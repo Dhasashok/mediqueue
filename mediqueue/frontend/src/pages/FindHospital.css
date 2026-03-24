@@ -1,0 +1,165 @@
+/* ════════════════════════════════════════════════════════
+   FIND HOSPITAL PAGE — Premium Design
+════════════════════════════════════════════════════════ */
+
+.fh-page { background: #f1f5f9; min-height: 100vh; }
+
+/* ── Hero ─────────────────────────────────────────────── */
+.fh-hero {
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 65%, #0f766e 100%);
+  padding: 52px 0 60px; position: relative; overflow: hidden;
+}
+.fh-hero-bg {
+  position: absolute; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(circle at 85% 30%, rgba(13,148,136,0.15) 0%, transparent 45%),
+    radial-gradient(circle at 10% 80%, rgba(8,145,178,0.1) 0%, transparent 40%);
+}
+.fh-hero-inner { position: relative; z-index: 1; }
+
+.fh-hero-content {
+  display: flex; align-items: flex-end; justify-content: space-between; gap: 40px;
+  flex-wrap: wrap;
+}
+.fh-hero-left { flex: 1; min-width: 280px; }
+
+.fh-live-tag {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(34,197,94,0.12); color: #4ade80;
+  padding: 6px 16px; border-radius: 999px; font-size: 0.78rem;
+  font-weight: 700; margin-bottom: 18px;
+  border: 1px solid rgba(74,222,128,0.2);
+}
+.fh-live-dot {
+  width: 7px; height: 7px; border-radius: 50%; background: #22c55e;
+  animation: fh-pulse 1.8s ease-in-out infinite;
+}
+@keyframes fh-pulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.5); }
+  50% { box-shadow: 0 0 0 5px rgba(34,197,94,0); }
+}
+
+.fh-title { color: white; font-size: clamp(1.8rem, 3.5vw, 2.6rem); margin-bottom: 4px; }
+.fh-subtitle { color: #5eead4; font-size: 1rem; font-weight: 600; margin-bottom: 8px; }
+.fh-desc { color: #64748b; font-size: 0.85rem; margin-bottom: 20px; }
+
+.fh-meta-pills { display: flex; flex-wrap: wrap; gap: 8px; }
+.fh-pill {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: rgba(255,255,255,0.07); color: #94a3b8;
+  padding: 6px 14px; border-radius: 999px; font-size: 0.78rem; font-weight: 500;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.fh-pill-red { background: rgba(239,68,68,0.12); color: #fca5a5; border-color: rgba(239,68,68,0.2); }
+
+/* Hero stats */
+.fh-hero-stats {
+  display: flex; gap: 0; background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1); border-radius: 20px;
+  overflow: hidden; backdrop-filter: blur(12px);
+}
+.fh-hstat {
+  padding: 20px 24px; text-align: center;
+  border-right: 1px solid rgba(255,255,255,0.08);
+}
+.fh-hstat:last-child { border-right: none; }
+.fh-hstat-val {
+  display: block; font-size: 1.6rem; font-weight: 800;
+  color: #5eead4; font-family: 'Fraunces', serif; line-height: 1; margin-bottom: 4px;
+}
+.fh-hstat-label { font-size: 0.68rem; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* ── Search Bar ───────────────────────────────────────── */
+.fh-search-bar {
+  background: white; border-bottom: 1px solid var(--border);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.06); position: sticky; top: 0; z-index: 10;
+}
+.fh-search-inner {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 24px; padding: 18px 0;
+}
+.fh-search-left h3 { font-size: 1rem; color: var(--navy); margin-bottom: 2px; }
+.fh-search-left p { font-size: 0.78rem; color: var(--muted); }
+.fh-search-box {
+  display: flex; align-items: center; gap: 10px;
+  background: #f8fafc; border: 2px solid var(--border);
+  border-radius: 999px; padding: 10px 20px;
+  min-width: 280px; transition: all 0.2s;
+}
+.fh-search-box:focus-within { border-color: var(--teal); background: white; box-shadow: 0 0 0 4px rgba(13,148,136,0.1); }
+.fh-search-icon { font-size: 1rem; flex-shrink: 0; }
+.fh-search-box input {
+  border: none; outline: none; background: none;
+  font-size: 0.9rem; color: var(--navy); width: 100%;
+  font-family: 'DM Sans', sans-serif;
+}
+.fh-search-box input::placeholder { color: var(--muted); }
+
+/* ── Department Grid ──────────────────────────────────── */
+.fh-depts-section { padding: 40px 0 80px; }
+.fh-dept-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;
+}
+
+/* Dept Card */
+.fh-dept-card {
+  background: white; border-radius: 22px; overflow: hidden;
+  border: 1.5px solid var(--border); cursor: pointer;
+  display: flex; flex-direction: column;
+  transition: all 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  animation: card-in 0.4s ease both;
+}
+@keyframes card-in {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fh-dept-card:hover {
+  transform: translateY(-8px) scale(1.01);
+  box-shadow: 0 24px 48px rgba(0,0,0,0.12);
+  border-color: var(--dept-color, var(--teal));
+}
+
+/* Colored top strip */
+.fhdc-strip {
+  height: 4px; width: 0; transition: width 0.3s ease;
+}
+.fh-dept-card:hover .fhdc-strip { width: 100%; }
+
+/* Icon area */
+.fhdc-icon-wrap {
+  width: 76px; height: 76px; border-radius: 22px; margin: 24px auto 16px;
+  display: flex; align-items: center; justify-content: center;
+  border: 1.5px solid; transition: transform 0.25s;
+}
+.fh-dept-card:hover .fhdc-icon-wrap { transform: scale(1.1) rotate(-6deg); }
+.fhdc-icon { font-size: 2.2rem; line-height: 1; }
+
+/* Info */
+.fhdc-info { padding: 0 20px; flex: 1; text-align: center; }
+.fhdc-name { font-size: 1rem; font-weight: 800; color: var(--navy); margin-bottom: 8px; }
+.fhdc-count {
+  display: inline-block; font-size: 0.7rem; font-weight: 800;
+  padding: 3px 12px; border-radius: 999px; margin-bottom: 10px;
+}
+.fhdc-desc { font-size: 0.78rem; color: var(--muted); line-height: 1.5; margin-bottom: 20px; }
+
+/* Book button */
+.fhdc-btn {
+  margin: 0 20px 20px; padding: 11px 16px; border-radius: 12px;
+  color: white; font-size: 0.82rem; font-weight: 700;
+  text-align: center; opacity: 0; transform: translateY(8px);
+  transition: all 0.25s; letter-spacing: 0.3px;
+}
+.fh-dept-card:hover .fhdc-btn { opacity: 1; transform: translateY(0); }
+
+/* ── Responsive ───────────────────────────────────────── */
+@media (max-width: 1100px) { .fh-dept-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 800px) {
+  .fh-dept-grid { grid-template-columns: repeat(2, 1fr); }
+  .fh-hero-stats { display: grid; grid-template-columns: repeat(2,1fr); width: 100%; }
+  .fh-hero-content { flex-direction: column; }
+  .fh-search-inner { flex-direction: column; align-items: stretch; }
+  .fh-search-box { min-width: unset; }
+}
+@media (max-width: 480px) { .fh-dept-grid { grid-template-columns: 1fr; } }

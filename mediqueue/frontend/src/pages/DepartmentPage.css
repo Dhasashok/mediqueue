@@ -1,0 +1,41 @@
+.ml-banner {
+  display: flex; gap: 10px; align-items: center;
+  background: var(--teal-light); border: 1px solid var(--teal-mid);
+  padding: 10px 16px; border-radius: 8px; font-size: 0.85rem; color: var(--teal-dark);
+}
+.dept-search-bar {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 28px; flex-wrap: wrap; gap: 16px;
+}
+.search-input {
+  padding: 10px 16px; border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+  font-size: 0.9rem; min-width: 240px; outline: none; transition: border-color 0.2s;
+}
+.search-input:focus { border-color: var(--teal); }
+
+.doctors-list { display: flex; flex-direction: column; gap: 20px; }
+.doctor-card {
+  display: flex; gap: 24px; align-items: center;
+  transition: box-shadow 0.2s; padding: 24px;
+}
+.doctor-card:hover { box-shadow: var(--shadow-lg); }
+.doc-photo {
+  width: 72px; height: 72px; border-radius: 50%; flex-shrink: 0;
+  background: linear-gradient(135deg, var(--teal), var(--teal-dark));
+  color: white; font-size: 1.5rem; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+.doc-info { flex: 1; }
+.doc-name-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 6px; }
+.doc-name-row h3 { margin: 0; }
+.doc-meta { display: flex; gap: 16px; font-size: 0.82rem; color: var(--muted); margin-bottom: 10px; flex-wrap: wrap; }
+.doc-stats { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.doc-wait { font-size: 0.82rem; color: var(--teal-dark); font-weight: 600; }
+.doc-action { flex-shrink: 0; }
+.empty-state { text-align: center; padding: 60px; color: var(--muted); font-size: 1.1rem; }
+
+@media (max-width: 640px) {
+  .doctor-card { flex-direction: column; align-items: flex-start; }
+  .doc-action { width: 100%; }
+  .doc-action .btn { width: 100%; justify-content: center; }
+}

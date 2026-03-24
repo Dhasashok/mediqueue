@@ -1,0 +1,65 @@
+.book-layout { display: grid; grid-template-columns: 300px 1fr; gap: 28px; align-items: start; }
+.book-left { position: sticky; top: 88px; }
+.doc-info-card { text-align: center; }
+.book-doc-photo {
+  width: 80px; height: 80px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--teal), var(--teal-dark));
+  color: white; font-size: 1.75rem; font-weight: 700;
+  display: flex; align-items: center; justify-content: center; margin: 0 auto 12px;
+}
+.book-spec { color: var(--teal); font-weight: 600; font-size: 0.85rem; margin-bottom: 12px; }
+.book-doc-meta { display: flex; flex-direction: column; gap: 6px; font-size: 0.8rem; color: var(--muted); text-align: left; }
+.avail-bar { display: flex; flex-direction: column; gap: 8px; }
+.avail-bar span { font-size: 0.8rem; color: var(--muted); }
+.prog-bar { height: 6px; background: var(--border); border-radius: 999px; overflow: hidden; }
+.prog-fill { height: 100%; background: var(--teal); border-radius: 999px; transition: width 0.5s; }
+
+.book-sub { font-weight: 700; font-size: 0.85rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin: 20px 0 10px; }
+.date-picker { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 4px; }
+.date-btn {
+  flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 10px 14px; border-radius: var(--radius-sm); border: 1.5px solid var(--border);
+  background: white; cursor: pointer; transition: all 0.15s; min-width: 64px; position: relative;
+}
+.date-btn:hover { border-color: var(--teal); background: var(--teal-light); }
+.date-btn.active { background: var(--teal); color: white; border-color: var(--teal); }
+.date-day { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; opacity: 0.7; }
+.date-num { font-size: 1.2rem; font-weight: 700; line-height: 1; }
+.date-month { font-size: 0.65rem; opacity: 0.7; }
+.today-dot { position: absolute; bottom: 5px; width: 5px; height: 5px; border-radius: 50%; background: var(--teal); }
+.date-btn.active .today-dot { background: white; }
+
+.slots-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.slot-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: 12px 8px; border-radius: var(--radius-sm); border: 1.5px solid var(--border);
+  background: white; cursor: pointer; transition: all 0.15s;
+}
+.slot-btn:hover:not(:disabled) { border-color: var(--teal); background: var(--teal-light); }
+.slot-btn.active { background: var(--teal); color: white; border-color: var(--teal); }
+.slot-btn.full { background: var(--bg); opacity: 0.6; cursor: not-allowed; }
+.slot-time { font-size: 0.8rem; font-weight: 700; }
+.slot-count { font-size: 0.7rem; opacity: 0.75; }
+.slot-wait { font-size: 0.68rem; color: var(--teal); }
+.slot-btn.active .slot-wait { color: var(--teal-light); }
+.slot-full { font-size: 0.68rem; color: var(--red); font-weight: 600; }
+
+/* Success */
+.success-page { display: flex; justify-content: center; padding: 60px 24px; background: var(--bg); min-height: 80vh; align-items: center; }
+.success-card { text-align: center; max-width: 520px; width: 100%; }
+.success-icon { font-size: 3rem; margin-bottom: 16px; }
+.success-card h2 { margin-bottom: 8px; }
+.success-card > p { color: var(--muted); margin-bottom: 24px; }
+.booking-summary { background: var(--bg); border-radius: 10px; padding: 20px; margin-bottom: 20px; text-align: left; }
+.summary-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 0.875rem; }
+.summary-row:last-child { border-bottom: none; }
+.summary-row span { color: var(--muted); }
+.qr-section { margin-bottom: 24px; }
+.qr-section p { font-size: 0.8rem; color: var(--muted); margin-bottom: 10px; }
+.qr-img { width: 150px; height: 150px; border: 2px solid var(--border); border-radius: 10px; }
+
+@media (max-width: 900px) {
+  .book-layout { grid-template-columns: 1fr; }
+  .book-left { position: static; }
+  .slots-grid { grid-template-columns: repeat(2, 1fr); }
+}

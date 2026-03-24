@@ -1,0 +1,111 @@
+/* ════════════════════════════════════════════════════════
+   FOOTER v2 — Compact Premium Design
+════════════════════════════════════════════════════════ */
+
+.footer-v2 { background: #0f172a; position: relative; }
+
+/* Wave — smaller height */
+.footer-wave {
+  display: block; line-height: 0; overflow: hidden;
+  background: #f1f5f9;
+}
+.footer-wave svg { display: block; width: 100%; height: 36px; }
+
+/* Body — tighter padding */
+.footer-body { padding: 36px 0 28px; }
+
+.footer-grid-v2 {
+  display: grid; grid-template-columns: 1.8fr 1fr 1.2fr 1.2fr; gap: 36px;
+  align-items: start;
+}
+
+/* ── Brand ────────────────────────────────────────────── */
+.footer-logo-v2 {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
+}
+.footer-logo-icon { font-size: 1.6rem; }
+.footer-logo-text {
+  font-family: 'Fraunces', serif; font-size: 1.2rem; font-weight: 800; color: white;
+}
+.footer-logo-text span { color: #5eead4; }
+
+.footer-tagline {
+  color: #64748b; font-size: 0.82rem; line-height: 1.65;
+  max-width: 240px; margin-bottom: 14px;
+}
+
+.footer-badges { display: flex; gap: 8px; flex-wrap: wrap; }
+.footer-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: rgba(255,255,255,0.05); color: #94a3b8;
+  padding: 4px 10px; border-radius: 6px; font-size: 0.72rem; font-weight: 600;
+  border: 1px solid rgba(255,255,255,0.07);
+}
+
+/* ── Column ───────────────────────────────────────────── */
+.footer-col-title {
+  color: white; font-family: 'DM Sans', sans-serif;
+  font-size: 0.72rem; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 1.5px;
+  margin-bottom: 14px; position: relative; padding-bottom: 10px;
+}
+.footer-col-title::after {
+  content: ''; position: absolute; bottom: 0; left: 0;
+  width: 24px; height: 2px;
+  background: linear-gradient(90deg, #0d9488, #0891b2);
+  border-radius: 1px;
+}
+
+/* Links */
+.footer-links { display: flex; flex-direction: column; gap: 8px; }
+.footer-links a {
+  color: #64748b; font-size: 0.82rem; transition: all 0.18s;
+}
+.footer-links a:hover { color: #5eead4; padding-left: 4px; }
+
+/* Info list */
+.footer-info-list { display: flex; flex-direction: column; gap: 8px; }
+.footer-info-item {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 0.82rem; color: #64748b;
+}
+.fi-icon { font-size: 0.9rem; flex-shrink: 0; width: 18px; text-align: center; }
+
+/* ── Emergency Card ───────────────────────────────────── */
+.footer-emergency-card {
+  background: rgba(239,68,68,0.1);
+  border: 1px solid rgba(239,68,68,0.2); border-radius: 12px;
+  padding: 12px 14px; margin-bottom: 12px;
+}
+.fe-header {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 0.72rem; font-weight: 700; color: #fca5a5; margin-bottom: 4px;
+}
+.fe-number {
+  font-size: 1.4rem; font-weight: 800; color: white;
+  font-family: 'Fraunces', serif; line-height: 1; margin-bottom: 2px;
+}
+.fe-sub { font-size: 0.68rem; color: #64748b; }
+
+/* ── Bottom bar ───────────────────────────────────────── */
+.footer-bottom-v2 {
+  border-top: 1px solid #1e293b; padding: 14px 0;
+}
+.footer-bottom-inner {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+}
+.footer-bottom-inner p { font-size: 0.75rem; color: #334155; }
+.footer-bottom-links { display: flex; align-items: center; gap: 10px; }
+.footer-bottom-links a { font-size: 0.75rem; color: #334155; transition: color 0.2s; }
+.footer-bottom-links a:hover { color: #5eead4; }
+.footer-bottom-links span { color: #1e293b; }
+
+/* ── Responsive ───────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .footer-grid-v2 { grid-template-columns: 1fr 1fr; gap: 28px; }
+}
+@media (max-width: 600px) {
+  .footer-grid-v2 { grid-template-columns: 1fr; gap: 24px; }
+  .footer-bottom-inner { flex-direction: column; text-align: center; }
+  .footer-badges { flex-direction: row; }
+}

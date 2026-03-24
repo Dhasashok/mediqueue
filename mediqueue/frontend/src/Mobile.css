@@ -1,0 +1,178 @@
+/* ════════════════════════════════════════════════════════
+   MOBILE.CSS — Fixes all white space and layout issues
+   Import this in App.js AFTER App.css
+════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+
+  /* ── Global ─────────────────────────────────────────── */
+  .container { padding: 0 16px; }
+  .section { padding: 40px 0; }
+  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; gap: 14px; }
+
+  /* ── HOME HERO ──────────────────────────────────────── */
+  .hero-v2 { min-height: auto; }
+  .hero-v2-inner {
+    grid-template-columns: 1fr !important;
+    padding-top: 48px !important;
+    padding-bottom: 32px !important;
+    text-align: center; gap: 0 !important;
+  }
+  .hero-v2-card-wrap { display: none !important; }
+  .hero-v2-title { font-size: 2rem !important; }
+  .hero-v2-desc { font-size: 0.9rem !important; max-width: 100% !important; margin-bottom: 24px !important; }
+  .hero-v2-btns { justify-content: center; flex-direction: column; align-items: center; gap: 10px; }
+  .btn-hero-primary, .btn-hero-outline { width: 100%; max-width: 300px; justify-content: center; font-size: 0.95rem; padding: 13px 24px; }
+  .hero-trust { justify-content: center; gap: 12px; }
+  .hero-badge { font-size: 0.72rem; padding: 6px 12px; }
+  .hero-stats-inner { grid-template-columns: repeat(2, 1fr) !important; }
+  .hero-stat-val { font-size: 1.5rem; }
+  .hero-stat-label { font-size: 0.7rem; }
+
+  /* ── HOW IT WORKS ───────────────────────────────────── */
+  .how-section { padding: 48px 0; }
+  .steps-row { flex-direction: column !important; gap: 14px !important; }
+  .step-arrow { display: none !important; }
+  .step-card-v2 { padding: 24px 20px; }
+  .step-icon-v2 { width: 60px; height: 60px; font-size: 1.8rem; }
+
+  /* ── FEATURES ───────────────────────────────────────── */
+  .features-v2 { padding: 48px 0; }
+  .features-grid-v2 { grid-template-columns: 1fr !important; gap: 12px !important; }
+  .feature-card-v2 { padding: 22px; }
+
+  /* ── CTA ────────────────────────────────────────────── */
+  .cta-v2 { padding: 56px 0; }
+  .cta-v2 h2 { font-size: 1.7rem !important; }
+  .cta-v2-btns { flex-direction: column; align-items: center; gap: 10px; }
+  .cta-v2-btns .btn-hero-primary,
+  .cta-v2-btns .btn-hero-outline { width: 100%; max-width: 280px; justify-content: center; }
+
+  /* ── FIND HOSPITAL ──────────────────────────────────── */
+  .fh-hero { padding: 28px 0 40px; }
+  .fh-hero-content { flex-direction: column !important; gap: 20px !important; }
+  .fh-title { font-size: 1.5rem !important; }
+  .fh-subtitle { font-size: 0.9rem; }
+  .fh-hero-stats {
+    display: grid !important; grid-template-columns: repeat(2, 1fr) !important;
+    width: 100%; border-radius: 14px;
+  }
+  .fh-hstat { padding: 12px 8px; }
+  .fh-hstat-val { font-size: 1.2rem; }
+  .fh-meta-pills { gap: 6px; }
+  .fh-pill { font-size: 0.7rem; padding: 4px 10px; }
+  .fh-search-inner { flex-direction: column !important; gap: 10px !important; padding: 12px 0; }
+  .fh-search-box { min-width: unset !important; width: 100%; }
+  .fh-depts-section { padding: 24px 0 48px; }
+  .fh-dept-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; }
+  .fhdc-icon-wrap { width: 60px; height: 60px; border-radius: 16px; }
+  .fhdc-icon { font-size: 1.8rem; }
+  .fhdc-name { font-size: 0.85rem; }
+  .fhdc-desc { font-size: 0.72rem; }
+  /* Always show book button on mobile — no hover */
+  .fhdc-btn { opacity: 1 !important; transform: none !important; font-size: 0.72rem; margin: 0 12px 14px; padding: 8px; }
+  .fhdc-strip { width: 100% !important; }
+
+  /* ── ABOUT ──────────────────────────────────────────── */
+  .about-hero { padding: 32px 0 44px; }
+  .about-hero h1 { font-size: 1.5rem !important; }
+  .about-pill-bar { gap: 6px; padding-top: 16px; }
+  .about-pill { font-size: 0.7rem; padding: 4px 10px; }
+  .mission-section { padding: 40px 0; }
+  .mission-grid { grid-template-columns: 1fr !important; gap: 24px !important; }
+  .mission-grid h2 { font-size: 1.4rem !important; }
+  .mission-stats { grid-template-columns: repeat(2, 1fr) !important; }
+  .m-stat { padding: 16px 8px; }
+  .m-stat-val { font-size: 1.5rem; }
+  .depts-section { padding: 40px 0; }
+  .dept-cards-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; }
+  .dept-card-icon { width: 52px; height: 52px; font-size: 1.5rem; border-radius: 14px; }
+  .dept-card-mini { padding: 20px 12px; }
+  .dept-card-mini h3 { font-size: 0.82rem; }
+  .contact-section { padding: 40px 0; }
+  .contact-grid-new { grid-template-columns: 1fr !important; gap: 12px !important; }
+  .contact-card-new { padding: 28px 20px; }
+
+  /* ── DASHBOARDS ─────────────────────────────────────── */
+  .dashboard-header { padding: 20px 0; }
+  .dashboard-header h1 { font-size: 1.3rem !important; }
+  .dash-header-row { flex-direction: column !important; align-items: flex-start !important; gap: 12px !important; }
+  .dash-stats { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
+  .dash-stat-card { padding: 14px 12px; gap: 10px; }
+  .stat-icon-box { width: 40px; height: 40px; font-size: 1.1rem; border-radius: 10px; }
+  .ds-val { font-size: 1.4rem; }
+  .ds-label { font-size: 0.72rem; }
+  .dashboard-body { padding: 16px 0; gap: 14px; }
+  .card { padding: 16px; }
+  .card-header-row { flex-direction: column; align-items: flex-start; gap: 8px; }
+
+  /* Live queue */
+  .live-queue-card { padding: 14px; }
+  .lq-body { grid-template-columns: 1fr !important; gap: 12px !important; }
+  .lq-info-row { flex-direction: column; gap: 2px; }
+  .lq-key { min-width: unset; font-size: 0.72rem; }
+  .lq-val { font-size: 0.82rem; }
+
+  /* Appointment list */
+  .appt-row { flex-wrap: wrap; gap: 10px; padding: 12px 0; }
+  .appt-actions-col { width: 100%; justify-content: flex-end; }
+  .dash-tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .dash-tab { padding: 8px 12px; font-size: 0.78rem; white-space: nowrap; }
+
+  /* Doctor queue */
+  .doctor-queue-row { grid-template-columns: 1fr !important; gap: 10px !important; padding: 14px !important; }
+  .dq-actions { flex-direction: row !important; flex-wrap: wrap; }
+  .queue-summary-banner { flex-wrap: wrap; }
+  .qs-item { min-width: 45%; padding: 10px; }
+  .qs-divider { display: none; }
+
+  /* Admin */
+  .checkin-input-row { flex-direction: column !important; }
+  .analytics-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
+
+  /* ── FOOTER ─────────────────────────────────────────── */
+  .footer-wave svg { height: 20px; }
+  .footer-body { padding: 24px 0 16px; }
+  .footer-grid-v2 { grid-template-columns: 1fr !important; gap: 20px !important; }
+  .footer-badges { flex-direction: row; flex-wrap: wrap; }
+  .footer-bottom-inner { flex-direction: column !important; text-align: center; gap: 6px; }
+  .footer-bottom-inner p { font-size: 0.7rem; }
+
+  /* ── MODAL ──────────────────────────────────────────── */
+  .modal { padding: 20px 16px; }
+  .modal img { width: 160px !important; height: 160px !important; }
+
+}
+
+/* ── Small phones ─────────────────────────────────────── */
+@media (max-width: 400px) {
+  .fh-dept-grid { grid-template-columns: 1fr !important; }
+  .hero-v2-title { font-size: 1.8rem !important; }
+  .otp-input { width: 38px !important; height: 46px !important; font-size: 1.1rem !important; }
+  .otp-container { gap: 5px !important; }
+  .dash-stats { grid-template-columns: 1fr 1fr !important; }
+  .dept-cards-grid { grid-template-columns: 1fr !important; }
+}
+
+/* ── Tablet ───────────────────────────────────────────── */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .hero-v2-title { font-size: 2.6rem !important; }
+  .fh-dept-grid { grid-template-columns: repeat(3, 1fr) !important; }
+  .dept-cards-grid { grid-template-columns: repeat(3, 1fr) !important; }
+  .features-grid-v2 { grid-template-columns: repeat(2, 1fr) !important; }
+  .dash-stats { grid-template-columns: repeat(2, 1fr) !important; }
+  .footer-grid-v2 { grid-template-columns: 1fr 1fr !important; gap: 24px !important; }
+  .auth-right { padding: 40px 36px; }
+}
+
+/* ── Touch devices — show interactive elements always ─── */
+@media (hover: none) {
+  .fhdc-btn { opacity: 1 !important; transform: none !important; }
+  .dept-arrow { opacity: 1 !important; transform: none !important; }
+  .fh-dept-card:hover { transform: none !important; }
+  .step-card-v2:hover { transform: none !important; }
+  .feature-card-v2:hover { transform: none !important; }
+  .contact-card-new:hover { transform: none !important; }
+  .dept-card-mini:hover { transform: none !important; }
+  .fhdc-strip { width: 100% !important; }
+}
