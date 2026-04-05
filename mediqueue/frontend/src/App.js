@@ -64,5 +64,8 @@ function App() {
     </AuthProvider>
   );
 }
-
+const API = axios.create({
+  baseURL: "https://mediqueue-2k3l.onrender.com/api",
+  withCredentials: true,
+});
 export default App;
