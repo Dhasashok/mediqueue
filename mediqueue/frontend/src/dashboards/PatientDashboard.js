@@ -178,10 +178,12 @@ const PatientDashboard = () => {
         try { localStorage.removeItem(TIMER_KEY(a.id)); } catch {}
       }
     });
-  }, [appointments]);
+  }, [appointments]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Run on appointments change (status updates)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { fetchQueuePositions(appointments); }, [appointments]);
+  
 
   // Also poll every 15s independently — catches doctor ▶ Start without status change
   // Patient #2 timer starts within 15s of doctor clicking ▶ Start on patient #1
@@ -192,6 +194,7 @@ const PatientDashboard = () => {
 
   // Live countdown timer — ticks every second
   const startedTimers = useRef({});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     Object.keys(countdown).forEach(id => {
       if (startedTimers.current[id]) return;

@@ -77,7 +77,7 @@ const displayDate = (dateStr) => {
 
 const BookAppointment = () => {
   const { doctorId } = useParams();
-  const { user } = useAuth();
+  //const { user } = useAuth();
   const navigate = useNavigate();
   const [doctor, setDoctor] = useState(null);
   const [days] = useState(getDaysFromToday(7));

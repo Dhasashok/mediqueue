@@ -76,8 +76,6 @@ const ToastContainer = ({ toasts, remove }) => (
   </div>
 );
 
-const useToast = () => React.useContext(ToastContext);
-
 // ── Status badge color map ─────────────────────────────────────────────────────
 const statusColor = {
   'Booked': 'badge-blue', 'Checked-In': 'badge-amber',
@@ -382,7 +380,7 @@ const AdminDashboard = () => {
       toast.error(err.response?.data?.message || 'Check-in failed. Verify Booking ID.');
       setCheckInId(bookingId);  // fallback: put in text field so admin can retry manually
     } finally { setCheckingIn(null); }
-  }, [loadQueues, loadAllAppointments]);
+  }, [loadQueues, loadAllAppointments]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleCancelAppointment = async (id, bookingId) => {
     if (!window.confirm(`Cancel appointment ${bookingId}?`)) return;
