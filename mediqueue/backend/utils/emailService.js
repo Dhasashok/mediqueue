@@ -13,17 +13,6 @@ const transporter = nodemailer.createTransport({
 const HOSPITAL = 'City General Hospital, Pune';
 const HOSPITAL_EMAIL = process.env.EMAIL_USER;
 
-// Format date nicely: "24 Mar 2026"
-const formatDate = (raw) => {
-  if (!raw) return '';
-  try {
-    const d = new Date(raw);
-    return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
-  } catch (e) {
-    return String(raw).split('T')[0];
-  }
-};
-
 // Base HTML template
 const baseTemplate = (content) => `
 <!DOCTYPE html>
@@ -42,10 +31,10 @@ const baseTemplate = (content) => `
     .title { font-size:22px; font-weight:bold; color:#0f172a; margin-bottom:8px; }
     .subtitle { font-size:14px; color:#64748b; margin-bottom:24px; }
     .info-box { background:#f8fafc; border-radius:10px; padding:20px; margin:20px 0; border:1px solid #e2e8f0; }
-    .info-row { padding:8px 0; border-bottom:1px solid #e2e8f0; font-size:14px; overflow:hidden; }
+    .info-row { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #e2e8f0; font-size:14px; }
     .info-row:last-child { border-bottom:none; }
-    .info-label { display:block; color:#64748b; font-size:12px; margin-bottom:2px; }
-    .info-value { display:block; color:#0f172a; font-weight:600; font-size:14px; }
+    .info-label { color:#64748b; }
+    .info-value { color:#0f172a; font-weight:600; }
     .otp-box { text-align:center; background:#f0fdf4; border:2px dashed #0d9488; border-radius:12px; padding:24px; margin:24px 0; }
     .otp-code { font-size:42px; font-weight:bold; color:#0d9488; letter-spacing:8px; }
     .otp-label { font-size:13px; color:#64748b; margin-top:8px; }
@@ -101,25 +90,26 @@ const sendOTPEmail = async (email, name, otp) => {
   });
 };
 
-// 2. Send Appointment Confirmation Email (with QR via CID attachment)
+// 2. Send Appointment Confirmation Email (with QR)
 const sendAppointmentConfirmation = async (email, name, appointment) => {
-  const QRCode = require('qrcode');
 
-  // Generate QR as a Buffer (PNG) — CID method works in ALL email clients including Gmail
+  // Use pre-generated QR from DB, or generate fresh one as fallback
+  const QRCode = require('qrcode');
+  // Generate QR as Buffer for CID attachment (works in all email clients)
+  // data: URI images are blocked by Gmail/Outlook — CID is the correct approach
   let qrBuffer = null;
   try {
-    let qrBase64 = appointment.qr_code_data; // base64 string from DB
-
+    let qrBase64 = appointment.qr_code_data;
     if (qrBase64) {
       // Strip the data:image/png;base64, prefix to get raw base64
-      const base64Data = qrBase64.replace(/^data:image\/png;base64,/, '');
-      qrBuffer = Buffer.from(base64Data, 'base64');
+      const b64 = qrBase64.replace(/^data:image\/png;base64,/, '');
+      qrBuffer = Buffer.from(b64, 'base64');
     } else {
-      // Fallback: generate fresh QR as buffer
+      // Generate fresh QR if not in DB
       const qrData = JSON.stringify({
         booking_id: appointment.booking_id,
         patient_id: appointment.patient_id,
-        doctor_id: appointment.doctor_id,
+        doctor_id:  appointment.doctor_id,
         department_id: appointment.department_id,
         date: String(appointment.appointment_date).split('T')[0],
         slot: appointment.time_slot,
@@ -132,16 +122,56 @@ const sendAppointmentConfirmation = async (email, name, appointment) => {
         color: { dark: '#0f172a', light: '#ffffff' }
       });
     }
-  } catch (e) {
+  } catch(e) {
     console.error('QR generation error:', e.message);
   }
-
-  // Use CID image tag — this works in Gmail, Outlook, mobile apps
-  const qrImageTag = qrBuffer
-    ? `<img src="cid:qrcode@mediqueue" width="200" height="200" style="border-radius:12px;border:2px solid #bbf7d0;display:block;margin:8px auto;" alt="QR Code" />`
-    : `<p style="font-size:14px;color:#0f172a;text-align:center;font-weight:bold;letter-spacing:1px;">${appointment.booking_id}</p>`;
-
-  const formattedDate = formatDate(appointment.appointment_date);
+  // ── Arrival Window (pre-computed string) ────────────────────
+  let arrivalBlock = '';
+  try {
+    const distMins   = appointment.distributed_mins
+      ? parseFloat(appointment.distributed_mins)
+      : appointment.slot_capacity
+        ? Math.round((120 / appointment.slot_capacity) * 100) / 100
+        : 20.0;
+    const patBefore  = appointment.patients_before != null ? appointment.patients_before : 0;
+    const slotStartH = appointment.time_slot ? parseInt(appointment.time_slot.split(':')[0]) : 10;
+    const slotStart  = slotStartH * 60;
+    const turnTime   = slotStart + patBefore * distMins;
+    const arriveBy   = Math.max(turnTime - distMins,     slotStart - 15);
+    const arriveFrom = Math.max(turnTime - 2 * distMins, slotStart - 30);
+    const fmt = (m) => {
+      const total = Math.round(m);
+      const h = Math.floor(total / 60), mn = total % 60;
+      const suf = h < 12 ? 'AM' : 'PM';
+      const hh  = h === 0 ? 12 : h > 12 ? h - 12 : h;
+      return hh + ':' + String(mn).padStart(2, '0') + ' ' + suf;
+    };
+    arrivalBlock =
+      '<div style="background:#f0fdf4;border:1.5px solid #0d9488;border-radius:10px;' +
+      'padding:16px;margin:16px 0;text-align:center;">' +
+        '<p style="font-weight:bold;color:#0d9488;margin:0 0 12px;font-size:14px;">' +
+          '&#127973; Suggested Arrival Time</p>' +
+        '<table width="100%" cellpadding="0" cellspacing="0" border="0"><tr>' +
+          '<td width="50%" style="text-align:center;padding:8px;">' +
+            '<p style="margin:0;font-size:11px;color:#64748b;text-transform:uppercase;">Arrive From</p>' +
+            '<p style="margin:4px 0 0;font-size:22px;font-weight:bold;color:#0f172a;">' +
+              fmt(arriveFrom) + '</p>' +
+          '</td>' +
+          '<td width="50%" style="text-align:center;padding:8px;">' +
+            '<p style="margin:0;font-size:11px;color:#64748b;text-transform:uppercase;">Arrive By</p>' +
+            '<p style="margin:4px 0 0;font-size:22px;font-weight:bold;color:#0f172a;">' +
+              fmt(arriveBy) + '</p>' +
+          '</td>' +
+        '</tr></table>' +
+        '<p style="margin:10px 0 0;font-size:12px;color:#475569;">' +
+          'Patient <strong>#' + (patBefore + 1) + '</strong> &middot; ' +
+          'Your turn: <strong>' + fmt(turnTime) + '</strong>' +
+        '</p>' +
+      '</div>';
+  } catch(e) {
+    console.warn('Arrival calc error:', e.message);
+    arrivalBlock = '';
+  }
 
   const content = `
     <div class="title">✅ Appointment Confirmed!</div>
@@ -151,39 +181,35 @@ const sendAppointmentConfirmation = async (email, name, appointment) => {
       <div class="info-row"><span class="info-label">Booking ID</span><span class="info-value">${appointment.booking_id}</span></div>
       <div class="info-row"><span class="info-label">Doctor</span><span class="info-value">Dr. ${appointment.first_name} ${appointment.last_name}</span></div>
       <div class="info-row"><span class="info-label">Department</span><span class="info-value">${appointment.dept_name}</span></div>
-      <div class="info-row"><span class="info-label">Date</span><span class="info-value">${formattedDate}</span></div>
+      <div class="info-row"><span class="info-label">Date</span><span class="info-value">${appointment.appointment_date}</span></div>
       <div class="info-row"><span class="info-label">Time Slot</span><span class="info-value">${appointment.time_slot}</span></div>
     </div>
     <div class="green-box">
       <p style="font-weight:bold;color:#15803d;margin:0 0 8px;">📲 Your QR Entry Pass</p>
       <p style="font-size:13px;color:#166534;margin:0 0 12px;">Show this QR code at the reception desk when you arrive.</p>
-      ${qrImageTag}
+      <img src="cid:qrcode" width="200" height="200" style="border-radius:12px;border:2px solid #bbf7d0;display:block;margin:8px auto;" alt="QR Code" />
       <p style="font-size:12px;color:#64748b;margin:10px 0 0;text-align:center;">Booking ID: <strong style="color:#0f172a;letter-spacing:1px;">${appointment.booking_id}</strong></p>
     </div>
+    ${arrivalBlock}
     <div class="info-box" style="background:#fef9c3;border-color:#fde047;">
-      <p style="font-size:13px;color:#a16207;margin:0;">⚠️ <strong>Important:</strong> Please arrive on time for your appointment. Your QR code is your entry pass — show it at reception.</p>
+      <p style="font-size:13px;color:#a16207;margin:0;">⚠️ <strong>Important:</strong> Please arrive on time. Your QR code is your entry pass — show it at reception.</p>
     </div>
   `;
-
-  // Build mail options — attach QR as inline CID image
   const mailOptions = {
     from: `"MediQueue Hospital" <${HOSPITAL_EMAIL}>`,
     to: email,
     subject: `Appointment Confirmed — ${appointment.booking_id}`,
     html: baseTemplate(content),
-    attachments: []
   };
-
-  // Add QR as inline attachment only if buffer is available
+  // Attach QR as inline CID image — visible in Gmail, Outlook, all clients
   if (qrBuffer) {
-    mailOptions.attachments.push({
+    mailOptions.attachments = [{
       filename: 'qrcode.png',
       content: qrBuffer,
-      cid: 'qrcode@mediqueue',  // must match cid: in img src
+      cid: 'qrcode',          // matches src="cid:qrcode" in the template
       contentType: 'image/png'
-    });
+    }];
   }
-
   await transporter.sendMail(mailOptions);
 };
 
@@ -221,7 +247,7 @@ const sendCompletionEmail = async (email, name, data) => {
     <div class="info-box">
       <div class="info-row"><span class="info-label">Doctor</span><span class="info-value">Dr. ${data.doc_first} ${data.doc_last}</span></div>
       <div class="info-row"><span class="info-label">Department</span><span class="info-value">${data.dept_name}</span></div>
-      <div class="info-row"><span class="info-label">Date</span><span class="info-value">${formatDate(data.appointment_date)}</span></div>
+      <div class="info-row"><span class="info-label">Date</span><span class="info-value">${data.appointment_date}</span></div>
       <div class="info-row"><span class="info-label">Booking ID</span><span class="info-value">${data.booking_id}</span></div>
     </div>
     <div class="green-box">
@@ -247,7 +273,7 @@ const sendCancellationEmail = async (email, name, appointment) => {
       <div class="info-row"><span class="info-label">Booking ID</span><span class="info-value">${appointment.booking_id}</span></div>
       <div class="info-row"><span class="info-label">Doctor</span><span class="info-value">Dr. ${appointment.first_name} ${appointment.last_name}</span></div>
       <div class="info-row"><span class="info-label">Department</span><span class="info-value">${appointment.dept_name}</span></div>
-      <div class="info-row"><span class="info-label">Date</span><span class="info-value">${formatDate(appointment.appointment_date)}</span></div>
+      <div class="info-row"><span class="info-label">Date</span><span class="info-value">${appointment.appointment_date}</span></div>
     </div>
     <div class="red-box">
       <p style="color:#b91c1c;font-size:13px;margin:0;">You can book a new appointment anytime at <strong>MediQueue</strong>.</p>

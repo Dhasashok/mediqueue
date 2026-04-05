@@ -235,4 +235,75 @@ const getMe = async (req, res) => {
   }
 };
 
-module.exports = { registerPatient, registerDoctor, verifyOTP, resendOTP, login, logout, getMe };
+// ── Forgot Password — sends OTP to email ─────────────────────
+const forgotPassword = async (req, res) => {
+  try {
+    const { email, role } = req.body;
+    if (!email || !role) return res.status(400).json({ success: false, message: 'Email and role are required.' });
+
+    const table = role === 'patient' ? 'patients' : role === 'doctor' ? 'doctors' : null;
+    if (!table) return res.status(400).json({ success: false, message: 'Invalid role.' });
+
+    const [rows] = await db.query(`SELECT id, first_name, email FROM ${table} WHERE email = ?`, [email]);
+    // Always return success to prevent email enumeration
+    if (rows.length === 0) return res.json({ success: true, message: 'If this email exists, an OTP has been sent.' });
+
+    const user = rows[0];
+    const otp = generateOTP();
+    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    await db.query(
+      `UPDATE ${table} SET otp=?, otp_expiry=? WHERE id=?`,
+      [otp, otpExpiry, user.id]
+    );
+
+    // Reuse existing OTP email function
+    await sendOTPEmail(email, user.first_name, otp);
+    res.json({ success: true, message: 'OTP sent to your email. Valid for 10 minutes.' });
+  } catch (err) {
+    console.error('forgotPassword error:', err);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+};
+
+// ── Reset Password — verify OTP then update password ─────────
+const resetPassword = async (req, res) => {
+  try {
+    const { email, role, otp, newPassword } = req.body;
+    if (!email || !role || !otp || !newPassword) {
+      return res.status(400).json({ success: false, message: 'All fields are required.' });
+    }
+    if (newPassword.length < 6) {
+      return res.status(400).json({ success: false, message: 'Password must be at least 6 characters.' });
+    }
+
+    const table = role === 'patient' ? 'patients' : role === 'doctor' ? 'doctors' : null;
+    if (!table) return res.status(400).json({ success: false, message: 'Invalid role.' });
+
+    const [rows] = await db.query(
+      `SELECT id, otp, otp_expiry FROM ${table} WHERE email = ?`, [email]
+    );
+    if (rows.length === 0) return res.status(400).json({ success: false, message: 'Email not found.' });
+
+    const user = rows[0];
+    if (!user.otp || user.otp !== otp) {
+      return res.status(400).json({ success: false, message: 'Invalid OTP.' });
+    }
+    if (new Date() > new Date(user.otp_expiry)) {
+      return res.status(400).json({ success: false, message: 'OTP has expired. Please request a new one.' });
+    }
+
+    const hash = await bcrypt.hash(newPassword, 12);
+    await db.query(
+      `UPDATE ${table} SET password_hash=?, otp=NULL, otp_expiry=NULL WHERE id=?`,
+      [hash, user.id]
+    );
+
+    res.json({ success: true, message: 'Password reset successfully. You can now log in.' });
+  } catch (err) {
+    console.error('resetPassword error:', err);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+};
+
+module.exports = { registerPatient, registerDoctor, verifyOTP, resendOTP, login, logout, getMe, forgotPassword, resetPassword };

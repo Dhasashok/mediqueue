@@ -1,0 +1,12 @@
+{
+  "Internal Medicine": 1,
+  "Cardiology": 2,
+  "Orthopedics": 3,
+  "General Surgery": 4,
+  "Neurology": 5,
+  "Pediatrics": 6,
+  "Oncology": 7,
+  "Emergency": 8,
+  "Obstetrics": 9,
+  "Radiology": 10
+}

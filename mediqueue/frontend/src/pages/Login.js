@@ -113,7 +113,7 @@ const Login = () => {
               />
               {errors.password && <p className="error">⚠ {errors.password}</p>}
               <p style={{ textAlign: 'right', marginTop: 8 }}>
-                <a href="#!" style={{ color: '#0d9488', fontSize: '0.8rem', fontWeight: 600 }}>Forgot Password?</a>
+                <Link to="/forgot-password" style={{ color: '#0d9488', fontSize: '0.8rem', fontWeight: 600 }}>Forgot Password?</Link>
               </p>
             </div>
 

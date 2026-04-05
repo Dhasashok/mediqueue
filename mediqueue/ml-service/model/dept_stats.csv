@@ -1,0 +1,11 @@
+Department,avg_wait,median_wait,std_wait
+Cardiology,53.1,38.3,47.0
+Emergency,47.6,35.1,42.0
+General Surgery,55.4,41.7,49.1
+Internal Medicine,60.2,48.1,51.1
+Neurology,63.0,49.6,53.4
+Obstetrics,41.9,32.0,37.6
+Oncology,49.7,41.6,38.7
+Orthopedics,57.1,43.3,48.4
+Pediatrics,44.3,31.6,39.9
+Radiology,41.1,32.1,36.0

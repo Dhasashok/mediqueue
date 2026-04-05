@@ -1,4 +1,3 @@
-
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
@@ -41,4 +40,13 @@ const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`\n🏥 MediQueue Backend running on http://localhost:${PORT}`);
   console.log(`📡 Socket.io ready for real-time connections\n`);
+
+  // ✅ ML self-learning: lazy require avoids circular dependency
+  try {
+    const { scheduleMidnightRecalculation } = require('./controllers/queueController');
+    scheduleMidnightRecalculation();
+    console.log('🤖 ML scheduler started (runs nightly at 23:59)\n');
+  } catch (e) {
+    console.warn('⚠️  ML scheduler not started:', e.message, '\n');
+  }
 });

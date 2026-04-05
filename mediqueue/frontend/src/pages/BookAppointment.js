@@ -13,6 +13,44 @@ const formatLocalDate = (d) => {
   return `${year}-${month}-${day}`;
 };
 
+// ── Arrival Time Calculator ────────────────────────────────
+// distributed_mins = 120 / slot_capacity (dept-specific equal share)
+// turn_time = slot_start + patients_before × distributed_mins
+// arrive_by   = max(turn_time - distributed_mins, slot_start - 15)
+// arrive_from = max(turn_time - 2×distributed_mins, slot_start - 30)
+const calcArrivalWindow = (timeSlot, patientsBefore, distributedMins) => {
+  if (!timeSlot || distributedMins <= 0) return null;
+  const slotStartH  = parseInt(timeSlot.split(':')[0]);
+  const slotStartM  = parseInt(timeSlot.split(':')[1]) || 0;
+  const slotStart   = slotStartH * 60 + slotStartM;
+
+  const turnTime    = slotStart + patientsBefore * distributedMins;
+
+  // arrive_by = 1 consultation before turn, min 15 min before slot
+  let arriveBy   = Math.max(turnTime - distributedMins, slotStart - 15);
+  // arrive_from = 2 consultations before turn, cap 30 min before slot
+  let arriveFrom = Math.max(turnTime - 2 * distributedMins, slotStart - 30);
+  // ensure from < by
+  if (arriveFrom >= arriveBy) arriveFrom = arriveBy - distributedMins;
+  arriveFrom = Math.max(arriveFrom, slotStart - 30);
+
+  const fmt = (mins) => {
+    const total = Math.round(mins);
+    const h  = Math.floor(total / 60);
+    const m  = total % 60;
+    const suf = h < 12 ? 'AM' : 'PM';
+    const hh  = h === 0 ? 12 : h > 12 ? h - 12 : h;
+    return `${hh}:${String(m).padStart(2,'0')} ${suf}`;
+  };
+
+  return {
+    turnTime:   fmt(turnTime),
+    arriveFrom: fmt(arriveFrom),
+    arriveBy:   fmt(arriveBy),
+    position:   patientsBefore + 1,
+  };
+};
+
 const getDaysFromToday = (count = 7) => {
   const days = [];
   const dayNames = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
@@ -139,6 +177,53 @@ const BookAppointment = () => {
             </div>
           </div>
 
+          {/* Arrival Time Guidance */}
+          {(() => {
+            const arrival = calcArrivalWindow(
+              successData.time_slot,
+              successData.patients_before ?? 0,
+              parseFloat(successData.distributed_mins) || (120 / (successData.slot_capacity || 6))
+            );
+            if (!arrival) return null;
+            return (
+              <div style={{
+                background: 'linear-gradient(135deg,#eff6ff,#f0fdf4)',
+                border: '1.5px solid #0d9488', borderRadius: 12,
+                padding: '16px 18px', marginBottom: 16, textAlign: 'left'
+              }}>
+                <p style={{ fontWeight: 800, color: '#0d9488', margin: '0 0 10px',
+                  fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: 8 }}>
+                  🏥 Suggested Arrival Time
+                </p>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  gap: 12, margin: '10px 0' }}>
+                  <div style={{ textAlign: 'center' }}>
+                    <p style={{ margin: 0, fontSize: '0.7rem', color: '#64748b',
+                      fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 }}>Arrive From</p>
+                    <p style={{ margin: '4px 0 0', fontSize: '1.4rem', fontWeight: 800,
+                      color: '#0f172a' }}>{arrival.arriveFrom}</p>
+                  </div>
+                  <div style={{ color: '#0d9488', fontSize: '1.5rem', fontWeight: 300 }}>—</div>
+                  <div style={{ textAlign: 'center' }}>
+                    <p style={{ margin: 0, fontSize: '0.7rem', color: '#64748b',
+                      fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 }}>Arrive By</p>
+                    <p style={{ margin: '4px 0 0', fontSize: '1.4rem', fontWeight: 800,
+                      color: '#0f172a' }}>{arrival.arriveBy}</p>
+                  </div>
+                </div>
+                <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: 10, marginTop: 6 }}>
+                  <p style={{ margin: 0, fontSize: '0.75rem', color: '#475569', lineHeight: 1.6 }}>
+                    📍 You are patient <strong>#{arrival.position}</strong> in this slot
+                    &nbsp;·&nbsp; Your turn starts around <strong>{arrival.turnTime}</strong>
+                  </p>
+                  <p style={{ margin: '4px 0 0', fontSize: '0.72rem', color: '#94a3b8' }}>
+                    Arrival window based on {successData.dept_name} avg consultation time
+                  </p>
+                </div>
+              </div>
+            );
+          })()}
+
           {/* ML Wait Time Explanation */}
           <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 10, padding: 16, marginBottom: 20, textAlign: 'left' }}>
             <p style={{ fontWeight: 700, marginBottom: 6, color: '#15803d' }}>🤖 ML Predicted Wait Time</p>
@@ -252,16 +337,20 @@ const BookAppointment = () => {
                   {slots.map(s => (
                     <button
                       key={s.slot}
-                      className={`slot-btn ${selectedSlot === s.slot ? 'active' : ''} ${s.available === 0 ? 'full' : ''}`}
-                      onClick={() => s.available > 0 && setSelectedSlot(s.slot)}
-                      disabled={s.available === 0}
+                      className={`slot-btn ${selectedSlot === s.slot ? 'active' : ''} ${(s.available === 0 || s.is_past || s.is_leave) ? 'full' : ''}`}
+                      onClick={() => !s.is_past && !s.is_leave && s.available > 0 && setSelectedSlot(s.slot)}
+                      disabled={s.available === 0 || s.is_past || !!s.is_leave}
                     >
                       <span className="slot-time">{s.slot}</span>
-                      <span className="slot-count">{s.booked}/{s.booked + s.available} booked</span>
-                      {s.available > 0 && (
+                      {!s.is_past && !s.is_leave && (
+                        <span className="slot-count">{s.booked}/{s.booked + s.available} booked</span>
+                      )}
+                      {!s.is_past && !s.is_leave && s.available > 0 && (
                         <span className="slot-wait">~{s.predicted_wait}min wait</span>
                       )}
-                      {s.available === 0 && <span className="slot-full">Full</span>}
+                      {s.is_past && <span className="slot-full" style={{background:'#e2e8f0',color:'#64748b'}}>⏰ Ended</span>}
+                      {!s.is_past && !!s.is_leave && <span className="slot-full">🏖️ Leave</span>}
+                      {!s.is_past && !s.is_leave && s.available === 0 && <span className="slot-full">Full</span>}
                     </button>
                   ))}
                 </div>

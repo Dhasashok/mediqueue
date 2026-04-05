@@ -1,12 +1,10 @@
 const db = require('../models/db');
 
-// Get today's date in local format YYYY-MM-DD
+// Get today's date in IST (UTC+5:30) — prevents UTC vs IST 1-day mismatch
 const getLocalToday = () => {
   const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
+  const ist = new Date(now.getTime() + 5.5 * 60 * 60000);
+  return `${ist.getUTCFullYear()}-${String(ist.getUTCMonth()+1).padStart(2,'0')}-${String(ist.getUTCDate()).padStart(2,'0')}`;
 };
 
 const getPendingDoctors = async (req, res) => {
@@ -128,7 +126,11 @@ const getUpcomingAppointments = async (req, res) => {
 const getAllAppointments = async (req, res) => {
   try {
     const [appointments] = await db.query(
-      `SELECT a.*, p.first_name as p_first, p.last_name as p_last,
+      `SELECT a.id, a.booking_id, a.time_slot, a.full_name, a.age, a.gender,
+       a.status, a.predicted_wait_time, a.qr_code_data, a.patient_id,
+       a.doctor_id, a.department_id, a.reason_for_visit,
+       DATE_FORMAT(a.appointment_date, '%Y-%m-%d') as appointment_date,
+       p.first_name as p_first, p.last_name as p_last,
        d.first_name as doc_first, d.last_name as doc_last,
        dep.name as dept_name
        FROM appointments a
@@ -136,7 +138,7 @@ const getAllAppointments = async (req, res) => {
        JOIN doctors d ON a.doctor_id = d.id
        JOIN departments dep ON a.department_id = dep.id
        ORDER BY a.appointment_date DESC, a.created_at DESC
-       LIMIT 200`
+       LIMIT 500`
     );
     res.json({ success: true, appointments });
   } catch (err) {
@@ -165,7 +167,110 @@ const adminCancelAppointment = async (req, res) => {
   }
 };
 
+// ── Doctor Leave Management ──────────────────────────────────
+// Admin marks doctor unavailable on date(s) — slots auto-blocked on BookAppointment
+
+const setDoctorLeave = async (req, res) => {
+  try {
+    const { doctor_id, leave_date, reason } = req.body;
+    if (!doctor_id || !leave_date) return res.status(400).json({ success: false, message: 'doctor_id and leave_date required.' });
+    await db.query(
+      `INSERT INTO doctor_leaves (doctor_id, leave_date, reason)
+       VALUES (?, ?, ?)
+       ON DUPLICATE KEY UPDATE reason = VALUES(reason)`,
+      [doctor_id, leave_date, reason || null]
+    );
+    res.json({ success: true, message: `Leave set for ${leave_date}.` });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Error setting leave.' });
+  }
+};
+
+const removeDoctorLeave = async (req, res) => {
+  try {
+    const { doctor_id, leave_date } = req.body;
+    await db.query('DELETE FROM doctor_leaves WHERE doctor_id=? AND leave_date=?', [doctor_id, leave_date]);
+    res.json({ success: true, message: 'Leave removed.' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Error.' });
+  }
+};
+
+const getDoctorLeaves = async (req, res) => {
+  try {
+    const [rows] = await db.query(
+      `SELECT dl.doctor_id, dl.reason,
+       DATE_FORMAT(dl.leave_date, '%Y-%m-%d') as leave_date,
+       d.first_name, d.last_name, dep.name as dept_name
+       FROM doctor_leaves dl
+       JOIN doctors d ON dl.doctor_id = d.id
+       JOIN departments dep ON d.department_id = dep.id
+       WHERE dl.leave_date >= CURDATE()
+       ORDER BY dl.leave_date ASC`
+    );
+    res.json({ success: true, leaves: rows });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Error.' });
+  }
+};
+
+// ── Doctor Self-Service Leave ─────────────────────────────────
+// Doctor sets their OWN leave — uses req.user.id, no need for admin
+
+const setMyLeave = async (req, res) => {
+  try {
+    const doctor_id = req.user.id;
+    const { leave_date, reason } = req.body;
+    if (!leave_date) return res.status(400).json({ success: false, message: 'leave_date is required.' });
+
+    await db.query(
+      `INSERT INTO doctor_leaves (doctor_id, leave_date, reason)
+       VALUES (?, ?, ?)
+       ON DUPLICATE KEY UPDATE reason = VALUES(reason)`,
+      [doctor_id, leave_date, reason || null]
+    );
+    res.json({ success: true, message: `Leave marked for ${leave_date}. Slots blocked for patients.` });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Error setting leave.' });
+  }
+};
+
+const removeMyLeave = async (req, res) => {
+  try {
+    const doctor_id = req.user.id;
+    const { leave_date } = req.body;
+    await db.query(
+      'DELETE FROM doctor_leaves WHERE doctor_id=? AND leave_date=?',
+      [doctor_id, leave_date]
+    );
+    res.json({ success: true, message: 'Leave removed. Slots available again.' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Error.' });
+  }
+};
+
+const getMyLeaves = async (req, res) => {
+  try {
+    const doctor_id = req.user.id;
+    const [rows] = await db.query(
+      `SELECT doctor_id, reason,
+       DATE_FORMAT(leave_date, '%Y-%m-%d') as leave_date
+       FROM doctor_leaves
+       WHERE doctor_id = ?
+       ORDER BY leave_date ASC`,
+      [doctor_id]
+    );
+    res.json({ success: true, leaves: rows });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Error.' });
+  }
+};
+
 module.exports = {
   getPendingDoctors, approveDoctor, getAllDoctors, getAnalytics,
-  getTodayAppointments, getUpcomingAppointments, getAllAppointments, adminCancelAppointment
+  getTodayAppointments, getUpcomingAppointments, getAllAppointments, adminCancelAppointment,
+  setDoctorLeave, removeDoctorLeave, getDoctorLeaves,
+  setMyLeave, removeMyLeave, getMyLeaves
 };

@@ -279,7 +279,22 @@ const AdminDashboard = () => {
   const [upcomingAppointments, setUpcomingAppointments] = useState([]);
   const [allAppointments, setAllAppointments] = useState([]);
   const [searchFilter, setSearchFilter] = useState('');
+  const [filterDept, setFilterDept]     = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
+  const [filterDate, setFilterDate]     = useState(() => {
+    // Default to today (IST) so admin sees today's appointments first
+    const now = new Date();
+    const ist = new Date(now.getTime() + 5.5 * 60 * 60000);
+    return `${ist.getUTCFullYear()}-${String(ist.getUTCMonth()+1).padStart(2,'0')}-${String(ist.getUTCDate()).padStart(2,'0')}`;
+  });
   const [showScanner, setShowScanner] = useState(false);
+  const [leaves, setLeaves]           = useState([]);
+  const [leaveForm, setLeaveForm]     = useState({ doctor_id: '', leave_date: '', reason: '' });
+  const [leaveLoading, setLeaveLoading] = useState(false);
+  const [leaveCheckDoctor, setLeaveCheckDoctor] = useState('');
+  const [leaveCheckDate, setLeaveCheckDate]     = useState('');
+  const [mlStats, setMlStats] = useState([]);
+  const [mlLoading, setMlLoading] = useState(false);
 
   const loadQueues = useCallback(() => {
     API.get('/queue/all').then(r => setAllQueues(r.data.queue || [])).catch(() => {});
@@ -293,6 +308,20 @@ const AdminDashboard = () => {
   const loadAllAppointments = useCallback(() => {
     API.get('/admin/all-appointments').then(r => setAllAppointments(r.data.appointments || [])).catch(() => {});
   }, []);
+  const loadMlStats = useCallback(() => {
+    setMlLoading(true);
+    API.get('/queue/dept-stats')
+      .then(r => setMlStats(r.data.stats || []))
+      .catch(() => {})
+      .finally(() => setMlLoading(false));
+  }, []);
+
+  const loadLeaves = useCallback(() => {
+    API.get('/admin/doctor-leaves')
+      .then(r => setLeaves(r.data.leaves || []))
+      .catch(() => {});
+  }, []);
+
   const loadMeta = useCallback(() => {
     Promise.all([getPendingDoctors(), getAllDoctors(), getAnalytics()])
       .then(([pRes, dRes, aRes]) => {
@@ -303,8 +332,8 @@ const AdminDashboard = () => {
   }, []);
   const loadAll = useCallback(() => {
     loadMeta(); loadQueues(); loadTodayAppointments();
-    loadUpcomingAppointments(); loadAllAppointments();
-  }, [loadMeta, loadQueues, loadTodayAppointments, loadUpcomingAppointments, loadAllAppointments]);
+    loadUpcomingAppointments(); loadAllAppointments(); loadMlStats(); loadLeaves();
+  }, [loadMeta, loadQueues, loadTodayAppointments, loadUpcomingAppointments, loadAllAppointments, loadMlStats, loadLeaves]);
 
   useEffect(() => { loadAll(); }, [loadAll]);
   useEffect(() => {
@@ -329,11 +358,31 @@ const AdminDashboard = () => {
     } finally { setCheckingIn(null); }
   };
 
-  const handleQRScan = useCallback((bookingId) => {
-    setShowScanner(false);
-    setCheckInId(bookingId);
-    addToast('info', 'QR Scanned', `${bookingId} — Click Check In to confirm`);
-  }, [addToast]);
+  // Debounce ref: prevents double-fire if scanner reads same QR twice within 3s
+  const lastScannedRef = useRef({ id: null, time: 0 });
+
+  const handleQRScan = useCallback(async (bookingId) => {
+    const now = Date.now();
+    // Debounce: ignore same booking_id within 3 seconds
+    if (lastScannedRef.current.id === bookingId &&
+        now - lastScannedRef.current.time < 3000) return;
+    lastScannedRef.current = { id: bookingId, time: now };
+
+    setShowScanner(false);   // close scanner immediately
+
+    // Auto check-in directly — no extra button click needed
+    const bid = bookingId.trim().toUpperCase();
+    setCheckingIn(bid);
+    try {
+      const res = await API.post('/queue/checkin', { booking_id: bid });
+      toast.success(`✅ ${res.data.message}`);
+      setTodayAppointments(prev => prev.filter(a => a.booking_id !== bid));
+      loadQueues(); loadAllAppointments();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Check-in failed. Verify Booking ID.');
+      setCheckInId(bookingId);  // fallback: put in text field so admin can retry manually
+    } finally { setCheckingIn(null); }
+  }, [loadQueues, loadAllAppointments]);
 
   const handleCancelAppointment = async (id, bookingId) => {
     if (!window.confirm(`Cancel appointment ${bookingId}?`)) return;
@@ -370,7 +419,27 @@ const AdminDashboard = () => {
     return acc;
   }, {});
 
+  // Normalize any date string to clean YYYY-MM-DD for reliable comparison
+  // Handles both "2026-03-30" (DATE_FORMAT) and "2026-03-30T00:00:00.000Z" (raw MySQL)
+  const normalizeDate = (dateStr) => {
+    if (!dateStr) return '';
+    const s = String(dateStr);
+    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;       // already clean
+    return s.substring(0, 10);                           // strip time portion
+  };
+
+  const todayIST = (() => {
+    const now = new Date();
+    const ist = new Date(now.getTime() + 5.5 * 60 * 60000);
+    return `${ist.getUTCFullYear()}-${String(ist.getUTCMonth()+1).padStart(2,'0')}-${String(ist.getUTCDate()).padStart(2,'0')}`;
+  })();
+
   const filteredAppointments = allAppointments.filter(a => {
+    const apptDate = normalizeDate(a.appointment_date);
+    // Date filter — default is today, so only today shows unless changed
+    if (filterDate && apptDate !== filterDate) return false;
+    if (filterDept   && !(a.dept_name || '').toLowerCase().includes(filterDept.toLowerCase())) return false;
+    if (filterStatus && a.status !== filterStatus) return false;
     if (!searchFilter) return true;
     const q = searchFilter.toLowerCase();
     return (
@@ -379,9 +448,11 @@ const AdminDashboard = () => {
       (`${a.p_first} ${a.p_last}`).toLowerCase().includes(q) ||
       (a.dept_name || '').toLowerCase().includes(q) ||
       (a.status || '').toLowerCase().includes(q) ||
-      (a.appointment_date || '').includes(q)
+      apptDate.includes(q)
     );
   });
+  const allDepts = [...new Set(allAppointments.map(a => a.dept_name).filter(Boolean))].sort();
+  const STATUS_OPTIONS = ['Booked','Checked-In','In-Progress','Completed','Cancelled','No-Show'];
 
   const ApptRow = ({ a, showCheckin = false, showCancel = false }) => (
     <div className="appt-row">
@@ -397,7 +468,7 @@ const AdminDashboard = () => {
           <span className={`badge ${statusColor[a.status] || 'badge-gray'}`}>{a.status}</span>
         </div>
         <p className="appt-dept">{a.dept_name} · Dr. {a.doc_first} {a.doc_last} · {a.time_slot}</p>
-        <p className="appt-date">🎫 {a.booking_id} · 📅 {a.appointment_date?.split('T')[0]} · Age: {a.age}</p>
+        <p className="appt-date">🎫 {a.booking_id} · 📅 {a.appointment_date?.substring(0,10)} · Age: {a.age}</p>
       </div>
       <div className="appt-actions-col">
         {showCheckin && (
@@ -508,6 +579,8 @@ const AdminDashboard = () => {
                 { key: 'overview',        label: '📊 Analytics',         count: null },
                 { key: 'pending',         label: '⏳ Approvals',         count: pending.length },
                 { key: 'doctors',         label: '🩺 Doctors',           count: null },
+                { key: 'mlstats',         label: '🤖 ML Stats',          count: null },
+                { key: 'leaves',          label: '🏖️ Doctor Leaves',     count: leaves.length },
               ].map(t => (
                 <button key={t.key}
                   className={`dash-tab ${activeTab === t.key ? 'active' : ''}`}
@@ -530,14 +603,45 @@ const AdminDashboard = () => {
                         View Upcoming →
                       </button>
                     </div>
-                  ) : (
-                    <div className="appt-list">
-                      <div style={{ background: '#fefce8', border: '1px solid #fde047', borderRadius: 10, padding: '10px 14px', marginBottom: 14, fontSize: '0.82rem', color: '#a16207' }}>
-                        💡 Click <strong>Check In</strong> when patient arrives, or use <strong>📷 Scan QR</strong> above
+                  ) : (() => {
+                    // Group by department so admin can clearly see which dept each patient belongs to
+                    const byDept = todayAppointments.reduce((acc, a) => {
+                      const dept = a.dept_name || 'Unknown';
+                      if (!acc[dept]) acc[dept] = [];
+                      acc[dept].push(a);
+                      return acc;
+                    }, {});
+                    return (
+                      <div>
+                        <div style={{ background: '#fefce8', border: '1px solid #fde047', borderRadius: 10,
+                          padding: '10px 14px', marginBottom: 16, fontSize: '0.82rem', color: '#a16207',
+                          display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <span>💡 Click <strong>Check In</strong> when patient arrives, or use <strong>📷 Scan QR</strong> above</span>
+                          <span style={{ background: '#fde047', borderRadius: 20, padding: '2px 10px', fontWeight: 700 }}>
+                            {todayAppointments.length} patient{todayAppointments.length !== 1 ? 's' : ''} today
+                          </span>
+                        </div>
+                        {Object.entries(byDept).map(([dept, patients]) => (
+                          <div key={dept} style={{ marginBottom: 20 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 10,
+                              padding: '8px 14px', background: 'var(--color-background-secondary)',
+                              borderRadius: 8, marginBottom: 8, borderLeft: '4px solid #0d9488' }}>
+                              <span style={{ fontWeight: 700, color: 'var(--navy)', fontSize: '0.9rem' }}>
+                                🏥 {dept}
+                              </span>
+                              <span style={{ background: '#0d9488', color: '#fff', borderRadius: 20,
+                                padding: '2px 10px', fontSize: '0.75rem', fontWeight: 600 }}>
+                                {patients.length} patient{patients.length !== 1 ? 's' : ''}
+                              </span>
+                            </div>
+                            <div className="appt-list" style={{ marginBottom: 0 }}>
+                              {patients.map(a => <ApptRow key={a.id} a={a} showCheckin showCancel />)}
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                      {todayAppointments.map(a => <ApptRow key={a.id} a={a} showCheckin showCancel />)}
-                    </div>
-                  )
+                    );
+                  })()
                 )}
 
                 {/* UPCOMING */}
@@ -582,7 +686,13 @@ const AdminDashboard = () => {
                                     <span className="badge badge-amber">{p.status}</span>
                                   </div>
                                   <p className="appt-dept">Dr. {p.doc_first} {p.doc_last} · {p.time_slot}</p>
-                                  <p className="appt-date">🎫 {p.booking_id} · ~{p.predicted_wait_time} min wait</p>
+                                  <p className="appt-date">
+                                    🎫 {p.booking_id} ·{' '}
+                                    {idx === 0
+                                      ? <span style={{color:'#0d9488',fontWeight:700}}>In Progress</span>
+                                      : <span>~{Math.round((p.queue_position - 1) * (parseFloat(p.distributed_mins) || 20))} min wait</span>
+                                    }
+                                  </p>
                                 </div>
                                 <button className="btn btn-danger btn-sm" onClick={() => handleNoShow(p.appointment_id)}>No Show</button>
                               </div>
@@ -597,19 +707,63 @@ const AdminDashboard = () => {
                 {/* ALL APPOINTMENTS */}
                 {activeTab === 'allappointments' && (
                   <div>
-                    <div style={{ position: 'relative', marginBottom: 16 }}>
+                    {/* Search bar */}
+                    <div style={{ position: 'relative', marginBottom: 12 }}>
                       <span style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)' }}>🔍</span>
                       <input
-                        style={{ width: '100%', padding: '11px 14px 11px 36px', border: '2px solid var(--border)', borderRadius: 10, fontSize: '0.875rem', outline: 'none', fontFamily: 'DM Sans, sans-serif' }}
-                        placeholder="Search by name, booking ID, date, department, status..."
+                        style={{ width: '100%', padding: '11px 14px 11px 36px', border: '2px solid var(--border)', borderRadius: 10, fontSize: '0.875rem', outline: 'none', fontFamily: 'DM Sans, sans-serif', boxSizing: 'border-box' }}
+                        placeholder="Search by name, booking ID..."
                         value={searchFilter}
                         onChange={e => setSearchFilter(e.target.value)}
                         onFocus={e => e.target.style.borderColor = '#0d9488'}
                         onBlur={e => e.target.style.borderColor = 'var(--border)'}
                       />
                     </div>
+
+                    {/* Filter row */}
+                    <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 14, alignItems: 'center' }}>
+                      {/* Date picker */}
+                      <div style={{ position: 'relative' }}>
+                        <input type="date" value={filterDate} onChange={e => setFilterDate(e.target.value)}
+                          style={{ padding: '8px 12px', border: '2px solid var(--border)', borderRadius: 8, fontSize: '0.82rem', outline: 'none', color: filterDate ? 'var(--navy)' : 'var(--muted)', background: filterDate ? '#f0fdf4' : '#fff', cursor: 'pointer' }}
+                          onFocus={e => e.target.style.borderColor='#0d9488'}
+                          onBlur={e => e.target.style.borderColor='var(--border)'}
+                        />
+                      </div>
+                      {/* Department dropdown */}
+                      <select value={filterDept} onChange={e => setFilterDept(e.target.value)}
+                        style={{ padding: '8px 12px', border: '2px solid var(--border)', borderRadius: 8, fontSize: '0.82rem', outline: 'none', background: filterDept ? '#f0fdf4' : '#fff', color: filterDept ? 'var(--navy)' : 'var(--muted)', cursor: 'pointer' }}>
+                        <option value="">All Departments</option>
+                        {allDepts.map(d => <option key={d} value={d}>{d}</option>)}
+                      </select>
+                      {/* Status chips */}
+                      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                        {STATUS_OPTIONS.map(s => (
+                          <button key={s} onClick={() => setFilterStatus(filterStatus === s ? '' : s)}
+                            style={{ padding: '5px 12px', borderRadius: 20, border: `1.5px solid ${filterStatus === s ? '#0d9488' : 'var(--border)'}`, background: filterStatus === s ? '#0d9488' : '#fff', color: filterStatus === s ? '#fff' : 'var(--muted)', fontSize: '0.75rem', fontWeight: filterStatus === s ? 600 : 400, cursor: 'pointer', transition: 'all 0.15s' }}>
+                            {s}
+                          </button>
+                        ))}
+                      </div>
+                      {/* Clear all */}
+                      {(filterDept || filterStatus || filterDate !== todayIST || searchFilter) && (
+                        <button onClick={() => { setFilterDept(''); setFilterStatus(''); setFilterDate(todayIST); setSearchFilter(''); }}
+                          style={{ padding: '5px 12px', borderRadius: 20, border: '1.5px solid #e11d48', background: '#fff', color: '#e11d48', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}>
+                          ✕ Reset to today
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Result count */}
+                    <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginBottom: 10 }}>
+                      {filterDate === todayIST && !filterDept && !filterStatus && !searchFilter
+                        ? `Showing ${filteredAppointments.length} appointment${filteredAppointments.length !== 1 ? 's' : ''} for today · Use filters to see other dates`
+                        : `Showing ${filteredAppointments.length} of ${allAppointments.length} appointments`
+                      }
+                    </p>
+
                     {filteredAppointments.length === 0 ? (
-                      <div className="empty-dash"><div className="empty-icon">🔍</div><p>No appointments found</p></div>
+                      <div className="empty-dash"><div className="empty-icon">🔍</div><p>No appointments match the filters</p></div>
                     ) : (
                       <div className="appt-list">
                         {filteredAppointments.map(a => (
@@ -701,6 +855,328 @@ const AdminDashboard = () => {
                     ))}
                   </div>
                 )}
+
+                {/* ML STATS TAB */}
+                {activeTab === 'mlstats' && (
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+                      <div>
+                        <p style={{ fontSize: '0.82rem', color: 'var(--color-text-secondary)', marginTop: 4 }}>
+                          Slot capacity auto-updates nightly at 23:59 based on real consultation times
+                        </p>
+                      </div>
+                      <button className="btn btn-outline btn-sm" onClick={loadMlStats} disabled={mlLoading}>
+                        {mlLoading ? '⏳' : '↻ Refresh'}
+                      </button>
+                    </div>
+
+                    {mlLoading ? (
+                      <div className="loading-screen"><div className="spinner"></div></div>
+                    ) : mlStats.length === 0 ? (
+                      <div className="empty-dash">
+                        <div className="empty-icon">🤖</div>
+                        <p>No ML stats yet</p>
+                        <p style={{ fontSize: '0.82rem', color: 'var(--color-text-secondary)', marginTop: 8 }}>
+                          Run ml_migration.sql in MySQL Workbench, then complete some appointments.
+                          Stats update every night at 23:59.
+                        </p>
+                      </div>
+                    ) : (
+                      <div>
+                        {/* Legend */}
+                        <div style={{ display: 'flex', gap: 20, marginBottom: 20, flexWrap: 'wrap' }}>
+                          <span style={{ fontSize: '0.78rem', color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#0d9488', display: 'inline-block' }}></span>
+                            Real data (self-learned)
+                          </span>
+                          <span style={{ fontSize: '0.78rem', color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#94a3b8', display: 'inline-block' }}></span>
+                            Default (no data yet)
+                          </span>
+                        </div>
+
+                        {/* Stats grid */}
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 }}>
+                          {mlStats.map(s => {
+                            const isReal = s.total_samples > 0;
+                            const barPct = Math.min(100, Math.round((s.avg_consultation_mins / 30) * 100));
+                            const lastUpdated = s.last_updated
+                              ? new Date(s.last_updated).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })
+                              : 'Never';
+                            return (
+                              <div key={s.department_id} style={{
+                                background: 'var(--color-background-secondary)',
+                                border: `1.5px solid ${isReal ? '#0d9488' : 'var(--color-border-tertiary)'}`,
+                                borderRadius: 12, padding: 16,
+                              }}>
+                                {/* Header */}
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
+                                  <div>
+                                    <p style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--color-text-primary)', margin: 0 }}>
+                                      {s.dept_name}
+                                    </p>
+                                    <p style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', margin: '2px 0 0' }}>
+                                      {isReal ? `${s.total_samples} real consultations` : 'Using dataset default'}
+                                    </p>
+                                  </div>
+                                  <span style={{
+                                    background: isReal ? '#ccfbf1' : '#f1f5f9',
+                                    color: isReal ? '#0f766e' : '#64748b',
+                                    fontSize: '0.72rem', fontWeight: 600,
+                                    padding: '3px 10px', borderRadius: 20
+                                  }}>
+                                    {isReal ? 'LIVE' : 'DEFAULT'}
+                                  </span>
+                                </div>
+
+                                {/* Key metrics */}
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 }}>
+                                  <div style={{ textAlign: 'center', background: 'var(--color-background-primary)', borderRadius: 8, padding: '10px 8px' }}>
+                                    <p style={{ fontSize: '1.4rem', fontWeight: 700, color: isReal ? '#0d9488' : '#64748b', margin: 0, lineHeight: 1 }}>
+                                      {parseFloat(s.avg_consultation_mins).toFixed(1)}
+                                    </p>
+                                    <p style={{ fontSize: '0.7rem', color: 'var(--color-text-secondary)', margin: '4px 0 0' }}>min avg / patient</p>
+                                  </div>
+                                  <div style={{ textAlign: 'center', background: 'var(--color-background-primary)', borderRadius: 8, padding: '10px 8px' }}>
+                                    <p style={{ fontSize: '1.4rem', fontWeight: 700, color: '#1d4ed8', margin: 0, lineHeight: 1 }}>
+                                      {s.slot_capacity}
+                                    </p>
+                                    <p style={{ fontSize: '0.7rem', color: 'var(--color-text-secondary)', margin: '4px 0 0' }}>patients / 2hr slot</p>
+                                  </div>
+                                </div>
+
+                                {/* Consultation time bar */}
+                                <div style={{ marginBottom: 8 }}>
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                                    <span style={{ fontSize: '0.72rem', color: 'var(--color-text-secondary)' }}>Avg consultation time</span>
+                                    <span style={{ fontSize: '0.72rem', color: 'var(--color-text-secondary)' }}>30 min max</span>
+                                  </div>
+                                  <div style={{ height: 6, background: 'var(--color-border-tertiary)', borderRadius: 4, overflow: 'hidden' }}>
+                                    <div style={{
+                                      height: '100%', width: `${barPct}%`,
+                                      background: isReal ? '#0d9488' : '#94a3b8',
+                                      borderRadius: 4, transition: 'width 0.5s ease'
+                                    }} />
+                                  </div>
+                                </div>
+
+                                {/* Footer */}
+                                <p style={{ fontSize: '0.7rem', color: 'var(--color-text-secondary)', margin: 0, textAlign: 'right' }}>
+                                  Updated: {lastUpdated}
+                                </p>
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        {/* How it works box */}
+                        <div style={{ marginTop: 24, background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 10, padding: 16 }}>
+                          <p style={{ fontWeight: 600, fontSize: '0.85rem', color: '#1e40af', margin: '0 0 8px' }}>How self-learning works</p>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 8 }}>
+                            {[
+                              { step: '1', text: 'Patient checks in → timer starts' },
+                              { step: '2', text: 'Doctor clicks Complete → timer stops' },
+                              { step: '3', text: 'Real mins saved to DB per dept' },
+                              { step: '4', text: 'Every 23:59 → avg recalculated' },
+                              { step: '5', text: 'Next day slot capacity auto-adjusts' },
+                            ].map(s => (
+                              <div key={s.step} style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                                <span style={{ background: '#1d4ed8', color: '#fff', width: 20, height: 20, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', fontWeight: 700, flexShrink: 0 }}>{s.step}</span>
+                                <p style={{ fontSize: '0.78rem', color: '#1e40af', margin: 0, lineHeight: 1.4 }}>{s.text}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+
+                {/* DOCTOR LEAVE MANAGEMENT */}
+                {activeTab === 'leaves' && (
+                  <div>
+                    {/* Add Leave Form */}
+                    <div style={{ background: '#f8fafc', border: '1px solid var(--border)', borderRadius: 12, padding: 20, marginBottom: 20 }}>
+                      <h4 style={{ margin: '0 0 14px', color: 'var(--navy)', fontSize: '0.95rem', fontWeight: 700 }}>
+                        ➕ Mark Doctor as Unavailable
+                      </h4>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 2fr auto', gap: 10, alignItems: 'end' }}>
+                        {/* Doctor dropdown */}
+                        <div>
+                          <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--muted)', display: 'block', marginBottom: 5 }}>Doctor</label>
+                          <select value={leaveForm.doctor_id}
+                            onChange={e => setLeaveForm(p => ({ ...p, doctor_id: e.target.value }))}
+                            style={{ width: '100%', padding: '9px 12px', border: '2px solid var(--border)', borderRadius: 8, fontSize: '0.85rem', outline: 'none', background: '#fff' }}
+                            onFocus={e => e.target.style.borderColor = '#0d9488'}
+                            onBlur={e => e.target.style.borderColor = 'var(--border)'}>
+                            <option value="">Select Doctor</option>
+                            {allDoctors.map(d => (
+                              <option key={d.id} value={d.id}>Dr. {d.first_name} {d.last_name} · {d.dept_name}</option>
+                            ))}
+                          </select>
+                        </div>
+                        {/* Date picker */}
+                        <div>
+                          <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--muted)', display: 'block', marginBottom: 5 }}>Leave Date</label>
+                          <input type="date" value={leaveForm.leave_date}
+                            onChange={e => setLeaveForm(p => ({ ...p, leave_date: e.target.value }))}
+                            min={new Date().toISOString().split('T')[0]}
+                            style={{ width: '100%', padding: '9px 12px', border: '2px solid var(--border)', borderRadius: 8, fontSize: '0.85rem', outline: 'none', boxSizing: 'border-box' }}
+                            onFocus={e => e.target.style.borderColor = '#0d9488'}
+                            onBlur={e => e.target.style.borderColor = 'var(--border)'} />
+                        </div>
+                        {/* Reason */}
+                        <div>
+                          <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--muted)', display: 'block', marginBottom: 5 }}>Reason (optional)</label>
+                          <input type="text" value={leaveForm.reason}
+                            placeholder="e.g. Medical leave, Conference..."
+                            onChange={e => setLeaveForm(p => ({ ...p, reason: e.target.value }))}
+                            style={{ width: '100%', padding: '9px 12px', border: '2px solid var(--border)', borderRadius: 8, fontSize: '0.85rem', outline: 'none', boxSizing: 'border-box' }}
+                            onFocus={e => e.target.style.borderColor = '#0d9488'}
+                            onBlur={e => e.target.style.borderColor = 'var(--border)'} />
+                        </div>
+                        {/* Submit */}
+                        <button
+                          disabled={!leaveForm.doctor_id || !leaveForm.leave_date || leaveLoading}
+                          onClick={async () => {
+                            if (!leaveForm.doctor_id || !leaveForm.leave_date) return;
+                            setLeaveLoading(true);
+                            try {
+                              await API.post('/admin/doctor-leave', leaveForm);
+                              toast.success('Leave marked successfully.');
+                              setLeaveForm({ doctor_id: '', leave_date: '', reason: '' });
+                              loadLeaves();
+                            } catch (err) {
+                              toast.error(err.response?.data?.message || 'Could not set leave.');
+                            } finally { setLeaveLoading(false); }
+                          }}
+                          style={{ padding: '9px 18px', background: !leaveForm.doctor_id || !leaveForm.leave_date ? '#94a3b8' : '#0d9488', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap', fontSize: '0.85rem' }}>
+                          {leaveLoading ? '⏳' : '✓ Set Leave'}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Leave list */}
+                    {/* Quick availability check — admin/receptionist can look up any doctor+date */}
+                    <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 10,
+                      padding: '14px 16px', marginBottom: 16 }}>
+                      <p style={{ fontWeight: 700, color: '#15803d', margin: '0 0 10px',
+                        fontSize: '0.88rem' }}>
+                        🔍 Check Doctor Availability
+                      </p>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                        <div>
+                          <label style={{ fontSize: '0.75rem', fontWeight: 600, color: '#166534',
+                            display: 'block', marginBottom: 4 }}>Doctor</label>
+                          <select
+                            value={leaveCheckDoctor} onChange={e => setLeaveCheckDoctor(e.target.value)}
+                            style={{ width: '100%', padding: '8px 12px', border: '1.5px solid #86efac',
+                              borderRadius: 8, fontSize: '0.85rem', outline: 'none', background: '#fff' }}>
+                            <option value="">All Doctors</option>
+                            {allDoctors.map(d => (
+                              <option key={d.id} value={d.id}>
+                                Dr. {d.first_name} {d.last_name} · {d.dept_name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <label style={{ fontSize: '0.75rem', fontWeight: 600, color: '#166534',
+                            display: 'block', marginBottom: 4 }}>Date</label>
+                          <input type="date" value={leaveCheckDate}
+                            onChange={e => setLeaveCheckDate(e.target.value)}
+                            style={{ width: '100%', padding: '8px 12px', border: '1.5px solid #86efac',
+                              borderRadius: 8, fontSize: '0.85rem', outline: 'none',
+                              boxSizing: 'border-box' }} />
+                        </div>
+                      </div>
+                      {(leaveCheckDoctor || leaveCheckDate) && (() => {
+                        const filtered = leaves.filter(l =>
+                          (!leaveCheckDoctor || String(l.doctor_id) === leaveCheckDoctor) &&
+                          (!leaveCheckDate   || l.leave_date === leaveCheckDate)
+                        );
+                        const doctorName = leaveCheckDoctor
+                          ? allDoctors.find(d => String(d.id) === leaveCheckDoctor)
+                          : null;
+                        return (
+                          <div style={{ marginTop: 10, padding: '10px 14px',
+                            background: filtered.length > 0 ? '#fef3c7' : '#f0fdf4',
+                            borderRadius: 8, border: `1px solid ${filtered.length > 0 ? '#fde68a' : '#bbf7d0'}` }}>
+                            {filtered.length > 0 ? (
+                              <div>
+                                <p style={{ fontWeight: 700, color: '#92400e', margin: 0, fontSize: '0.88rem' }}>
+                                  ❌ Unavailable on {filtered.map(l => l.leave_date).join(', ')}
+                                </p>
+                                {filtered.map((l, i) => (
+                                  <p key={i} style={{ margin: '4px 0 0', fontSize: '0.8rem', color: '#b45309' }}>
+                                    Dr. {l.first_name} {l.last_name} · {l.leave_date}
+                                    {l.reason && ` · ${l.reason}`}
+                                  </p>
+                                ))}
+                              </div>
+                            ) : (
+                              <p style={{ fontWeight: 700, color: '#15803d', margin: 0, fontSize: '0.88rem' }}>
+                                ✅ {doctorName ? `Dr. ${doctorName.first_name} ${doctorName.last_name} is` : 'All doctors are'} available
+                                {leaveCheckDate ? ` on ${leaveCheckDate}` : ' (no leaves found)'}
+                              </p>
+                            )}
+                          </div>
+                        );
+                      })()}
+                    </div>
+
+                    {leaves.length === 0 ? (
+                      <div className="empty-dash">
+                        <div className="empty-icon">🏖️</div>
+                        <p>No upcoming leaves scheduled</p>
+                        <span style={{ fontSize: '0.82rem', color: 'var(--muted)' }}>Mark a doctor as unavailable above — their slots will be auto-blocked on the booking page</span>
+                      </div>
+                    ) : (
+                      <div>
+                        <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginBottom: 12 }}>
+                          {leaves.length} upcoming leave{leaves.length !== 1 ? 's' : ''} · Patients cannot book these dates
+                        </p>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                          {leaves.map((l, i) => (
+                            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 14,
+                              background: '#fff', border: '1.5px solid #fde68a',
+                              borderLeft: '4px solid #f59e0b', borderRadius: 10, padding: '12px 16px' }}>
+                              <div style={{ fontSize: 28 }}>🏖️</div>
+                              <div style={{ flex: 1 }}>
+                                <p style={{ fontWeight: 600, margin: 0, color: 'var(--navy)', fontSize: '0.9rem' }}>
+                                  Dr. {l.first_name} {l.last_name}
+                                  <span style={{ marginLeft: 8, fontSize: '0.75rem',
+                                    color: 'var(--muted)', fontWeight: 400 }}>{l.dept_name}</span>
+                                </p>
+                                <p style={{ margin: '3px 0 0', fontSize: '0.82rem', color: '#92400e' }}>
+                                  📅 {l.leave_date} {l.reason && `· ${l.reason}`}
+                                </p>
+                              </div>
+                              <span style={{ background: '#fef3c7', color: '#92400e',
+                                fontSize: '0.72rem', fontWeight: 600,
+                                padding: '3px 10px', borderRadius: 20 }}>
+                                Slots Blocked
+                              </span>
+                              <button
+                                onClick={async () => {
+                                  try {
+                                    await API.delete('/admin/doctor-leave', { data: { doctor_id: l.doctor_id, leave_date: l.leave_date } });
+                                    toast.success('Leave removed.');
+                                    loadLeaves();
+                                  } catch { toast.error('Could not remove leave.'); }
+                                }}
+                                style={{ background: 'none', border: '1.5px solid #ef4444', color: '#ef4444', borderRadius: 8, padding: '5px 12px', cursor: 'pointer', fontSize: '0.78rem', fontWeight: 600 }}>
+                                ✕ Remove
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
               </>
             )}
           </div>

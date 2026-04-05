@@ -1,0 +1,72 @@
+{
+  "2": {
+    "department_name": "Cardiology",
+    "avg_consultation_min": 18.8,
+    "slot_duration_min": 120,
+    "max_patients_per_slot": 6,
+    "calculation": "floor(120 / 18.8) = 6"
+  },
+  "8": {
+    "department_name": "Emergency",
+    "avg_consultation_min": 18.6,
+    "slot_duration_min": 120,
+    "max_patients_per_slot": 6,
+    "calculation": "floor(120 / 18.6) = 6"
+  },
+  "4": {
+    "department_name": "General Surgery",
+    "avg_consultation_min": 19.2,
+    "slot_duration_min": 120,
+    "max_patients_per_slot": 6,
+    "calculation": "floor(120 / 19.2) = 6"
+  },
+  "1": {
+    "department_name": "Internal Medicine",
+    "avg_consultation_min": 18.6,
+    "slot_duration_min": 120,
+    "max_patients_per_slot": 6,
+    "calculation": "floor(120 / 18.6) = 6"
+  },
+  "5": {
+    "department_name": "Neurology",
+    "avg_consultation_min": 18.7,
+    "slot_duration_min": 120,
+    "max_patients_per_slot": 6,
+    "calculation": "floor(120 / 18.7) = 6"
+  },
+  "9": {
+    "department_name": "Obstetrics",
+    "avg_consultation_min": 18.9,
+    "slot_duration_min": 120,
+    "max_patients_per_slot": 6,
+    "calculation": "floor(120 / 18.9) = 6"
+  },
+  "7": {
+    "department_name": "Oncology",
+    "avg_consultation_min": 18.7,
+    "slot_duration_min": 120,
+    "max_patients_per_slot": 6,
+    "calculation": "floor(120 / 18.7) = 6"
+  },
+  "3": {
+    "department_name": "Orthopedics",
+    "avg_consultation_min": 18.8,
+    "slot_duration_min": 120,
+    "max_patients_per_slot": 6,
+    "calculation": "floor(120 / 18.8) = 6"
+  },
+  "6": {
+    "department_name": "Pediatrics",
+    "avg_consultation_min": 18.5,
+    "slot_duration_min": 120,
+    "max_patients_per_slot": 6,
+    "calculation": "floor(120 / 18.5) = 6"
+  },
+  "10": {
+    "department_name": "Radiology",
+    "avg_consultation_min": 18.2,
+    "slot_duration_min": 120,
+    "max_patients_per_slot": 6,
+    "calculation": "floor(120 / 18.2) = 6"
+  }
+}

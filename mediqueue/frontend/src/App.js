@@ -15,8 +15,12 @@ import BookAppointment from './pages/BookAppointment';
 import PatientDashboard from './dashboards/PatientDashboard';
 import DoctorDashboard from './dashboards/DoctorDashboard';
 import AdminDashboard from './dashboards/AdminDashboard';
+import ForgotPassword from './pages/ForgotPassword';
 import './App.css';
 import './Mobile.css';
+
+
+
 
 const ProtectedRoute = ({ children, roles }) => {
   const { user, loading } = useAuth();
@@ -43,6 +47,7 @@ const AppContent = () => {
           <Route path="/patient/dashboard" element={<ProtectedRoute roles={['patient']}><PatientDashboard /></ProtectedRoute>} />
           <Route path="/doctor/dashboard" element={<ProtectedRoute roles={['doctor']}><DoctorDashboard /></ProtectedRoute>} />
           <Route path="/admin/dashboard" element={<ProtectedRoute roles={['admin']}><AdminDashboard /></ProtectedRoute>} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </main>

@@ -28,6 +28,8 @@ export const registerPatient = (data) => API.post('/auth/register/patient', data
 export const registerDoctor = (data) => API.post('/auth/register/doctor', data);
 export const login = (data) => API.post('/auth/login', data);
 export const logout = () => API.post('/auth/logout');
+export const forgotPassword = (data) => API.post('/auth/forgot-password', data);
+export const resetPassword = (data) => API.post('/auth/reset-password', data);
 export const getMe = () => API.get('/auth/me');
 
 // Departments
@@ -54,5 +56,7 @@ export const getPendingDoctors = () => API.get('/admin/doctors/pending');
 export const approveDoctor = (id) => API.put(`/admin/doctors/${id}/approve`);
 export const getAllDoctors = () => API.get('/admin/doctors');
 export const getAnalytics = () => API.get('/admin/analytics');
+export const markInProgress = (appointmentId) =>
+  API.put(`/queue/${appointmentId}/start`);
 
 export default API;
