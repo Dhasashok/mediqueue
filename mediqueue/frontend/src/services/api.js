@@ -1,7 +1,8 @@
 import axios from 'axios';
 
 const API = axios.create({
-  baseURL: '/api',
+  baseURL: 'https://mediqueue-2k3l.onrender.com/api',
+  //baseURL: '/api',
   withCredentials: true,
 });
 
