@@ -10,12 +10,19 @@ const setupSocket = require('./socket/index');
 
 const app = express();
 const server = http.createServer(app);
+
+const ALLOWED_ORIGINS = [
+  'http://localhost:3000',
+  'https://mediqueue-pon4-awiw54s0j-mediqueue.vercel.app',
+  process.env.FRONTEND_URL,
+].filter(Boolean);
+
 const io = new Server(server, {
-  cors: { origin: process.env.FRONTEND_URL || 'http://localhost:3000', credentials: true }
+  cors: { origin: ALLOWED_ORIGINS, credentials: true }
 });
 
 // Middleware
-app.use(cors({ origin: process.env.FRONTEND_URL || 'http://localhost:3000', credentials: true }));
+app.use(cors({ origin: ALLOWED_ORIGINS, credentials: true }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
