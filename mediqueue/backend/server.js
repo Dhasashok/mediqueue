@@ -1,59 +1,85 @@
 require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const http = require('http');
-const { Server } = require('socket.io');
+const express      = require('express');
+const cors         = require('cors');
+const http         = require('http');
+const { Server }   = require('socket.io');
 const cookieParser = require('cookie-parser');
-const rateLimit = require('express-rate-limit');
-const routes = require('./routes/index');
-const setupSocket = require('./socket/index');
+const routes       = require('./routes/index');
+const setupSocket  = require('./socket/index');
 
-const app = express();
+const app    = express();
 const server = http.createServer(app);
 
-const ALLOWED_ORIGINS = [
-  'http://localhost:3000',
-  'https://mediqueue-pon4-awiw54s0j-mediqueue.vercel.app',
-  process.env.FRONTEND_URL,
-].filter(Boolean);
+// ── CORS — supports localhost dev + any Vercel preview + explicit FRONTEND_URL ──
+const corsOrigin = (origin, callback) => {
+  // Allow requests with no origin (Postman, curl, mobile)
+  if (!origin) return callback(null, true);
+  // Allow any Vercel preview for this project
+  if (origin.includes('.vercel.app')) return callback(null, true);
+  // Allow localhost dev
+  if (origin.startsWith('http://localhost')) return callback(null, true);
+  // Allow explicit env var (e.g. custom domain)
+  if (process.env.FRONTEND_URL && origin === process.env.FRONTEND_URL)
+    return callback(null, true);
+  console.warn(`⚠️  CORS blocked origin: ${origin}`);
+  callback(new Error(`CORS: origin ${origin} not allowed`));
+};
 
+const corsOptions = {
+  origin: corsOrigin,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
+};
+
+// Handle preflight OPTIONS before everything else
+app.options('*', cors(corsOptions));
+app.use(cors(corsOptions));
+
+// ── Socket.io ─────────────────────────────────────────────────
 const io = new Server(server, {
-  cors: { origin: ALLOWED_ORIGINS, credentials: true }
+  cors: { origin: corsOrigin, credentials: true }
 });
 
-// Middleware
-app.use(cors({ origin: ALLOWED_ORIGINS, credentials: true }));
+// ── Middleware ────────────────────────────────────────────────
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-
-// Rate limiting on auth routes
-//const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 20, message: { success: false, message: 'Too many requests. Try again later.' } });
-//app.use('/api/auth', authLimiter);
-
-// Make io accessible in routes
 app.set('io', io);
 
-// Routes
+// ── Routes ────────────────────────────────────────────────────
 app.use('/api', routes);
 
-// Health check
-app.get('/health', (req, res) => res.json({ status: 'OK', message: 'MediQueue API is running' }));
+// ── Health check ─────────────────────────────────────────────
+app.get('/health', (req, res) =>
+  res.json({ status: 'OK', env: process.env.NODE_ENV || 'development' })
+);
 
-// Setup Socket.io
 setupSocket(io);
 
+// ── Start ─────────────────────────────────────────────────────
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => {
-  console.log(`🏥 MediQueue Backend running on port ${PORT}`);
-  console.log(`📡 Socket.io ready for real-time connections\n`);
+server.listen(PORT, async () => {
+  console.log(`\n🏥 MediQueue Backend — port ${PORT}`);
+  console.log(`🌐 NODE_ENV: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`📡 Socket.io ready\n`);
 
-  // ✅ ML self-learning: lazy require avoids circular dependency
+  // ── DB health check on startup ───────────────────────────
+  try {
+    const db = require('./models/db');
+    await db.query('SELECT 1');
+    console.log('✅ Database connected\n');
+  } catch (err) {
+    console.error('❌ DATABASE CONNECTION FAILED:', err.message);
+    console.error('   → Check Render env vars: DB_HOST, DB_USER, DB_PASS, DB_NAME, DB_PORT\n');
+  }
+
+  // ── ML nightly scheduler ──────────────────────────────────
   try {
     const { scheduleMidnightRecalculation } = require('./controllers/queueController');
     scheduleMidnightRecalculation();
-    console.log('🤖 ML scheduler started (runs nightly at 23:59)\n');
+    console.log('🤖 ML scheduler started (runs nightly at 23:59 IST)\n');
   } catch (e) {
-    console.warn('⚠️  ML scheduler not started:', e.message, '\n');
+    console.warn('⚠️  ML scheduler not started:', e.message);
   }
 });

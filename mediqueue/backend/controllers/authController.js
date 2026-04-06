@@ -204,7 +204,14 @@ const login = async (req, res) => {
     const name = `${user.first_name || user.username || ''} ${user.last_name || ''}`.trim();
     const token = generateToken({ id: user.id, email: user.email, role, name });
 
-    res.cookie('token', token, { httpOnly: true, secure: false, maxAge: 7 * 24 * 60 * 60 * 1000 });
+    // Production (Render+Vercel): secure:true + sameSite:'none' required for cross-domain cookies
+    const isProd = process.env.NODE_ENV === 'production';
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure:   isProd,
+      sameSite: isProd ? 'none' : 'lax',
+      maxAge:   7 * 24 * 60 * 60 * 1000
+    });
     res.json({
       success: true,
       message: 'Login successful',
