@@ -7,7 +7,7 @@ const pool = mysql.createPool({
   password: process.env.DB_PASSWORD || '0f7d313db08394d30d7c8b2fce657ecdc50e93a6',
   database: process.env.DB_NAME     || 'mediqueue_worejoined',
   waitForConnections: true,
-  connectionLimit: 3,
+  connectionLimit: 10,
   queueLimit: 0
 });
  
