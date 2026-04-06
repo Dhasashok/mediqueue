@@ -45,7 +45,7 @@ setupSocket(io);
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
-  console.log(`\n🏥 MediQueue Backend running on http://localhost:${PORT}`);
+  console.log(`🏥 MediQueue Backend running on port ${PORT}`);
   console.log(`📡 Socket.io ready for real-time connections\n`);
 
   // ✅ ML self-learning: lazy require avoids circular dependency
