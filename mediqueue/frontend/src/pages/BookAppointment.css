@@ -1,65 +1,264 @@
-.book-layout { display: grid; grid-template-columns: 300px 1fr; gap: 28px; align-items: start; }
-.book-left { position: sticky; top: 88px; }
-.doc-info-card { text-align: center; }
-.book-doc-photo {
-  width: 80px; height: 80px; border-radius: 50%;
-  background: linear-gradient(135deg, var(--teal), var(--teal-dark));
-  color: white; font-size: 1.75rem; font-weight: 700;
-  display: flex; align-items: center; justify-content: center; margin: 0 auto 12px;
-}
-.book-spec { color: var(--teal); font-weight: 600; font-size: 0.85rem; margin-bottom: 12px; }
-.book-doc-meta { display: flex; flex-direction: column; gap: 6px; font-size: 0.8rem; color: var(--muted); text-align: left; }
-.avail-bar { display: flex; flex-direction: column; gap: 8px; }
-.avail-bar span { font-size: 0.8rem; color: var(--muted); }
-.prog-bar { height: 6px; background: var(--border); border-radius: 999px; overflow: hidden; }
-.prog-fill { height: 100%; background: var(--teal); border-radius: 999px; transition: width 0.5s; }
+/* ════════════════════════════════════════════════════════
+   BOOK APPOINTMENT — Premium Redesign
+   Skeleton loaders, rich doctor card, slot cards, 
+   celebration success screen
+════════════════════════════════════════════════════════ */
 
-.book-sub { font-weight: 700; font-size: 0.85rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin: 20px 0 10px; }
-.date-picker { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 4px; }
+/* ── Page Layout ─────────────────────────────────────── */
+.book-layout {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 28px;
+  align-items: start;
+}
+.book-left { position: sticky; top: 88px; }
+
+/* ── Skeleton Loader ─────────────────────────────────── */
+@keyframes shimmer {
+  0% { background-position: -600px 0; }
+  100% { background-position: 600px 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 600px 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: 8px;
+}
+.skeleton-doctor-card { padding: 28px; }
+.skel-avatar { width: 88px; height: 88px; border-radius: 50%; margin: 0 auto 16px; }
+.skel-line { height: 14px; margin: 8px auto; border-radius: 4px; }
+.skel-line.short { width: 55%; }
+.skel-line.medium { width: 75%; }
+.skel-line.full { width: 100%; }
+
+/* ── Doctor Info Card ────────────────────────────────── */
+.doc-info-card { text-align: center; padding: 28px; }
+.book-doc-photo {
+  width: 88px; height: 88px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--teal), #0891b2);
+  color: white; font-size: 2rem; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 16px;
+  box-shadow: 0 8px 24px rgba(13,148,136,0.3);
+  position: relative;
+}
+.book-doc-photo::after {
+  content: '';
+  position: absolute; inset: -4px;
+  border-radius: 50%;
+  border: 2px solid rgba(13,148,136,0.2);
+}
+.book-doc-name { font-size: 1.05rem; font-weight: 800; color: var(--navy); margin-bottom: 4px; }
+.book-spec {
+  display: inline-flex; align-items: center;
+  background: linear-gradient(135deg, #ccfbf1, #e0f2fe);
+  color: var(--teal-dark); padding: 4px 14px;
+  border-radius: 999px; font-size: 0.75rem; font-weight: 700;
+  letter-spacing: 0.3px; margin-bottom: 18px;
+}
+.book-doc-meta {
+  display: flex; flex-direction: column; gap: 8px;
+  font-size: 0.82rem; color: var(--muted); text-align: left;
+  background: var(--bg); border-radius: 12px; padding: 14px 16px;
+}
+.book-doc-meta-row {
+  display: flex; align-items: center; gap: 8px;
+}
+.book-doc-meta-row span:first-child { font-size: 1rem; flex-shrink: 0; }
+.avail-bar { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+.avail-label { display: flex; justify-content: space-between; font-size: 0.78rem; color: var(--muted); }
+.prog-bar { height: 8px; background: var(--border); border-radius: 999px; overflow: hidden; }
+.prog-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--teal), #0891b2);
+  border-radius: 999px; transition: width 0.8s cubic-bezier(0.4,0,0.2,1);
+}
+
+/* ML Info Box */
+.ml-info-box {
+  margin-top: 16px;
+  background: linear-gradient(135deg, #f0fdf4, #eff6ff);
+  border: 1px solid #bbf7d0; border-radius: 14px; padding: 16px;
+}
+.ml-info-box h4 {
+  color: #15803d; margin-bottom: 8px; font-size: 0.9rem;
+  display: flex; align-items: center; gap: 6px;
+}
+.ml-info-box p { font-size: 0.78rem; color: #166534; line-height: 1.65; }
+
+/* ── Date Picker ─────────────────────────────────────── */
+.book-sub {
+  font-weight: 800; font-size: 0.75rem; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.8px; margin: 22px 0 12px;
+}
+.date-picker {
+  display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 4px;
+  scrollbar-width: none;
+}
+.date-picker::-webkit-scrollbar { display: none; }
 .date-btn {
   flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 2px;
-  padding: 10px 14px; border-radius: var(--radius-sm); border: 1.5px solid var(--border);
-  background: white; cursor: pointer; transition: all 0.15s; min-width: 64px; position: relative;
+  padding: 12px 14px; border-radius: 14px; border: 2px solid var(--border);
+  background: white; cursor: pointer; transition: all 0.2s; min-width: 64px;
+  position: relative;
 }
-.date-btn:hover { border-color: var(--teal); background: var(--teal-light); }
-.date-btn.active { background: var(--teal); color: white; border-color: var(--teal); }
-.date-day { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; opacity: 0.7; }
-.date-num { font-size: 1.2rem; font-weight: 700; line-height: 1; }
-.date-month { font-size: 0.65rem; opacity: 0.7; }
-.today-dot { position: absolute; bottom: 5px; width: 5px; height: 5px; border-radius: 50%; background: var(--teal); }
-.date-btn.active .today-dot { background: white; }
+.date-btn:hover { border-color: var(--teal); background: #f0fdf4; transform: translateY(-2px); }
+.date-btn.active {
+  background: linear-gradient(135deg, var(--teal), #0891b2);
+  color: white; border-color: transparent;
+  box-shadow: 0 4px 14px rgba(13,148,136,0.4);
+  transform: translateY(-2px);
+}
+.date-day { font-size: 0.62rem; font-weight: 800; text-transform: uppercase; opacity: 0.7; }
+.date-num { font-size: 1.25rem; font-weight: 800; line-height: 1; }
+.date-month { font-size: 0.62rem; opacity: 0.7; }
+.today-dot {
+  position: absolute; bottom: 6px;
+  width: 5px; height: 5px; border-radius: 50%; background: var(--teal);
+}
+.date-btn.active .today-dot { background: rgba(255,255,255,0.7); }
 
+/* ── Time Slots ──────────────────────────────────────── */
 .slots-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-.slot-btn {
-  display: flex; flex-direction: column; align-items: center; gap: 3px;
-  padding: 12px 8px; border-radius: var(--radius-sm); border: 1.5px solid var(--border);
-  background: white; cursor: pointer; transition: all 0.15s;
-}
-.slot-btn:hover:not(:disabled) { border-color: var(--teal); background: var(--teal-light); }
-.slot-btn.active { background: var(--teal); color: white; border-color: var(--teal); }
-.slot-btn.full { background: var(--bg); opacity: 0.6; cursor: not-allowed; }
-.slot-time { font-size: 0.8rem; font-weight: 700; }
-.slot-count { font-size: 0.7rem; opacity: 0.75; }
-.slot-wait { font-size: 0.68rem; color: var(--teal); }
-.slot-btn.active .slot-wait { color: var(--teal-light); }
-.slot-full { font-size: 0.68rem; color: var(--red); font-weight: 600; }
 
-/* Success */
-.success-page { display: flex; justify-content: center; padding: 60px 24px; background: var(--bg); min-height: 80vh; align-items: center; }
-.success-card { text-align: center; max-width: 520px; width: 100%; }
-.success-icon { font-size: 3rem; margin-bottom: 16px; }
-.success-card h2 { margin-bottom: 8px; }
+.slot-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 14px 8px; border-radius: 14px; border: 2px solid var(--border);
+  background: white; cursor: pointer; transition: all 0.2s; position: relative;
+  overflow: hidden;
+}
+.slot-btn::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(135deg, var(--teal), #0891b2);
+  opacity: 0; transition: opacity 0.2s;
+}
+.slot-btn:hover:not(:disabled)::before { opacity: 0.06; }
+.slot-btn:hover:not(:disabled) { border-color: var(--teal); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(13,148,136,0.15); }
+.slot-btn.active {
+  background: linear-gradient(135deg, var(--teal), #0891b2);
+  color: white; border-color: transparent;
+  box-shadow: 0 6px 20px rgba(13,148,136,0.35);
+  transform: translateY(-2px);
+}
+.slot-btn.full { background: #f8fafc; opacity: 0.55; cursor: not-allowed; border-color: #f1f5f9; }
+.slot-time { font-size: 0.82rem; font-weight: 800; position: relative; }
+.slot-count { font-size: 0.68rem; opacity: 0.7; position: relative; }
+.slot-wait {
+  font-size: 0.68rem; color: var(--teal); font-weight: 700; position: relative;
+  background: #f0fdf4; padding: 2px 8px; border-radius: 999px;
+}
+.slot-btn.active .slot-wait {
+  background: rgba(255,255,255,0.2); color: #ccfbf1;
+}
+.slot-full { font-size: 0.65rem; color: var(--red); font-weight: 700; }
+
+/* Slot skeleton */
+.slot-skeleton-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.slot-skeleton { height: 86px; border-radius: 14px; }
+
+/* ── Booking Form Section ────────────────────────────── */
+.book-form-divider {
+  height: 1px; background: var(--border); margin: 24px 0;
+  position: relative;
+}
+.book-form-divider::after {
+  content: 'Patient Information';
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+  background: white; padding: 0 12px;
+  font-size: 0.72rem; font-weight: 800; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.8px;
+}
+
+.book-submit-btn {
+  width: 100%; padding: 16px;
+  background: linear-gradient(135deg, var(--teal), #0891b2);
+  color: white; border: none; border-radius: 14px;
+  font-size: 1rem; font-weight: 800; cursor: pointer;
+  transition: all 0.25s; letter-spacing: 0.3px;
+  box-shadow: 0 6px 20px rgba(13,148,136,0.35);
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.book-submit-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(13,148,136,0.45);
+}
+.book-submit-btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; box-shadow: none; }
+.book-submit-note {
+  text-align: center; color: var(--muted); font-size: 0.78rem; margin-top: 10px;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+
+/* ── Success / Confirmation Screen ───────────────────── */
+.success-page {
+  display: flex; justify-content: center; padding: 60px 24px;
+  background: linear-gradient(135deg, #f0fdfa 0%, #eff6ff 100%);
+  min-height: 80vh; align-items: center;
+}
+.success-card {
+  text-align: center; max-width: 560px; width: 100%;
+  animation: success-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@keyframes success-pop {
+  from { opacity: 0; transform: scale(0.8) translateY(24px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+.success-confetti-ring {
+  width: 96px; height: 96px; border-radius: 50%;
+  background: linear-gradient(135deg, #ccfbf1, #e0f2fe);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 3rem; margin: 0 auto 20px;
+  box-shadow: 0 0 0 12px rgba(13,148,136,0.08), 0 0 0 24px rgba(13,148,136,0.04);
+  animation: ring-pulse 2s ease-in-out infinite;
+}
+@keyframes ring-pulse {
+  0%, 100% { box-shadow: 0 0 0 12px rgba(13,148,136,0.08), 0 0 0 24px rgba(13,148,136,0.04); }
+  50%       { box-shadow: 0 0 0 16px rgba(13,148,136,0.12), 0 0 0 32px rgba(13,148,136,0.05); }
+}
+.success-card h2 { font-size: 1.8rem; color: var(--navy); margin-bottom: 8px; }
 .success-card > p { color: var(--muted); margin-bottom: 24px; }
-.booking-summary { background: var(--bg); border-radius: 10px; padding: 20px; margin-bottom: 20px; text-align: left; }
-.summary-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 0.875rem; }
+.booking-summary {
+  background: white; border-radius: 16px; padding: 20px 24px;
+  margin-bottom: 20px; text-align: left;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+  border: 1px solid var(--border);
+}
+.summary-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 0.875rem;
+}
 .summary-row:last-child { border-bottom: none; }
 .summary-row span { color: var(--muted); }
-.qr-section { margin-bottom: 24px; }
-.qr-section p { font-size: 0.8rem; color: var(--muted); margin-bottom: 10px; }
-.qr-img { width: 150px; height: 150px; border: 2px solid var(--border); border-radius: 10px; }
+.summary-row strong { color: var(--navy); font-weight: 700; }
 
+/* QR Success Section */
+.qr-section {
+  margin-bottom: 24px; background: white; border-radius: 16px;
+  padding: 24px; border: 1px solid var(--border);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+}
+.qr-section-title {
+  font-weight: 800; color: var(--navy); font-size: 0.95rem;
+  margin-bottom: 4px; display: flex; align-items: center; gap: 6px;
+}
+.qr-section-sub { font-size: 0.78rem; color: var(--muted); margin-bottom: 16px; }
+.qr-img {
+  width: 200px; height: 200px;
+  border: 3px solid var(--teal-light); border-radius: 16px;
+  padding: 8px; background: white;
+  box-shadow: 0 8px 24px rgba(13,148,136,0.12);
+}
+
+/* Success actions */
+.success-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+/* ── Responsive ──────────────────────────────────────── */
 @media (max-width: 900px) {
   .book-layout { grid-template-columns: 1fr; }
   .book-left { position: static; }
   .slots-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 480px) {
+  .slots-grid { grid-template-columns: repeat(2, 1fr); }
+  .date-picker { gap: 6px; }
+  .date-btn { min-width: 58px; padding: 10px 10px; }
 }

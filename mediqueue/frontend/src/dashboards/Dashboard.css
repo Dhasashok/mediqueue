@@ -50,6 +50,13 @@
 .stat-icon-box.red { background: #fee2e2; }
 .ds-val { font-size: 1.75rem; font-weight: 800; color: var(--navy); line-height: 1; font-family: 'Fraunces', serif; }
 .ds-label { font-size: 0.78rem; color: var(--muted); font-weight: 500; margin-top: 2px; }
+.ds-trend {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-size: 0.68rem; font-weight: 700; margin-top: 4px;
+  padding: 2px 8px; border-radius: 999px;
+}
+.ds-trend.up { background: #dcfce7; color: #15803d; }
+.ds-trend.neutral { background: #f1f5f9; color: #64748b; }
 
 /* ── Live Queue Card ──────────────────────────────────── */
 .live-queue-card {
@@ -120,33 +127,68 @@
 
 /* ── Empty State ──────────────────────────────────────── */
 .empty-dash {
-  text-align: center; padding: 56px 24px;
+  text-align: center; padding: 64px 24px;
   display: flex; flex-direction: column; align-items: center; gap: 12px;
 }
-.empty-icon { font-size: 3rem; opacity: 0.5; }
-.empty-dash p { color: var(--muted); font-weight: 500; }
-.empty-dash span { font-size: 0.82rem; }
-
-/* ── Appointment List ─────────────────────────────────── */
-.appt-list { display: flex; flex-direction: column; gap: 0; }
-.appt-row {
-  display: flex; align-items: center; gap: 16px; padding: 16px 0;
-  border-bottom: 1px solid var(--border); transition: background 0.15s;
+.empty-icon {
+  font-size: 3.5rem; opacity: 0.4;
+  animation: empty-float 3s ease-in-out infinite;
 }
-.appt-row:last-child { border-bottom: none; }
-.appt-row:hover { background: #f8fafc; margin: 0 -24px; padding: 16px 24px; border-radius: 8px; }
+@keyframes empty-float {
+  0%,100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
+}
+.empty-dash p { color: var(--muted); font-weight: 600; font-size: 0.95rem; }
+.empty-dash span { font-size: 0.82rem; color: #94a3b8; }
+
+/* ── Appointment Cards (status-coded) ────────────────── */
+.appt-list { display: flex; flex-direction: column; gap: 10px; }
+
+.appt-row {
+  display: flex; align-items: center; gap: 14px;
+  padding: 16px 18px; border-radius: 14px;
+  border: 1.5px solid var(--border);
+  background: white;
+  transition: all 0.2s;
+  position: relative; overflow: hidden;
+}
+.appt-row::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+  width: 4px; border-radius: 4px 0 0 4px;
+  background: var(--border);
+}
+.appt-row:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: transparent; }
+
+/* Status color accent bars */
+.appt-row.status-booked::before     { background: #3b82f6; }
+.appt-row.status-checked-in::before { background: #22c55e; }
+.appt-row.status-completed::before  { background: #0d9488; }
+.appt-row.status-cancelled::before  { background: #ef4444; }
+.appt-row.status-no-show::before    { background: #f59e0b; }
+
+/* Tinted backgrounds for status */
+.appt-row.status-booked     { background: linear-gradient(135deg, #eff6ff, #ffffff); }
+.appt-row.status-checked-in { background: linear-gradient(135deg, #f0fdf4, #ffffff); border-color: #bbf7d0; }
+.appt-row.status-completed  { background: #fafafa; }
+.appt-row.status-cancelled  { background: #fafafa; opacity: 0.75; }
+
 .appt-dept-icon {
-  width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, #ccfbf1, #e0f2fe);
+  width: 46px; height: 46px; border-radius: 12px;
+  background: linear-gradient(135deg, #ccfbf1, #e0f2fe);
   display: flex; align-items: center; justify-content: center;
-  font-size: 1.1rem; font-weight: 800; color: var(--teal); flex-shrink: 0;
+  font-size: 1.15rem; font-weight: 800; color: var(--teal); flex-shrink: 0;
 }
 .appt-main { flex: 1; min-width: 0; }
-.appt-top-row { display: flex; align-items: center; gap: 8px; margin-bottom: 3px; }
+.appt-top-row { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; flex-wrap: wrap; }
 .appt-doc { font-weight: 700; font-size: 0.9rem; color: var(--navy); }
 .appt-dept { font-size: 0.8rem; color: var(--muted); margin-bottom: 2px; }
-.appt-date { font-size: 0.78rem; color: var(--muted); }
-.appt-queue-inline { font-size: 0.75rem; color: #15803d; font-weight: 600; margin-top: 3px; }
-.appt-actions-col { display: flex; gap: 8px; flex-shrink: 0; }
+.appt-date { font-size: 0.76rem; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+.appt-queue-inline {
+  font-size: 0.73rem; color: #15803d; font-weight: 700; margin-top: 4px;
+  display: inline-flex; align-items: center; gap: 5px;
+  background: #dcfce7; padding: 3px 10px; border-radius: 999px;
+}
+.appt-actions-col { display: flex; gap: 6px; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; }
 
 /* ── Doctor Queue List ────────────────────────────────── */
 .doctor-queue-list { display: flex; flex-direction: column; gap: 12px; }

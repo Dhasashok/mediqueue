@@ -343,19 +343,35 @@ const PatientDashboard = () => {
         <div className="dash-stats">
           <div className="dash-stat-card">
             <div className="stat-icon-box blue"><span>📅</span></div>
-            <div><p className="ds-val">{upcoming.length}</p><p className="ds-label">Upcoming</p></div>
+            <div>
+              <p className="ds-val">{upcoming.length}</p>
+              <p className="ds-label">Upcoming</p>
+              <span className={`ds-trend ${upcoming.length > 0 ? 'up' : 'neutral'}`}>{upcoming.length > 0 ? '● Active' : '● None'}</span>
+            </div>
           </div>
           <div className="dash-stat-card">
             <div className="stat-icon-box green"><span>✅</span></div>
-            <div><p className="ds-val">{appointments.filter(a=>a.status==='Completed').length}</p><p className="ds-label">Completed</p></div>
+            <div>
+              <p className="ds-val">{appointments.filter(a=>a.status==='Completed').length}</p>
+              <p className="ds-label">Completed</p>
+              <span className="ds-trend neutral">All time</span>
+            </div>
           </div>
           <div className="dash-stat-card">
             <div className="stat-icon-box teal"><span>🏥</span></div>
-            <div><p className="ds-val">{appointments.length}</p><p className="ds-label">Total Visits</p></div>
+            <div>
+              <p className="ds-val">{appointments.length}</p>
+              <p className="ds-label">Total Visits</p>
+              <span className="ds-trend neutral">All records</span>
+            </div>
           </div>
           <div className="dash-stat-card">
             <div className="stat-icon-box purple"><span>📊</span></div>
-            <div><p className="ds-val">{checkedIn.length}</p><p className="ds-label">In Queue</p></div>
+            <div>
+              <p className="ds-val">{checkedIn.length}</p>
+              <p className="ds-label">In Queue</p>
+              <span className={`ds-trend ${checkedIn.length > 0 ? 'up' : 'neutral'}`}>{checkedIn.length > 0 ? '🟢 Live' : '● None'}</span>
+            </div>
           </div>
         </div>
 
@@ -464,8 +480,9 @@ const PatientDashboard = () => {
             <div className="appt-list">
               {displayed.map(a => {
                 const sb = statusBadge[a.status] || { cls:'badge-gray', label: a.status };
+                const statusClass = 'status-' + (a.status || '').toLowerCase().replace(/[^a-z]/g, '-');
                 return (
-                  <div key={a.id} className="appt-row">
+                  <div key={a.id} className={`appt-row ${statusClass}`}>
                     <div className="appt-dept-icon">{a.dept_name?.[0]}</div>
                     <div className="appt-main">
                       <div className="appt-top-row">

@@ -139,41 +139,56 @@ const BookAppointment = () => {
     }
   };
 
-  if (!doctor) return <div className="loading-screen"><div className="spinner"></div></div>;
+  if (!doctor) return (
+    <div>
+      <section className="page-header">
+        <div className="container">
+          <div className="breadcrumb"><span>Home</span> <span>›</span> <span>Find Hospital</span> <span>›</span> <span>Book Appointment</span></div>
+          <h1>📅 Schedule Appointment</h1>
+        </div>
+      </section>
+      <section className="section" style={{ paddingTop: 32 }}>
+        <div className="container book-layout">
+          <div className="book-left">
+            <div className="card skeleton-doctor-card">
+              <div className="skeleton skel-avatar"></div>
+              <div className="skeleton skel-line medium"></div>
+              <div className="skeleton skel-line short"></div>
+              <div style={{ height: 16 }}></div>
+              {[1,2,3,4].map(i => <div key={i} className="skeleton skel-line full" style={{ marginBottom: 8 }}></div>)}
+            </div>
+          </div>
+          <div className="book-right">
+            <div className="card" style={{ padding: 28 }}>
+              <div className="skeleton skel-line medium" style={{ marginBottom: 20, height: 22 }}></div>
+              <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
+                {[1,2,3,4,5,6,7].map(i => <div key={i} className="skeleton" style={{ width: 64, height: 80, borderRadius: 14 }}></div>)}
+              </div>
+              <div className="slot-skeleton-grid">
+                {[1,2,3,4,5,6].map(i => <div key={i} className="skeleton slot-skeleton"></div>)}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
 
   // Success page
   if (successData) {
     return (
       <div className="success-page">
         <div className="success-card card">
-          <div className="success-icon">✅</div>
-          <h2>Appointment Booked!</h2>
-          <p>Your appointment has been confirmed. Please show your QR code at the reception.</p>
+          <div className="success-confetti-ring">🎉</div>
+          <h2>Appointment Confirmed!</h2>
+          <p>Your booking is confirmed. Show your QR code at reception to join the queue.</p>
           <div className="booking-summary">
-            <div className="summary-row">
-              <span>Booking ID</span>
-              <strong>{successData.booking_id}</strong>
-            </div>
-            <div className="summary-row">
-              <span>Doctor</span>
-              <strong>Dr. {successData.first_name} {successData.last_name}</strong>
-            </div>
-            <div className="summary-row">
-              <span>Department</span>
-              <strong>{successData.dept_name}</strong>
-            </div>
-            <div className="summary-row">
-              <span>Date</span>
-              <strong>{displayDate(successData.appointment_date)}</strong>
-            </div>
-            <div className="summary-row">
-              <span>Time Slot</span>
-              <strong>{successData.time_slot}</strong>
-            </div>
-            <div className="summary-row">
-              <span>Est. Wait</span>
-              <strong>~{successData.predicted_wait_time} min</strong>
-            </div>
+            <div className="summary-row"><span>Booking ID</span><strong>{successData.booking_id}</strong></div>
+            <div className="summary-row"><span>Doctor</span><strong>Dr. {successData.first_name} {successData.last_name}</strong></div>
+            <div className="summary-row"><span>Department</span><strong>{successData.dept_name}</strong></div>
+            <div className="summary-row"><span>Date</span><strong>{displayDate(successData.appointment_date)}</strong></div>
+            <div className="summary-row"><span>Time Slot</span><strong>{successData.time_slot}</strong></div>
+            <div className="summary-row"><span>Est. Wait</span><strong style={{color:'#0d9488'}}>~{successData.predicted_wait_time} min</strong></div>
           </div>
 
           {/* Arrival Time Guidance */}
@@ -238,19 +253,17 @@ const BookAppointment = () => {
 
           {successData.qr_code_data && (
             <div className="qr-section">
-              <p style={{ fontWeight: 600, marginBottom: 10 }}>Your QR Entry Pass</p>
-              <img src={successData.qr_code_data} alt="QR Code" className="qr-img" />
-              <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: 8 }}>
-                Show this at reception to join the queue
-              </p>
+              <p className="qr-section-title">📲 Your QR Entry Pass</p>
+              <p className="qr-section-sub">Show this at reception to skip the line instantly</p>
+              <img src={successData.qr_code_data} alt="QR Entry Pass" className="qr-img" />
             </div>
           )}
 
-          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <button className="btn btn-primary" onClick={() => navigate('/patient/dashboard')}>
-              Go to Dashboard
+          <div className="success-actions">
+            <button className="btn btn-primary btn-lg" onClick={() => navigate('/patient/dashboard')}>
+              📊 Go to Dashboard
             </button>
-            <button className="btn btn-outline" onClick={() => navigate('/find-hospital')}>
+            <button className="btn btn-outline btn-lg" onClick={() => navigate('/find-hospital')}>
               Book Another
             </button>
           </div>
@@ -280,30 +293,27 @@ const BookAppointment = () => {
           <div className="book-left">
             <div className="card doc-info-card">
               <div className="book-doc-photo">{doctor.first_name[0]}{doctor.last_name[0]}</div>
-              <h3>Dr. {doctor.first_name} {doctor.last_name}</h3>
-              <p className="book-spec">{doctor.specialization}</p>
+              <p className="book-doc-name">Dr. {doctor.first_name} {doctor.last_name}</p>
+              <span className="book-spec">{doctor.specialization}</span>
               <div className="book-doc-meta">
-                <span>⭐ {doctor.years_of_experience} Years Exp.</span>
-                <span>🗣️ {doctor.languages_known}</span>
-                <span>🏥 {doctor.department_name}</span>
-                <span>💰 ₹{doctor.consultation_fee}</span>
+                <div className="book-doc-meta-row"><span>⭐</span><span>{doctor.years_of_experience} Years Experience</span></div>
+                <div className="book-doc-meta-row"><span>🗣️</span><span>{doctor.languages_known}</span></div>
+                <div className="book-doc-meta-row"><span>🏥</span><span>{doctor.department_name}</span></div>
+                <div className="book-doc-meta-row"><span>💰</span><span>₹{doctor.consultation_fee} Consultation Fee</span></div>
               </div>
-              <div className="divider"></div>
-              <div className="avail-bar">
-                <span>Today's Availability</span>
+              <div className="avail-bar" style={{ marginTop: 16 }}>
+                <div className="avail-label">
+                  <span>Today's Availability</span>
+                  <span>{slots.reduce((a, s) => a + s.booked, 0)} booked</span>
+                </div>
                 <div className="prog-bar">
-                  <div className="prog-fill" style={{ width: `${Math.min(80, slots.reduce((a, s) => a + s.booked, 0))}%` }}></div>
+                  <div className="prog-fill" style={{ width: `${Math.min(90, slots.reduce((a, s) => a + s.booked, 0) * 6)}%` }}></div>
                 </div>
               </div>
             </div>
-
-            {/* ML Info Card */}
-            <div className="card" style={{ marginTop: 16, background: '#f0fdf4', border: '1px solid #bbf7d0' }}>
-              <h4 style={{ color: '#15803d', marginBottom: 8 }}>🤖 ML Wait Prediction</h4>
-              <p style={{ fontSize: '0.8rem', color: '#166534', lineHeight: 1.6 }}>
-                Wait times are predicted using a <strong>Random Forest ML model</strong> trained on hospital data.
-                Each slot shows estimated wait based on bookings and department load.
-              </p>
+            <div className="ml-info-box">
+              <h4>🤖 ML Wait Prediction</h4>
+              <p>Wait times are predicted using a <strong>Random Forest model</strong> trained on real hospital data. Each slot shows estimated wait based on current bookings.</p>
             </div>
           </div>
 
@@ -330,7 +340,9 @@ const BookAppointment = () => {
 
               <p className="book-sub">Select 2-Hour Slot</p>
               {loadingSlots ? (
-                <div className="spinner" style={{ margin: '20px auto' }}></div>
+                <div className="slot-skeleton-grid">
+                  {[1,2,3,4,5,6].map(i => <div key={i} className="skeleton slot-skeleton"></div>)}
+                </div>
               ) : (
                 <div className="slots-grid">
                   {slots.map(s => (
@@ -345,10 +357,10 @@ const BookAppointment = () => {
                         <span className="slot-count">{s.booked}/{s.booked + s.available} booked</span>
                       )}
                       {!s.is_past && !s.is_leave && s.available > 0 && (
-                        <span className="slot-wait">~{s.predicted_wait}min wait</span>
+                        <span className="slot-wait">⏱ ~{s.predicted_wait}m</span>
                       )}
-                      {s.is_past && <span className="slot-full" style={{background:'#e2e8f0',color:'#64748b'}}>⏰ Ended</span>}
-                      {!s.is_past && !!s.is_leave && <span className="slot-full">🏖️ Leave</span>}
+                      {s.is_past && <span className="slot-full">⏰ Ended</span>}
+                      {!s.is_past && !!s.is_leave && <span className="slot-full">🏖 Leave</span>}
                       {!s.is_past && !s.is_leave && s.available === 0 && <span className="slot-full">Full</span>}
                     </button>
                   ))}
@@ -356,39 +368,25 @@ const BookAppointment = () => {
               )}
               {errors.slot && <p className="error" style={{ marginTop: 6 }}>{errors.slot}</p>}
 
-              <div className="divider"></div>
-              <h3>Your Information</h3>
+              <div className="book-form-divider"></div>
 
               <form onSubmit={handleSubmit}>
                 <div className="form-row">
                   <div className="form-group">
                     <label>Full Name *</label>
-                    <input
-                      placeholder="Your full name"
-                      value={form.full_name}
-                      onChange={e => setForm({ ...form, full_name: e.target.value })}
-                    />
+                    <input placeholder="Your full name" value={form.full_name} onChange={e => setForm({ ...form, full_name: e.target.value })} />
                     {errors.full_name && <p className="error">{errors.full_name}</p>}
                   </div>
                   <div className="form-group">
                     <label>Phone Number *</label>
-                    <input
-                      placeholder="10-digit number"
-                      value={form.phone}
-                      onChange={e => setForm({ ...form, phone: e.target.value })}
-                    />
+                    <input placeholder="10-digit number" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
                     {errors.phone && <p className="error">{errors.phone}</p>}
                   </div>
                 </div>
                 <div className="form-row">
                   <div className="form-group">
                     <label>Age *</label>
-                    <input
-                      type="number"
-                      placeholder="25"
-                      value={form.age}
-                      onChange={e => setForm({ ...form, age: e.target.value })}
-                    />
+                    <input type="number" placeholder="25" value={form.age} onChange={e => setForm({ ...form, age: e.target.value })} />
                     {errors.age && <p className="error">{errors.age}</p>}
                   </div>
                   <div className="form-group">
@@ -403,25 +401,13 @@ const BookAppointment = () => {
                   </div>
                 </div>
                 <div className="form-group">
-                  <label>Reason for Visit (Optional)</label>
-                  <textarea
-                    rows={3}
-                    placeholder="Brief description of symptoms..."
-                    value={form.reason_for_visit}
-                    onChange={e => setForm({ ...form, reason_for_visit: e.target.value })}
-                  />
+                  <label>Reason for Visit <span style={{ fontWeight: 400, color: 'var(--muted)' }}>(Optional)</span></label>
+                  <textarea rows={3} placeholder="Brief description of symptoms or reason for visit..." value={form.reason_for_visit} onChange={e => setForm({ ...form, reason_for_visit: e.target.value })} />
                 </div>
-                <button
-                  type="submit"
-                  className="btn btn-primary"
-                  style={{ width: '100%' }}
-                  disabled={loading}
-                >
-                  {loading ? '⏳ Booking...' : 'Schedule Appointment →'}
+                <button type="submit" className="book-submit-btn" disabled={loading}>
+                  {loading ? <><span>⏳</span> Booking your slot...</> : <><span>📅</span> Confirm Appointment</>}
                 </button>
-                <p style={{ textAlign: 'center', color: 'var(--muted)', fontSize: '0.8rem', marginTop: 10 }}>
-                  After booking, a QR code will be generated as your entry pass
-                </p>
+                <p className="book-submit-note">🔒 A QR entry pass will be generated after confirmation</p>
               </form>
             </div>
           </div>
