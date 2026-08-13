@@ -9,9 +9,25 @@ const transporter = nodemailer.createTransport({
   }
 });
 
+// Safe mail dispatcher that checks credentials first
+const safeSendMail = async (mailOptions) => {
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+    console.warn(`⚠️ [EmailService] EMAIL_USER or EMAIL_PASS not configured in backend/.env or hosting environment. Email to "${mailOptions.to}" skipped.`);
+    return false;
+  }
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`✅ [EmailService] Email sent to ${mailOptions.to} (Message ID: ${info.messageId})`);
+    return true;
+  } catch (err) {
+    console.error(`❌ [EmailService] Failed to send email to ${mailOptions.to}:`, err.message);
+    return false;
+  }
+};
+
 // Hospital info
 const HOSPITAL = 'City General Hospital, Pune';
-const HOSPITAL_EMAIL = process.env.EMAIL_USER;
+const HOSPITAL_EMAIL = process.env.EMAIL_USER || 'no-reply@mediqueue.com';
 
 // Base HTML template
 const baseTemplate = (content) => `
@@ -82,7 +98,7 @@ const sendOTPEmail = async (email, name, otp) => {
     <div class="divider"></div>
     <p style="font-size:13px;color:#64748b;">If you did not create an account, please ignore this email.</p>
   `;
-  await transporter.sendMail({
+  await safeSendMail({
     from: `"MediQueue Hospital" <${HOSPITAL_EMAIL}>`,
     to: email,
     subject: 'Verify Your MediQueue Account — OTP Inside',
@@ -210,7 +226,7 @@ const sendAppointmentConfirmation = async (email, name, appointment) => {
       contentType: 'image/png'
     }];
   }
-  await transporter.sendMail(mailOptions);
+  await safeSendMail(mailOptions);
 };
 
 // 3. Send Check-In Email (Queue Position)
@@ -230,7 +246,7 @@ const sendCheckInEmail = async (email, name, data) => {
       <p style="color:#15803d;font-weight:bold;margin:0;">📍 Please stay near the ${data.dept_name} department</p>
     </div>
   `;
-  await transporter.sendMail({
+  await safeSendMail({
     from: `"MediQueue Hospital" <${HOSPITAL_EMAIL}>`,
     to: email,
     subject: `You are #${data.position} in Queue — ${data.dept_name}`,
@@ -255,7 +271,7 @@ const sendCompletionEmail = async (email, name, data) => {
       <p style="color:#166534;font-size:13px;margin:0;">We hope you feel better soon. Please visit again if needed.</p>
     </div>
   `;
-  await transporter.sendMail({
+  await safeSendMail({
     from: `"MediQueue Hospital" <${HOSPITAL_EMAIL}>`,
     to: email,
     subject: `Consultation Complete — ${HOSPITAL}`,
@@ -279,7 +295,7 @@ const sendCancellationEmail = async (email, name, appointment) => {
       <p style="color:#b91c1c;font-size:13px;margin:0;">You can book a new appointment anytime at <strong>MediQueue</strong>.</p>
     </div>
   `;
-  await transporter.sendMail({
+  await safeSendMail({
     from: `"MediQueue Hospital" <${HOSPITAL_EMAIL}>`,
     to: email,
     subject: `Appointment Cancelled — ${appointment.booking_id}`,

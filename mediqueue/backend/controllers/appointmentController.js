@@ -139,8 +139,11 @@ const bookAppointment = async (req, res) => {
       [doctor_id, cleanDate]
     );
 
+    // Sanitize Age (enforce positive integer between 1 and 120)
+    const cleanAge = Math.max(1, Math.min(120, Math.abs(parseInt(age, 10)) || 25));
+
     const predicted_wait = await getPredictedWait(
-      deptId, queueData[0].count, time_slot, cleanDate, age
+      deptId, queueData[0].count, time_slot, cleanDate, cleanAge
     );
 
     // QR code
@@ -162,7 +165,7 @@ const bookAppointment = async (req, res) => {
        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`,
       [
         booking_id, patient_id, doctor_id, deptId, cleanDate,
-        time_slot, full_name, phone.replace(/\D/g, ''), age, gender,
+        time_slot, full_name, phone.replace(/\D/g, ''), cleanAge, gender,
         reason_for_visit || null, predicted_wait, qr_code_data
       ]
     );

@@ -108,7 +108,8 @@ const BookAppointment = () => {
     const e = {};
     if (!form.full_name.trim()) e.full_name = 'Full name is required';
     if (!form.phone || !/^\d{10}$/.test(form.phone.replace(/\D/g, ''))) e.phone = 'Valid 10-digit phone required';
-    if (!form.age || form.age < 1 || form.age > 120) e.age = 'Valid age required';
+    const ageNum = parseInt(form.age, 10);
+    if (!form.age || isNaN(ageNum) || ageNum < 1 || ageNum > 120) e.age = 'Please enter a valid age (1 - 120)';
     if (!form.gender) e.gender = 'Gender is required';
     if (!selectedSlot) e.slot = 'Please select a time slot';
     setErrors(e);
@@ -386,7 +387,17 @@ const BookAppointment = () => {
                 <div className="form-row">
                   <div className="form-group">
                     <label>Age *</label>
-                    <input type="number" placeholder="25" value={form.age} onChange={e => setForm({ ...form, age: e.target.value })} />
+                    <input
+                      type="number"
+                      min="1"
+                      max="120"
+                      placeholder="25"
+                      value={form.age}
+                      onChange={e => {
+                        const cleaned = e.target.value.replace(/[^0-9]/g, '');
+                        setForm({ ...form, age: cleaned });
+                      }}
+                    />
                     {errors.age && <p className="error">{errors.age}</p>}
                   </div>
                   <div className="form-group">
