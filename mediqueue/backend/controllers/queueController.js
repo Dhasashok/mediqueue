@@ -305,12 +305,12 @@ const checkIn = async (req, res) => {
     );
     await db.query(`UPDATE appointments SET status = 'Checked-In' WHERE id = ?`, [appt.id]);
 
-    try {
-      await sendCheckInEmail(appt.email, appt.p_first, {
-        dept_name: appt.dept_name, doc_first: appt.doc_first,
-        doc_last: appt.doc_last, position, booking_id: appt.booking_id
-      });
-    } catch (e) { console.error('Email error:', e.message); }
+    // Send check-in email asynchronously in background
+    sendCheckInEmail(appt.email, appt.p_first, {
+      dept_name: appt.dept_name, doc_first: appt.doc_first,
+      doc_last: appt.doc_last, position, booking_id: appt.booking_id
+    }).then(() => console.log('✅ Check-in email sent to:', appt.email))
+      .catch((e) => console.error('❌ Check-in email error:', e.message));
 
     const io = req.app.get('io');
     if (io) {
@@ -438,13 +438,13 @@ const completeAppointment = async (req, res) => {
       [deptId, completedPosition]
     );
 
-    try {
-      await sendCompletionEmail(appt.email, appt.p_first, {
-        doc_first: appt.doc_first, doc_last: appt.doc_last,
-        dept_name: appt.dept_name, appointment_date: appt.appointment_date,
-        booking_id: appt.booking_id
-      });
-    } catch (e) { console.error('Email error:', e.message); }
+    // Send completion email asynchronously in background
+    sendCompletionEmail(appt.email, appt.p_first, {
+      doc_first: appt.doc_first, doc_last: appt.doc_last,
+      dept_name: appt.dept_name, appointment_date: appt.appointment_date,
+      booking_id: appt.booking_id
+    }).then(() => console.log('✅ Completion email sent to:', appt.email))
+      .catch((e) => console.error('❌ Completion email error:', e.message));
 
     const io = req.app.get('io');
     if (io) {

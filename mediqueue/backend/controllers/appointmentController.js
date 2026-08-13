@@ -190,17 +190,18 @@ const bookAppointment = async (req, res) => {
     // = their 0-indexed position → used to compute arrival window on success page
     const patientsBookedBefore = queueData[0].count; // count was taken before this insert
 
-    // Email
-    try {
-      const [patient] = await db.query('SELECT email, first_name FROM patients WHERE id=?', [patient_id]);
-      if (patient.length > 0) {
-        await sendAppointmentConfirmation(
-          patient[0].email, patient[0].first_name,
-          { ...appointment[0], patient_id, qr_code_data }
-        );
-        console.log('✅ Email sent to:', patient[0].email);
-      }
-    } catch (e) { console.error('❌ Email error:', e.message); }
+    // Send confirmation email asynchronously in background (non-blocking)
+    db.query('SELECT email, first_name FROM patients WHERE id=?', [patient_id])
+      .then(([patient]) => {
+        if (patient.length > 0) {
+          sendAppointmentConfirmation(
+            patient[0].email, patient[0].first_name,
+            { ...appointment[0], patient_id, qr_code_data }
+          ).then(() => console.log('✅ Background email sent to:', patient[0].email))
+           .catch((e) => console.error('❌ Background email error:', e.message));
+        }
+      })
+      .catch((e) => console.error('❌ Patient lookup error for email:', e.message));
 
     res.status(201).json({
       success: true,
@@ -297,9 +298,10 @@ const cancelAppointment = async (req, res) => {
     }
 
     await db.query(`UPDATE appointments SET status='Cancelled' WHERE id=?`, [id]);
-    try {
-      await sendCancellationEmail(appt[0].email, appt[0].p_first, appt[0]);
-    } catch (e) { console.error('Email error:', e.message); }
+    // Send cancellation email in background (non-blocking)
+    sendCancellationEmail(appt[0].email, appt[0].p_first, appt[0])
+      .then(() => console.log('✅ Background cancellation email sent to:', appt[0].email))
+      .catch((e) => console.error('❌ Background cancellation email error:', e.message));
 
     res.json({ success: true, message: 'Appointment cancelled successfully.' });
   } catch (err) {
