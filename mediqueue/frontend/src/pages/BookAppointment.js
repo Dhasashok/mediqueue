@@ -13,25 +13,25 @@ const formatLocalDate = (d) => {
 };
 
 // ── Arrival Time Calculator ────────────────────────────────
-// distributed_mins = 120 / slot_capacity (dept-specific equal share)
-// turn_time = slot_start + patients_before × distributed_mins
-// arrive_by   = max(turn_time - distributed_mins, slot_start - 15)
-// arrive_from = max(turn_time - 2×distributed_mins, slot_start - 30)
+// Dynamically divides each 2-hour slot according to department consultation capacity
+// Patient #1: Slot Start -> Slot Start + dist
+// Patient #2: Slot Start + dist -> Slot Start + 2*dist
+// Patient #k: Slot Start + (k-1)*dist -> Slot Start + k*dist
 const calcArrivalWindow = (timeSlot, patientsBefore, distributedMins) => {
-  if (!timeSlot || distributedMins <= 0) return null;
-  const slotStartH  = parseInt(timeSlot.split(':')[0]);
-  const slotStartM  = parseInt(timeSlot.split(':')[1]) || 0;
+  if (!timeSlot) return null;
+  const dist = (distributedMins && distributedMins > 0) ? distributedMins : 20;
+
+  const slotStartH  = parseInt(timeSlot.split(':')[0], 10);
+  const slotStartM  = parseInt(timeSlot.split(':')[1], 10) || 0;
   const slotStart   = slotStartH * 60 + slotStartM;
 
-  const turnTime    = slotStart + patientsBefore * distributedMins;
+  const position = (patientsBefore != null ? patientsBefore : 0) + 1;
+  const turnStart = slotStart + (position - 1) * dist;
+  const turnEnd   = Math.min(slotStart + 120, turnStart + dist);
 
-  // arrive_by = 1 consultation before turn, min 15 min before slot
-  let arriveBy   = Math.max(turnTime - distributedMins, slotStart - 15);
-  // arrive_from = 2 consultations before turn, cap 30 min before slot
-  let arriveFrom = Math.max(turnTime - 2 * distributedMins, slotStart - 30);
-  // ensure from < by
-  if (arriveFrom >= arriveBy) arriveFrom = arriveBy - distributedMins;
-  arriveFrom = Math.max(arriveFrom, slotStart - 30);
+  // Staggered arrival window for each patient
+  const arriveFrom = turnStart;
+  const arriveBy   = turnEnd;
 
   const fmt = (mins) => {
     const total = Math.round(mins);
@@ -43,10 +43,10 @@ const calcArrivalWindow = (timeSlot, patientsBefore, distributedMins) => {
   };
 
   return {
-    turnTime:   fmt(turnTime),
+    turnTime:   fmt(turnStart),
     arriveFrom: fmt(arriveFrom),
     arriveBy:   fmt(arriveBy),
-    position:   patientsBefore + 1,
+    position:   position,
   };
 };
 

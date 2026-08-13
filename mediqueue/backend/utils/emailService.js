@@ -150,11 +150,15 @@ const sendAppointmentConfirmation = async (email, name, appointment) => {
         ? Math.round((120 / appointment.slot_capacity) * 100) / 100
         : 20.0;
     const patBefore  = appointment.patients_before != null ? appointment.patients_before : 0;
-    const slotStartH = appointment.time_slot ? parseInt(appointment.time_slot.split(':')[0]) : 10;
-    const slotStart  = slotStartH * 60;
+    const slotStartH = appointment.time_slot ? parseInt(appointment.time_slot.split(':')[0], 10) : 10;
+    const slotStartM = (appointment.time_slot && appointment.time_slot.split(':')[1]) ? parseInt(appointment.time_slot.split(':')[1], 10) : 0;
+    const slotStart  = slotStartH * 60 + slotStartM;
     const turnTime   = slotStart + patBefore * distMins;
-    const arriveBy   = Math.max(turnTime - distMins,     slotStart - 15);
-    const arriveFrom = Math.max(turnTime - 2 * distMins, slotStart - 30);
+    const turnEnd    = Math.min(slotStart + 120, turnTime + distMins);
+
+    const arriveFrom = turnTime;
+    const arriveBy   = turnEnd;
+
     const fmt = (m) => {
       const total = Math.round(m);
       const h = Math.floor(total / 60), mn = total % 60;

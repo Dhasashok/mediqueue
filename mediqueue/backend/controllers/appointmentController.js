@@ -189,9 +189,9 @@ const bookAppointment = async (req, res) => {
       [result.insertId]
     );
 
-    // patients_booked_in_slot = how many were booked BEFORE this patient
-    // = their 0-indexed position → used to compute arrival window on success page
-    const patientsBookedBefore = queueData[0].count; // count was taken before this insert
+    // patients_booked_in_slot = how many were booked in THIS TIME SLOT BEFORE this patient
+    // = their 0-indexed position in the slot → used to compute arrival window on success page
+    const patientsBookedInSlotBefore = slotCount[0].count; // count in this slot taken before insert
 
     // Send confirmation email asynchronously in background (non-blocking)
     db.query('SELECT email, first_name FROM patients WHERE id=?', [patient_id])
@@ -199,7 +199,7 @@ const bookAppointment = async (req, res) => {
         if (patient.length > 0) {
           sendAppointmentConfirmation(
             patient[0].email, patient[0].first_name,
-            { ...appointment[0], patient_id, qr_code_data }
+            { ...appointment[0], patient_id, qr_code_data, patients_before: patientsBookedInSlotBefore }
           ).then(() => console.log('✅ Background email sent to:', patient[0].email))
            .catch((e) => console.error('❌ Background email error:', e.message));
         }
@@ -211,7 +211,7 @@ const bookAppointment = async (req, res) => {
       message: 'Appointment booked successfully!',
       appointment: {
         ...appointment[0],
-        patients_before: patientsBookedBefore,  // position = patients_before + 1
+        patients_before: patientsBookedInSlotBefore,  // position in slot = patients_before + 1
       }
     });
 
