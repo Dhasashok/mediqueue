@@ -213,6 +213,7 @@ const PatientDashboard = () => {
         });
       }, 1000);
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [Object.keys(countdown).join(',')]);
 
   const formatTime = (seconds) => {

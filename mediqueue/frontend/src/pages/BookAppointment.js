@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { getDoctorById, getDoctorSlots, bookAppointment } from '../services/api';
-import { useAuth } from '../context/AuthContext';
 import './BookAppointment.css';
 
 // Fix timezone — use local date not UTC

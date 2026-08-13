@@ -14,14 +14,14 @@
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
-SET @MYSQLDUMP_TEMP_LOG_BIN = @@SESSION.SQL_LOG_BIN;
-SET @@SESSION.SQL_LOG_BIN= 0;
+-- SET @MYSQLDUMP_TEMP_LOG_BIN = @@SESSION.SQL_LOG_BIN;
+-- SET @@SESSION.SQL_LOG_BIN= 0;
 
 --
 -- GTID state at the beginning of the backup 
 --
 
-SET @@GLOBAL.GTID_PURGED=/*!80000 '+'*/ '1c970b20-26c3-11f1-b870-0a0027000010:1-557';
+-- SET @@GLOBAL.GTID_PURGED=/*!80000 '+'*/ '1c970b20-26c3-11f1-b870-0a0027000010:1-557';
 
 --
 -- Table structure for table `admins`
@@ -122,7 +122,7 @@ CREATE TABLE `departments` (
 
 LOCK TABLES `departments` WRITE;
 /*!40000 ALTER TABLE `departments` DISABLE KEYS */;
-INSERT INTO `departments` VALUES (1,'Dentistry','Dental care & oral health','?',1,'2026-03-21 13:47:07'),(2,'Cardiology','Heart & vascular care','❤️',1,'2026-03-21 13:47:07'),(3,'Orthopedics','Bones, joints & muscles','?',1,'2026-03-21 13:47:07'),(4,'General Medicine','Primary healthcare','?',1,'2026-03-21 13:47:07'),(5,'Neurology','Brain & nervous system','?',1,'2026-03-21 13:47:07'),(6,'Pediatrics','Children\'s health','?',1,'2026-03-21 13:47:07'),(7,'Dermatology','Skin care & treatment','?',1,'2026-03-21 13:47:07'),(8,'ENT','Ear, Nose & Throat','?',1,'2026-03-21 13:47:07'),(9,'Ophthalmology','Eye care & surgery','?️',1,'2026-03-21 13:47:07'),(10,'Gynecology','Women\'s health','?',1,'2026-03-21 13:47:07'),(11,'Radiology','Imaging & diagnostics','?',1,'2026-03-21 13:47:07'),(12,'Emergency','Critical & emergency care','?',1,'2026-03-21 13:47:07');
+INSERT INTO `departments` VALUES (1,'Dentistry','Dental care & oral health','?',1,'2026-03-21 13:47:07'),(2,'Cardiology','Heart & vascular care','â¤ï¸',1,'2026-03-21 13:47:07'),(3,'Orthopedics','Bones, joints & muscles','?',1,'2026-03-21 13:47:07'),(4,'General Medicine','Primary healthcare','?',1,'2026-03-21 13:47:07'),(5,'Neurology','Brain & nervous system','?',1,'2026-03-21 13:47:07'),(6,'Pediatrics','Children\'s health','?',1,'2026-03-21 13:47:07'),(7,'Dermatology','Skin care & treatment','?',1,'2026-03-21 13:47:07'),(8,'ENT','Ear, Nose & Throat','?',1,'2026-03-21 13:47:07'),(9,'Ophthalmology','Eye care & surgery','?ï¸',1,'2026-03-21 13:47:07'),(10,'Gynecology','Women\'s health','?',1,'2026-03-21 13:47:07'),(11,'Radiology','Imaging & diagnostics','?',1,'2026-03-21 13:47:07'),(12,'Emergency','Critical & emergency care','?',1,'2026-03-21 13:47:07');
 /*!40000 ALTER TABLE `departments` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -142,7 +142,7 @@ CREATE TABLE `dept_consultation_stats` (
   `last_updated` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_dept` (`department_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=44 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=44 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -171,7 +171,7 @@ CREATE TABLE `doctor_leaves` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_doctor_date` (`doctor_id`,`leave_date`),
   CONSTRAINT `doctor_leaves_ibfk_1` FOREIGN KEY (`doctor_id`) REFERENCES `doctors` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -292,7 +292,7 @@ CREATE TABLE `prescriptions` (
   CONSTRAINT `prescriptions_ibfk_1` FOREIGN KEY (`appointment_id`) REFERENCES `appointments` (`id`) ON DELETE CASCADE,
   CONSTRAINT `prescriptions_ibfk_2` FOREIGN KEY (`doctor_id`) REFERENCES `doctors` (`id`),
   CONSTRAINT `prescriptions_ibfk_3` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -339,7 +339,7 @@ LOCK TABLES `queue` WRITE;
 INSERT INTO `queue` VALUES (1,1,2,2,1,'2026-03-21 18:16:25',NULL,NULL,'Completed','2026-03-22 00:00:25',14.2),(2,2,2,2,1,'2026-03-21 19:15:05',NULL,NULL,'Completed','2026-03-22 01:01:05',15.8),(3,3,2,2,1,'2026-03-22 08:48:38',NULL,NULL,'Completed','2026-03-22 14:31:38',13.4),(4,4,1,1,1,'2026-03-22 09:25:30',NULL,NULL,'No-Show',NULL,NULL),(5,5,8,8,1,'2026-03-23 15:24:29',NULL,NULL,'Completed','2026-03-23 21:05:29',11.2),(6,7,11,11,1,'2026-03-24 13:20:18',NULL,NULL,'No-Show',NULL,NULL),(7,9,5,5,1,'2026-03-25 16:46:48',NULL,NULL,'No-Show',NULL,NULL),(8,10,1,1,1,'2026-03-25 18:27:12',NULL,NULL,'No-Show',NULL,NULL),(9,11,7,7,1,'2026-03-25 18:40:57',NULL,NULL,'Completed','2026-03-26 00:28:57',17.8),(10,12,7,7,1,'2026-03-25 18:41:03',NULL,NULL,'Completed','2026-03-26 00:28:03',16.9),(11,13,7,7,1,'2026-03-25 18:41:09',NULL,NULL,'Completed','2026-03-26 00:30:09',18.5),(12,14,5,5,2,'2026-03-25 19:41:05',NULL,NULL,'Completed','2026-03-26 01:36:05',24.8),(13,15,5,5,2,'2026-03-25 19:41:52',NULL,NULL,'Completed','2026-03-26 01:37:52',25.9),(14,16,4,4,1,'2026-03-26 13:15:03',NULL,NULL,'No-Show',NULL,NULL),(15,17,1,1,1,'2026-03-26 14:57:57',NULL,NULL,'No-Show',NULL,NULL),(16,18,3,3,1,'2026-03-26 17:22:10',NULL,NULL,'No-Show',NULL,NULL),(17,20,3,3,2,'2026-03-26 17:22:16',NULL,NULL,'No-Show',NULL,NULL),(18,22,3,3,3,'2026-03-26 17:22:29',NULL,NULL,'No-Show',NULL,NULL),(19,24,9,9,1,'2026-03-26 17:22:44',NULL,NULL,'No-Show',NULL,NULL),(20,19,3,3,4,'2026-03-26 17:22:54',NULL,NULL,'No-Show',NULL,NULL),(21,21,3,3,5,'2026-03-26 17:23:00',NULL,NULL,'No-Show',NULL,NULL),(22,23,3,3,6,'2026-03-26 17:23:14',NULL,NULL,'No-Show',NULL,NULL),(23,25,8,8,1,'2026-03-26 18:18:15',NULL,NULL,'No-Show',NULL,NULL),(24,26,8,8,2,'2026-03-26 18:18:22',NULL,NULL,'No-Show',NULL,NULL),(25,27,8,8,3,'2026-03-26 18:18:28',NULL,NULL,'No-Show',NULL,NULL),(26,28,1,1,1,'2026-03-26 19:09:41',NULL,NULL,'Completed','2026-03-27 00:54:41',14.6),(27,29,1,1,1,'2026-03-26 19:09:42',NULL,NULL,'No-Show',NULL,NULL),(28,30,2,2,1,'2026-03-27 06:54:28',NULL,NULL,'Completed','2026-03-27 12:38:28',14.1),(29,31,2,2,1,'2026-03-27 06:56:12',NULL,NULL,'Completed','2026-03-27 12:41:12',15.3),(30,32,2,2,1,'2026-03-27 07:11:18',NULL,NULL,'Completed','2026-03-27 18:20:24',NULL),(31,33,2,2,1,'2026-03-27 07:11:25',NULL,NULL,'Completed','2026-03-27 18:20:34',NULL),(32,37,2,2,1,'2026-03-28 16:08:39',NULL,NULL,'Completed','2026-03-28 22:08:26',29.8),(33,38,7,7,1,'2026-03-28 16:54:25',NULL,NULL,'No-Show',NULL,NULL),(34,39,7,7,2,'2026-03-28 16:54:28',NULL,NULL,'No-Show',NULL,NULL),(35,40,2,2,1,'2026-03-29 08:39:04','2026-03-29 14:11:37',NULL,'Completed','2026-03-29 14:25:21',13.7),(36,42,2,2,1,'2026-03-29 08:39:31','2026-03-29 14:25:32',NULL,'Completed','2026-03-29 14:30:35',5.1),(37,44,2,2,1,'2026-03-29 13:53:04','2026-03-29 19:24:09',NULL,'Completed','2026-03-29 19:48:01',23.9),(38,43,2,2,1,'2026-03-29 13:53:10',NULL,NULL,'Completed','2026-03-29 23:53:25',NULL),(39,46,8,8,1,'2026-03-29 18:52:45','2026-03-30 00:24:03',NULL,'Completed','2026-03-30 00:36:46',12.7),(40,45,8,8,1,'2026-03-29 18:52:58',NULL,NULL,'No-Show',NULL,NULL),(41,47,7,7,1,'2026-03-30 06:37:25','2026-03-30 12:34:43',NULL,'Completed','2026-03-30 20:11:19',NULL),(42,48,7,7,1,'2026-03-30 07:01:44',NULL,NULL,'No-Show',NULL,NULL),(43,52,7,7,1,'2026-03-31 06:02:02','2026-03-31 23:04:16',NULL,'Completed','2026-03-31 23:17:18',13.0),(44,53,7,7,1,'2026-03-31 17:32:16',NULL,NULL,'No-Show',NULL,NULL),(45,54,7,7,2,'2026-03-31 17:32:27',NULL,NULL,'No-Show',NULL,NULL),(46,55,2,2,1,'2026-04-01 03:49:33','2026-04-01 09:21:00',NULL,'Completed','2026-04-01 09:40:21',19.4),(47,57,2,2,1,'2026-04-01 03:49:41','2026-04-01 09:40:27',NULL,'Completed','2026-04-01 09:43:44',3.3),(48,59,2,2,1,'2026-04-01 04:06:43',NULL,NULL,'Completed','2026-04-01 09:59:04',22.4),(49,60,2,2,1,'2026-04-01 04:06:48','2026-04-01 09:59:15',NULL,'Completed','2026-04-01 10:06:38',7.4),(50,56,7,7,1,'2026-04-01 04:39:14','2026-04-01 10:10:28',NULL,'Completed','2026-04-01 10:19:33',9.1),(51,58,7,7,1,'2026-04-01 04:39:19',NULL,NULL,'No-Show',NULL,NULL),(52,62,2,2,1,'2026-04-01 08:58:02','2026-04-01 14:29:30',NULL,'Completed','2026-04-01 14:45:30',16.0),(53,61,2,2,1,'2026-04-01 08:58:22',NULL,NULL,'No-Show',NULL,NULL),(54,68,5,5,1,'2026-04-04 09:42:31','2026-04-04 15:14:29',NULL,'Completed','2026-04-04 17:06:11',111.7),(55,67,5,5,1,'2026-04-04 09:42:39',NULL,NULL,'Completed','2026-04-04 20:21:41',NULL),(56,69,5,5,1,'2026-04-04 09:42:43',NULL,NULL,'Completed','2026-04-04 20:21:47',NULL),(57,70,5,5,1,'2026-04-04 09:42:48',NULL,NULL,'Completed','2026-04-04 20:21:51',NULL),(58,72,2,2,1,'2026-04-04 14:35:09','2026-04-04 20:16:03',NULL,'Completed','2026-04-04 20:23:59',7.9),(59,73,2,2,1,'2026-04-04 14:35:09','2026-04-04 20:40:17',NULL,'Completed','2026-04-04 20:40:36',NULL),(60,74,2,2,1,'2026-04-04 14:43:24','2026-04-04 21:54:18',NULL,'Completed','2026-04-04 21:56:43',2.4),(61,77,9,9,1,'2026-04-04 16:40:01','2026-04-04 22:31:27',NULL,'Completed','2026-04-04 22:39:49',8.4),(62,78,9,9,1,'2026-04-04 16:40:57','2026-04-04 22:44:27',NULL,'Completed','2026-04-04 23:06:45',22.3),(63,76,4,4,1,'2026-04-04 16:41:14','2026-04-04 22:19:24',NULL,'Completed','2026-04-04 22:21:53',2.5),(64,79,4,4,1,'2026-04-04 16:41:19',NULL,NULL,'No-Show',NULL,NULL),(65,80,9,9,1,'2026-04-04 17:13:45','2026-04-04 23:35:42',NULL,'Completed','2026-04-04 23:58:57',23.3),(66,81,9,9,1,'2026-04-04 17:52:17',NULL,NULL,'No-Show',NULL,NULL),(67,83,3,3,1,'2026-04-05 03:16:20','2026-04-05 08:49:28',NULL,'Completed','2026-04-05 08:58:36',9.1),(68,84,3,3,1,'2026-04-05 03:16:36','2026-04-05 15:11:34',NULL,'Completed','2026-04-05 15:19:14',7.7),(69,98,3,3,1,'2026-04-05 09:34:42',NULL,NULL,'Completed','2026-04-05 18:19:30',NULL),(70,99,3,3,1,'2026-04-05 09:35:31',NULL,NULL,'Completed','2026-04-05 18:19:37',NULL),(71,101,7,7,1,'2026-04-05 13:06:38','2026-04-05 18:38:58',NULL,'Completed','2026-04-05 18:53:30',14.5),(72,103,7,7,1,'2026-04-05 13:06:44','2026-04-05 19:03:33',NULL,'Completed','2026-04-05 19:05:35',NULL),(73,107,7,7,1,'2026-04-05 13:07:10','2026-04-05 19:19:49',NULL,'Completed','2026-04-05 19:22:37',NULL),(74,108,7,7,1,'2026-04-05 13:48:31',NULL,NULL,'Completed','2026-04-05 19:22:43',NULL);
 /*!40000 ALTER TABLE `queue` ENABLE KEYS */;
 UNLOCK TABLES;
-SET @@SESSION.SQL_LOG_BIN = @MYSQLDUMP_TEMP_LOG_BIN;
+-- SET @@SESSION.SQL_LOG_BIN = @MYSQLDUMP_TEMP_LOG_BIN;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;

@@ -1,8 +1,7 @@
 import axios from 'axios';
 
 const API = axios.create({
-  baseURL: 'https://mediqueue-2k3l.onrender.com/api',
-  //baseURL: '/api',
+  baseURL: process.env.REACT_APP_API_URL || 'https://mediqueue-2k3l.onrender.com/api',
   withCredentials: true,
 });
 
