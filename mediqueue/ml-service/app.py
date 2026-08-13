@@ -220,10 +220,13 @@ def health():
         'features': FEATURES if FEATURES else []
     })
 
+# Auto-load models on module import for production WSGI servers
+load_models()
+
 if __name__ == '__main__':
-    load_models()
-    print("🤖 MediQueue ML Service → http://localhost:5001")
+    port = int(os.environ.get('PORT', 5001))
+    print(f"🤖 MediQueue ML Service → http://localhost:{port}")
     print("   POST /predict-wait  — predict wait time")
     print("   GET  /dept-stats    — dept historical averages")
     print("   GET  /health        — service status")
-    app.run(host='0.0.0.0', port=5001, debug=False)
+    app.run(host='0.0.0.0', port=port, debug=False)

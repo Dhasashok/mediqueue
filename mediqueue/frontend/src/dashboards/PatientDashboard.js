@@ -35,6 +35,29 @@ const displayDate = (dateStr) => {
   return `${ist.getUTCFullYear()}-${String(ist.getUTCMonth()+1).padStart(2,'0')}-${String(ist.getUTCDate()).padStart(2,'0')}`;
 };
 
+// ── Web Audio Synthesizer for Turn Alerts ───────────────────
+const playTurnAlert = () => {
+  try {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) return;
+    const ctx = new AudioContext();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = 'sine';
+    // Two-tone pleasant hospital chime (D5 -> A5)
+    osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+    osc.frequency.setValueAtTime(880.00, ctx.currentTime + 0.15);
+    gain.gain.setValueAtTime(0.2, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.6);
+  } catch (e) {
+    // Audio context may be blocked by browser autoplay policy until user gesture
+  }
+};
+
 const PatientDashboard = () => {
   const { user }    = useAuth();
   const navigate    = useNavigate();
@@ -49,10 +72,21 @@ const PatientDashboard = () => {
   const [queueData, setQueueData]       = useState({});
   const [countdown, setCountdown]       = useState({});
   const timerRefs   = useRef({});
+  const alertedPositions = useRef({});
 
   const load = useCallback(() => {
     getMyAppointments()
-      .then(r => { setAppointments(r.data.appointments || []); setLoading(false); })
+      .then(r => {
+        const list = r.data.appointments || [];
+        setAppointments(list);
+        setLoading(false);
+        // Cache QR passes offline in localStorage
+        list.forEach(a => {
+          if (a.qr_code_data) {
+            try { localStorage.setItem(`mq_offline_qr_${a.booking_id}`, a.qr_code_data); } catch {}
+          }
+        });
+      })
       .catch(() => setLoading(false));
   }, []);
 
@@ -156,6 +190,14 @@ const PatientDashboard = () => {
             ...prev,
             [a.id]: { position: pos, waitMins, patientsAhead: patients_ahead, deptAvg }
           }));
+
+          // Trigger audio chime and toast notification when patient is next in line
+          if (pos <= 2 && !alertedPositions.current[a.id]) {
+            alertedPositions.current[a.id] = true;
+            playTurnAlert();
+            toast.info(`🔔 You are #${pos} in line! Please prepare for your consultation.`, { autoClose: 8000 });
+          }
+
           const remainingSecs = computeRemaining(a.id, pos, deptAvg, pos1TreatmentStart, patients_ahead);
           setCountdown(prev => {
             const current = prev[a.id] || 0;
@@ -773,7 +815,8 @@ const PatientDashboard = () => {
             </p>
             <div style={{textAlign:'center',marginBottom:16}}>
               <img
-                src={qrModal.qr_code_data} alt="QR"
+                src={qrModal.qr_code_data || localStorage.getItem(`mq_offline_qr_${qrModal.booking_id}`)}
+                alt="QR Pass"
                 style={{width:200,height:200,borderRadius:8,border:'2px solid var(--border)'}}
               />
             </div>

@@ -9,16 +9,43 @@ const { getPendingDoctors, approveDoctor, getAllDoctors, getAnalytics, getTodayA
 const { authMiddleware, roleCheck } = require('../middleware/auth');
 const { savePrescription, getMyPrescriptions, getPrescriptionByAppointment, deletePrescription } = require('../controllers/prescriptionController');
 
+const rateLimit = require('express-rate-limit');
+
+// Rate limiters for security & brute-force prevention
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 15, // limit each IP to 15 login attempts per window
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: 'Too many login attempts. Please try again after 15 minutes.' }
+});
+
+const otpLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000, // 10 minutes
+  max: 6, // limit each IP to 6 OTP verification attempts per window
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: 'Too many OTP verification attempts. Please try again after 10 minutes.' }
+});
+
+const registerLimiter = rateLimit({
+  windowMs: 30 * 60 * 1000, // 30 minutes
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: 'Too many accounts created from this IP. Please try again later.' }
+});
+
 // ── Auth ──────────────────────────────────────────────────────
-router.post('/auth/register/patient',  registerPatient);
-router.post('/auth/register/doctor',   registerDoctor);
-router.post('/auth/verify-otp',        verifyOTP);
-router.post('/auth/resend-otp',        resendOTP);
-router.post('/auth/forgot-password',   forgotPassword);
-router.post('/auth/reset-password',    resetPassword);
-router.post('/auth/login',             login);
+router.post('/auth/register/patient',  registerLimiter, registerPatient);
+router.post('/auth/register/doctor',   registerLimiter, registerDoctor);
+router.post('/auth/verify-otp',        otpLimiter,      verifyOTP);
+router.post('/auth/resend-otp',        otpLimiter,      resendOTP);
+router.post('/auth/forgot-password',   loginLimiter,    forgotPassword);
+router.post('/auth/reset-password',    loginLimiter,    resetPassword);
+router.post('/auth/login',             loginLimiter,    login);
 router.post('/auth/logout',            logout);
-router.get ('/auth/me',                authMiddleware, getMe);
+router.get ('/auth/me',                authMiddleware,  getMe);
 
 // ── Departments & Doctors ─────────────────────────────────────
 router.get('/departments',                   getDepartments);

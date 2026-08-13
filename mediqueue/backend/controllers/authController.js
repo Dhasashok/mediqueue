@@ -171,9 +171,21 @@ const registerDoctor = async (req, res) => {
 const login = async (req, res) => {
   try {
     const { email, password, role } = req.body;
+    
+    // Strict role validation
+    const allowedRoles = ['patient', 'doctor', 'admin'];
+    if (!role || !allowedRoles.includes(role)) {
+      return res.status(400).json({ success: false, message: 'Invalid role. Must be patient, doctor, or admin.' });
+    }
+
+    const cleanEmail = (email || '').trim().toLowerCase();
+    if (!cleanEmail || !password) {
+      return res.status(400).json({ success: false, message: 'Email and password are required.' });
+    }
+
     const table = role === 'patient' ? 'patients' : role === 'doctor' ? 'doctors' : 'admins';
 
-    const [rows] = await db.query(`SELECT * FROM ${table} WHERE email = ?`, [email]);
+    const [rows] = await db.query(`SELECT * FROM ${table} WHERE email = ?`, [cleanEmail]);
     if (rows.length === 0) {
       return res.status(400).json({ success: false, message: 'Invalid email or password.' });
     }
