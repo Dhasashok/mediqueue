@@ -49,7 +49,7 @@ const safeSendMail = async (mailOptions) => {
 
 // Hospital info
 const HOSPITAL = 'City General Hospital, Pune';
-const HOSPITAL_EMAIL = process.env.EMAIL_USER || 'no-reply@mediqueue.com';
+const HOSPITAL_EMAIL = emailUser;
 
 // Base HTML template
 const baseTemplate = (content) => `
@@ -176,10 +176,11 @@ const sendAppointmentConfirmation = async (email, name, appointment) => {
     const slotStartM = (appointment.time_slot && appointment.time_slot.split(':')[1]) ? parseInt(appointment.time_slot.split(':')[1], 10) : 0;
     const slotStart  = slotStartH * 60 + slotStartM;
     const turnTime   = slotStart + patBefore * distMins;
-    const turnEnd    = Math.min(slotStart + 120, turnTime + distMins);
 
-    const arriveFrom = turnTime;
-    const arriveBy   = turnEnd;
+    // Staggered arrival window: arrive 30 mins (or treatment duration) before turn starts
+    const buffer     = Math.max(15, Math.min(30, distMins));
+    const arriveFrom = Math.max(0, turnTime - buffer);
+    const arriveBy   = turnTime;
 
     const fmt = (m) => {
       const total = Math.round(m);

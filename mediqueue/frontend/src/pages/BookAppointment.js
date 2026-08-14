@@ -27,11 +27,11 @@ const calcArrivalWindow = (timeSlot, patientsBefore, distributedMins) => {
 
   const position = (patientsBefore != null ? patientsBefore : 0) + 1;
   const turnStart = slotStart + (position - 1) * dist;
-  const turnEnd   = Math.min(slotStart + 120, turnStart + dist);
 
-  // Staggered arrival window for each patient
-  const arriveFrom = turnStart;
-  const arriveBy   = turnEnd;
+  // Staggered arrival window: arrive 30 mins (or treatment duration) before turn starts
+  const buffer = Math.max(15, Math.min(30, dist));
+  const arriveFrom = Math.max(0, turnStart - buffer);
+  const arriveBy   = turnStart;
 
   const fmt = (mins) => {
     const total = Math.round(mins);

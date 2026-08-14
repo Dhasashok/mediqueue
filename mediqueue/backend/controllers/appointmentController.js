@@ -197,11 +197,14 @@ const bookAppointment = async (req, res) => {
     db.query('SELECT email, first_name FROM patients WHERE id=?', [patient_id])
       .then(([patient]) => {
         if (patient.length > 0) {
+          console.log(`📧 [Booking Confirmation] Dispatching email to: ${patient[0].email} (${appointment[0].booking_id})`);
           sendAppointmentConfirmation(
             patient[0].email, patient[0].first_name,
             { ...appointment[0], patient_id, qr_code_data, patients_before: patientsBookedInSlotBefore }
-          ).then(() => console.log('✅ Background email sent to:', patient[0].email))
-           .catch((e) => console.error('❌ Background email error:', e.message));
+          ).then(() => console.log('✅ [Booking Confirmation] Email sent successfully to:', patient[0].email))
+           .catch((e) => console.error('❌ [Booking Confirmation] Email error:', e.message));
+        } else {
+          console.warn(`⚠️ [Booking Confirmation] Patient not found for ID ${patient_id}`);
         }
       })
       .catch((e) => console.error('❌ Patient lookup error for email:', e.message));
