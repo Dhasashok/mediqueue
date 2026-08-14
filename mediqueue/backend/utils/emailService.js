@@ -1,18 +1,40 @@
 const nodemailer = require('nodemailer');
 
-// Create transporter
+const emailUser = (process.env.EMAIL_USER || 'ashokdhas9066@gmail.com').trim();
+const emailPass = (process.env.EMAIL_PASS || 'agsl jihg wyam dove').replace(/\s+/g, '');
+
+// Create transporter with pooled connections and faster TLS handshake
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  host: 'smtp.gmail.com',
+  port: 465,
+  secure: true,
+  pool: true,
+  maxConnections: 5,
+  maxMessages: 100,
+  connectionTimeout: 10000,
+  greetingTimeout: 5000,
+  socketTimeout: 15000,
   auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
+    user: emailUser,
+    pass: emailPass
   }
 });
 
+// Verify connection on startup to warm up SMTP pool
+if (emailUser && emailPass) {
+  transporter.verify((err) => {
+    if (err) {
+      console.warn('⚠️ [EmailService] SMTP verification failed:', err.message);
+    } else {
+      console.log('✅ [EmailService] Gmail SMTP connected & connection pool ready.');
+    }
+  });
+}
+
 // Safe mail dispatcher that checks credentials first
 const safeSendMail = async (mailOptions) => {
-  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-    console.warn(`⚠️ [EmailService] EMAIL_USER or EMAIL_PASS not configured in backend/.env or hosting environment. Email to "${mailOptions.to}" skipped.`);
+  if (!emailUser || !emailPass) {
+    console.warn(`⚠️ [EmailService] EMAIL_USER or EMAIL_PASS not configured. Email to "${mailOptions.to}" skipped.`);
     return false;
   }
   try {

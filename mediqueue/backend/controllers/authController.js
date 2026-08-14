@@ -45,12 +45,12 @@ const registerPatient = async (req, res) => {
       );
     }
 
-    // Always send fresh OTP email
-    try {
-      await sendOTPEmail(email, first_name, otp);
-    } catch (emailErr) {
+    console.log(`\n==================================================\n🔑 [OTP] Generated for ${email} (${first_name}): ${otp}\n==================================================\n`);
+
+    // Send OTP email (non-blocking so user transitions immediately)
+    sendOTPEmail(email, first_name, otp).catch(emailErr => {
       console.error('Email send error:', emailErr.message);
-    }
+    });
 
     res.status(201).json({
       success: true,
@@ -124,7 +124,12 @@ const resendOTP = async (req, res) => {
       [otp, otpExpiry, email]
     );
 
-    await sendOTPEmail(email, rows[0].first_name, otp);
+    console.log(`\n==================================================\n🔑 [OTP Resend] For ${email}: ${otp}\n==================================================\n`);
+
+    // Send OTP email (non-blocking)
+    sendOTPEmail(email, rows[0].first_name, otp).catch(emailErr => {
+      console.error('Resend OTP email error:', emailErr.message);
+    });
 
     res.json({ success: true, message: 'New OTP sent to your email.' });
   } catch (err) {
@@ -276,8 +281,12 @@ const forgotPassword = async (req, res) => {
       [otp, otpExpiry, user.id]
     );
 
-    // Reuse existing OTP email function
-    await sendOTPEmail(email, user.first_name, otp);
+    console.log(`\n==================================================\n🔑 [OTP ForgotPassword] For ${email}: ${otp}\n==================================================\n`);
+
+    // Reuse existing OTP email function (non-blocking)
+    sendOTPEmail(email, user.first_name, otp).catch(emailErr => {
+      console.error('Forgot password OTP email error:', emailErr.message);
+    });
     res.json({ success: true, message: 'OTP sent to your email. Valid for 10 minutes.' });
   } catch (err) {
     console.error('forgotPassword error:', err);
