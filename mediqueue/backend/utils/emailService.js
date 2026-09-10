@@ -1,7 +1,7 @@
 const nodemailer = require('nodemailer');
 
-const emailUser = (process.env.EMAIL_USER || 'ashokdhas9066@gmail.com').trim();
-const emailPass = (process.env.EMAIL_PASS || 'agsl jihg wyam dove').replace(/\s+/g, '');
+const emailUser = (process.env.EMAIL_USER || '').trim();
+const emailPass = (process.env.EMAIL_PASS || '').replace(/\s+/g, '');
 
 // Create transporter with pooled connections and faster TLS handshake
 const transporter = nodemailer.createTransport({
