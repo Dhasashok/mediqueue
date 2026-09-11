@@ -85,6 +85,9 @@ const FindHospital = () => {
             <p className="fh-search-sub">
               City General Hospital, Pune · {filtered.length} department{filtered.length !== 1 ? 's' : ''} available
             </p>
+            <p className="fh-mobile-instruction">
+              👉 Tap any department to select a doctor & book
+            </p>
           </div>
           <div className="fh-search-box">
             <Search size={16} className="fh-search-icon" color="#0d9488" />
@@ -153,6 +156,11 @@ const FindHospital = () => {
                         <h3 className="fhdc-name">{d.name}</h3>
                         <p className="fhdc-desc">{d.description}</p>
                       </div>
+
+                      {/* Mobile action button */}
+                      <span className="fhdc-mobile-tap-btn" style={{ background: meta.light, color: meta.color }}>
+                        Book
+                      </span>
                     </div>
 
                     {/* Book button / footer */}
