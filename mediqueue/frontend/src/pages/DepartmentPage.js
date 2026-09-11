@@ -195,15 +195,10 @@ const DepartmentPage = () => {
                       <span className="ddp-sub">Per Visit · No Extra Fee</span>
                     </div>
 
-                    {/* Mobile Price Row */}
-                    <div className="doc-mobile-price-bar">
-                      <span className="dmpb-label">Consultation Fee</span>
-                      <span className="dmpb-amount">₹{parseFloat(doc.consultation_fee).toLocaleString('en-IN')}</span>
-                    </div>
-
                     <button className="btn btn-primary doc-book-btn" onClick={() => handleBook(doc.id)}>
                       <Calendar size={16} />
                       <span>Book Appointment</span>
+                      <span className="doc-mobile-btn-fee">· ₹{parseFloat(doc.consultation_fee).toLocaleString('en-IN')}</span>
                     </button>
                   </div>
                 </div>
