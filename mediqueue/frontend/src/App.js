@@ -16,11 +16,9 @@ import PatientDashboard from './dashboards/PatientDashboard';
 import DoctorDashboard from './dashboards/DoctorDashboard';
 import AdminDashboard from './dashboards/AdminDashboard';
 import ForgotPassword from './pages/ForgotPassword';
+import BottomNav from './components/BottomNav';
 import './App.css';
 import './Mobile.css';
-
-
-
 
 const ProtectedRoute = ({ children, roles }) => {
   const { user, loading } = useAuth();
@@ -35,7 +33,7 @@ const AppContent = () => {
   return (
     <Router>
       <Navbar />
-      <main>
+      <main className="app-main">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
@@ -52,6 +50,7 @@ const AppContent = () => {
         </Routes>
       </main>
       <Footer />
+      <BottomNav />
       <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} />
     </Router>
   );

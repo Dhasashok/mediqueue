@@ -294,10 +294,111 @@
   .doctor-queue-row { grid-template-columns: 1fr; }
   .analytics-grid { grid-template-columns: repeat(2, 1fr); }
 }
-@media (max-width: 600px) {
-  .dash-stats { grid-template-columns: 1fr 1fr; }
-  .dash-header-row { flex-direction: column; align-items: flex-start; }
+@media (max-width: 680px) {
+  .dash-stats { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .dash-stat-card { padding: 14px 12px; gap: 10px; }
+  .stat-icon-box { width: 42px; height: 42px; border-radius: 12px; }
+  .ds-val { font-size: 1.45rem; }
+  .dash-header-row { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .dash-header-row .btn { width: 100%; justify-content: center; }
   .checkin-input-row { flex-direction: column; }
+
+  /* Appt Row on Mobile */
+  .appt-row {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 16px;
+    gap: 12px;
+  }
+  .appt-dept-icon {
+    display: none;
+  }
+  .appt-main {
+    width: 100%;
+  }
+  .appt-actions-col {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-top: 4px;
+    border-top: 1px solid #f1f5f9;
+    padding-top: 10px;
+  }
+  .appt-action-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 8px 12px;
+    font-size: 0.82rem;
+  }
+
+  /* Live queue card on mobile */
+  .live-queue-card {
+    padding: 18px 16px;
+  }
+  .lq-body {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+  }
+  .lq-position {
+    order: 1;
+    margin-bottom: 4px;
+  }
+  .lq-info {
+    order: 2;
+  }
+  .lq-timer {
+    order: 3;
+    padding: 12px;
+    background: #f8fafc;
+    border-radius: 14px;
+    border: 1px solid #e2e8f0;
+  }
+}
+
+/* ── Digital QR Pass Modal Styling ───────────────────── */
+.qr-pass-barcode-frame {
+  background: #ffffff;
+  border: 2px dashed #0d9488;
+  border-radius: 18px;
+  padding: 18px;
+  text-align: center;
+  margin: 0 auto 18px;
+  max-width: 260px;
+  box-shadow: 0 8px 24px rgba(13, 148, 136, 0.08);
+}
+.qr-pass-img {
+  width: 190px;
+  height: 190px;
+  display: block;
+  margin: 0 auto 10px;
+  border-radius: 10px;
+}
+.qr-pass-token-badge {
+  display: inline-block;
+  background: #f0fdfa;
+  color: #0f766e;
+  font-weight: 700;
+  font-size: 0.8rem;
+  padding: 4px 12px;
+  border-radius: 999px;
+  letter-spacing: 0.5px;
+}
+.appt-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  border-radius: 10px;
+}
+.spin-slow {
+  animation: spin 5s linear infinite;
+}
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 /* ── QR Scanner ───────────────────────────────────────── */

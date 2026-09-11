@@ -1,11 +1,16 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { User, Stethoscope, Settings, Eye, EyeOff, ShieldCheck, Check } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import './Auth.css';
 
 const roles = ['patient', 'doctor', 'admin'];
-const roleIcons = { patient: '👤', doctor: '🩺', admin: '⚙️' };
+const roleIcons = {
+  patient: <User size={16} strokeWidth={2.4} />,
+  doctor: <Stethoscope size={16} strokeWidth={2.4} />,
+  admin: <Settings size={16} strokeWidth={2.4} />
+};
 const roleLabels = { patient: 'Patient', doctor: 'Doctor', admin: 'Admin' };
 
 const Login = () => {
@@ -13,6 +18,7 @@ const Login = () => {
   const navigate = useNavigate();
   const [role, setRole] = useState('patient');
   const [form, setForm] = useState({ email: '', password: '' });
+  const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
@@ -54,18 +60,20 @@ const Login = () => {
       {/* ── Left Panel ──────────────────────────────── */}
       <div className="auth-left">
         <div className="auth-left-content">
-          <span className="auth-left-icon">🏥</span>
+          <div className="auth-brand-badge">
+            <ShieldCheck size={36} color="#5eead4" />
+          </div>
           <h2>Welcome Back to City General Hospital</h2>
           <p>Sign in to manage your appointments, view your QR tickets, and track your queue status in real-time.</p>
 
           <ul className="auth-benefits">
             {['Book appointments in 2 minutes', 'Get your QR code instantly', 'Track real-time queue status', 'View predicted wait times'].map((b, i) => (
-              <li key={i}><span>✓</span>{b}</li>
+              <li key={i}><span><Check size={13} strokeWidth={3} /></span>{b}</li>
             ))}
           </ul>
 
           <div className="auth-hospital-tag">
-            <span>🏥</span>
+            <span className="aht-icon"><Stethoscope size={24} color="#5eead4" /></span>
             <div>
               <strong>City General Hospital, Pune</strong>
               <small>12 Departments · 200+ Doctors · Online 24/7</small>
@@ -86,39 +94,51 @@ const Login = () => {
               <button key={r} type="button"
                 className={`role-tab ${role === r ? 'active' : ''}`}
                 onClick={() => { setRole(r); setErrors({}); }}>
-                {roleIcons[r]} {roleLabels[r]}
+                {roleIcons[r]} <span>{roleLabels[r]}</span>
               </button>
             ))}
           </div>
 
-          <form onSubmit={handleSubmit} autoComplete="off">
+          <form onSubmit={handleSubmit} autoComplete="on">
             <div className="form-group">
               <label>Email Address</label>
               <input
                 type="email" placeholder="you@example.com"
                 value={form.email}
                 onChange={e => handleChange('email', e.target.value)}
-                autoComplete="off"
+                autoComplete="username"
+                inputMode="email"
               />
               {errors.email && <p className="error">⚠ {errors.email}</p>}
             </div>
 
             <div className="form-group">
               <label>Password</label>
-              <input
-                type="password" placeholder="Enter your password"
-                value={form.password}
-                onChange={e => handleChange('password', e.target.value)}
-                autoComplete="off"
-              />
+              <div className="password-input-wrap">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="Enter your password"
+                  value={form.password}
+                  onChange={e => handleChange('password', e.target.value)}
+                  autoComplete="current-password"
+                />
+                <button
+                  type="button"
+                  className="password-toggle-btn"
+                  onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
               {errors.password && <p className="error">⚠ {errors.password}</p>}
               <p style={{ textAlign: 'right', marginTop: 8 }}>
-                <Link to="/forgot-password" style={{ color: '#0d9488', fontSize: '0.8rem', fontWeight: 600 }}>Forgot Password?</Link>
+                <Link to="/forgot-password" style={{ color: '#0d9488', fontSize: '0.85rem', fontWeight: 600, display: 'inline-block', padding: '6px 0' }}>Forgot Password?</Link>
               </p>
             </div>
 
             <button type="submit" className="auth-submit-btn" disabled={loading}>
-              {loading ? '⏳ Signing in...' : 'Sign In →'}
+              {loading ? 'Signing in...' : 'Sign In →'}
             </button>
           </form>
 

@@ -1,6 +1,18 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import {
+  Calendar,
+  CheckCircle2,
+  Activity,
+  Users,
+  QrCode,
+  FileText,
+  X,
+  RotateCcw,
+  RefreshCw,
+  Ticket
+} from 'lucide-react';
 import { getMyAppointments, cancelAppointment } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import API from '../services/api';
@@ -342,7 +354,7 @@ const PatientDashboard = () => {
         {/* Stats */}
         <div className="dash-stats">
           <div className="dash-stat-card">
-            <div className="stat-icon-box blue"><span>📅</span></div>
+            <div className="stat-icon-box blue"><Calendar size={22} color="#2563eb" /></div>
             <div>
               <p className="ds-val">{upcoming.length}</p>
               <p className="ds-label">Upcoming</p>
@@ -350,7 +362,7 @@ const PatientDashboard = () => {
             </div>
           </div>
           <div className="dash-stat-card">
-            <div className="stat-icon-box green"><span>✅</span></div>
+            <div className="stat-icon-box green"><CheckCircle2 size={22} color="#16a34a" /></div>
             <div>
               <p className="ds-val">{appointments.filter(a=>a.status==='Completed').length}</p>
               <p className="ds-label">Completed</p>
@@ -358,7 +370,7 @@ const PatientDashboard = () => {
             </div>
           </div>
           <div className="dash-stat-card">
-            <div className="stat-icon-box teal"><span>🏥</span></div>
+            <div className="stat-icon-box teal"><Activity size={22} color="#0d9488" /></div>
             <div>
               <p className="ds-val">{appointments.length}</p>
               <p className="ds-label">Total Visits</p>
@@ -366,11 +378,11 @@ const PatientDashboard = () => {
             </div>
           </div>
           <div className="dash-stat-card">
-            <div className="stat-icon-box purple"><span>📊</span></div>
+            <div className="stat-icon-box purple"><Users size={22} color="#7c3aed" /></div>
             <div>
               <p className="ds-val">{checkedIn.length}</p>
               <p className="ds-label">In Queue</p>
-              <span className={`ds-trend ${checkedIn.length > 0 ? 'up' : 'neutral'}`}>{checkedIn.length > 0 ? '🟢 Live' : '● None'}</span>
+              <span className={`ds-trend ${checkedIn.length > 0 ? 'up' : 'neutral'}`}>{checkedIn.length > 0 ? '● Live Now' : '● None'}</span>
             </div>
           </div>
         </div>
@@ -384,16 +396,23 @@ const PatientDashboard = () => {
               <div className="lq-header">
                 <div className="lq-title">
                   <span className="live-dot"></span>
-                  <span>LIVE Queue Status</span>
+                  <span>Live OPD Queue Status</span>
                 </div>
-                <span className="badge badge-green">Checked In ✓</span>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  {appt.qr_code_data && (
+                    <button className="btn btn-outline btn-sm" onClick={() => setQrModal(appt)} style={{ borderColor: '#0d9488', color: '#0d9488', display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                      <QrCode size={14} /> <span>Pass</span>
+                    </button>
+                  )}
+                  <span className="badge badge-green">Checked In</span>
+                </div>
               </div>
 
               <div className="lq-body">
                 <div className="lq-position">
                   <div className={`pos-circle ${q?.position === 1 ? 'pos-current' : ''}`}>
                     <span className="pos-num">#{q?.position || '–'}</span>
-                    <span className="pos-label">{q?.position === 1 ? 'Current' : 'Position'}</span>
+                    <span className="pos-label">{q?.position === 1 ? 'Current Turn' : 'In Line'}</span>
                   </div>
                 </div>
 
@@ -425,7 +444,7 @@ const PatientDashboard = () => {
                   ) : (
                     <div className={`timer-box ${secs <= 0 ? 'current' : 'waiting'}`}>
                       <span className="timer-val">{formatTime(secs)}</span>
-                      <span className="timer-label">{secs <= 0 ? 'Getting close!' : 'Est. Wait'}</span>
+                      <span className="timer-label">{secs <= 0 ? 'Approaching turn' : 'Est. Wait'}</span>
                       {secs > 0 && <span className="timer-sub">~{q?.waitMins || q?.deptAvg || 20} min total</span>}
                     </div>
                   )}
@@ -437,14 +456,16 @@ const PatientDashboard = () => {
                   <div className="lq-progress-bar">
                     <div className="lq-progress-fill" style={{ width: `${Math.max(5, 100 - (q.patientsAhead * 20))}%` }}></div>
                   </div>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>
-                    {q.patientsAhead === 0 ? '🎉 You are next!' : `${q.patientsAhead} patient${q.patientsAhead!==1?'s':''} ahead`}
+                  <span style={{ fontSize: '0.78rem', color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <Users size={13} />
+                    {q.patientsAhead === 0 ? 'You are next in line!' : `${q.patientsAhead} patient${q.patientsAhead!==1?'s':''} ahead`}
                   </span>
                 </div>
               )}
 
               <div className="lq-footer">
-                🔄 Auto-refreshes every 15 seconds · Avg consultation: {q?.deptAvg || 20} min/patient (real data)
+                <RefreshCw size={12} className="spin-slow" />
+                <span>Auto-refreshes every 15 seconds · Department avg: {q?.deptAvg || 20} min/consultation</span>
               </div>
             </div>
           );
@@ -468,11 +489,11 @@ const PatientDashboard = () => {
             <div className="loading-screen"><div className="spinner"></div></div>
           ) : displayed.length === 0 ? (
             <div className="empty-dash">
-              <div className="empty-icon">📋</div>
-              <p>No {activeTab} appointments</p>
+              <div className="empty-icon"><Calendar size={48} color="#94a3b8" /></div>
+              <p>No {activeTab} appointments found</p>
               {activeTab==='upcoming' && (
                 <button className="btn btn-primary btn-sm" onClick={()=>navigate('/find-hospital')}>
-                  Book Now
+                  Book Appointment Now
                 </button>
               )}
             </div>
@@ -490,42 +511,49 @@ const PatientDashboard = () => {
                         <span className={`badge ${sb.cls}`}>{sb.label}</span>
                       </div>
                       <p className="appt-dept">{a.dept_name} · {a.time_slot}</p>
-                      {/* FIXED: was a.appointment_date?.split('T')[0] */}
-                      <p className="appt-date">📅 {displayDate(a.appointment_date)} · 🎫 {a.booking_id}</p>
+                      <p className="appt-date">
+                        <Calendar size={13} /> {displayDate(a.appointment_date)} &nbsp;·&nbsp; <Ticket size={13} /> {a.booking_id}
+                      </p>
                       {a.status==='Checked-In' && queueData[a.id] && (
                         <p className="appt-queue-inline">
-                          🔴 Queue #{queueData[a.id].position} · {queueData[a.id].patientsAhead} ahead · ~{queueData[a.id].waitMins} min wait
+                          <span className="live-dot" style={{ width: 6, height: 6 }}></span>
+                          Queue #{queueData[a.id].position} · {queueData[a.id].patientsAhead} ahead · ~{queueData[a.id].waitMins} min wait
                         </p>
                       )}
                     </div>
                     <div className="appt-actions-col">
                       {/* QR — only for active appointments */}
                       {a.qr_code_data && a.status !== 'Completed' && a.status !== 'Cancelled' && a.status !== 'No-Show' && (
-                        <button className="btn btn-outline btn-sm" onClick={()=>setQrModal(a)}>📲 QR</button>
+                        <button className="btn btn-outline btn-sm appt-action-btn" onClick={()=>setQrModal(a)}>
+                          <QrCode size={14} />
+                          <span>QR Pass</span>
+                        </button>
                       )}
                       {/* Prescription — completed appointments */}
                       {a.status==='Completed' && (
-                        <button className="btn btn-outline btn-sm"
+                        <button className="btn btn-outline btn-sm appt-action-btn"
                           style={{borderColor:'#0d9488',color:'#0d9488'}}
                           disabled={rxLoading===a.id}
                           onClick={()=>handleViewRx(a)}>
-                          {rxLoading===a.id ? '⏳' : '📋 Prescription'}
+                          <FileText size={14} />
+                          <span>{rxLoading===a.id ? 'Loading...' : 'Prescription'}</span>
                         </button>
                       )}
-                      {/* Reschedule — Booked appointments (cancel + rebook same doctor) */}
 
                       {/* Cancel — Booked appointments */}
                       {a.status==='Booked' && (
-                        <button className="btn btn-danger btn-sm" onClick={()=>handleCancel(a)}>
-                          Cancel
+                        <button className="btn btn-danger btn-sm appt-action-btn" onClick={()=>handleCancel(a)}>
+                          <X size={14} />
+                          <span>Cancel</span>
                         </button>
                       )}
                       {/* Rebook — Completed, Cancelled, No-Show */}
                       {['Completed','Cancelled','No-Show'].includes(a.status) && (
-                        <button className="btn btn-outline btn-sm"
+                        <button className="btn btn-outline btn-sm appt-action-btn"
                           style={{borderColor:'#0d9488',color:'#0d9488'}}
                           onClick={()=>navigate(`/book/${a.doctor_id}`)}>
-                          📅 Rebook
+                          <RotateCcw size={14} />
+                          <span>Rebook</span>
                         </button>
                       )}
                     </div>
@@ -822,33 +850,35 @@ const PatientDashboard = () => {
       {/* QR Modal */}
       {qrModal && (
         <div className="modal-overlay" onClick={()=>setQrModal(null)}>
-          <div className="modal" onClick={e=>e.stopPropagation()}>
+          <div className="modal qr-pass-modal" onClick={e=>e.stopPropagation()}>
             <div className="modal-header">
-              <h3>📲 QR Entry Pass</h3>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <QrCode size={20} color="#0d9488" />
+                <h3 style={{ margin: 0 }}>Digital Queue Pass</h3>
+              </div>
               <button className="modal-close" onClick={()=>setQrModal(null)}>✕</button>
             </div>
-            <p style={{color:'var(--muted)',marginBottom:16,fontSize:'0.875rem'}}>
-              Show this at reception to join the queue
+            <p style={{color:'var(--muted)',marginBottom:16,fontSize:'0.84rem'}}>
+              Scan this barcode at hospital kiosk or reception to verify entry
             </p>
-            <div style={{textAlign:'center',marginBottom:16}}>
+            <div className="qr-pass-barcode-frame">
               <img
                 src={qrModal.qr_code_data || localStorage.getItem(`mq_offline_qr_${qrModal.booking_id}`)}
                 alt="QR Pass"
-                style={{width:200,height:200,borderRadius:8,border:'2px solid var(--border)'}}
+                className="qr-pass-img"
               />
+              <span className="qr-pass-token-badge">Token: {qrModal.booking_id}</span>
             </div>
             <div className="qr-details">
-              <div className="qr-row"><span>Booking ID</span><strong>{qrModal.booking_id}</strong></div>
               <div className="qr-row"><span>Doctor</span><strong>Dr. {qrModal.first_name} {qrModal.last_name}</strong></div>
               <div className="qr-row"><span>Department</span><strong>{qrModal.dept_name}</strong></div>
-              {/* FIXED: was qrModal.appointment_date?.split('T')[0] */}
               <div className="qr-row">
                 <span>Date & Slot</span>
-                <strong>{displayDate(qrModal.appointment_date)} · {qrModal.time_slot}</strong>
+                <strong style={{ color: '#0d9488' }}>{displayDate(qrModal.appointment_date)} · {qrModal.time_slot}</strong>
               </div>
             </div>
             <button className="btn btn-primary" style={{width:'100%',marginTop:16}} onClick={()=>setQrModal(null)}>
-              Close
+              Done
             </button>
           </div>
         </div>

@@ -9,6 +9,7 @@
   .container { padding: 0 16px; }
   .section { padding: 40px 0; }
   .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; gap: 14px; }
+  .app-main { padding-bottom: 68px; }
 
   /* Prevent iOS Safari automatic zoom on input focus */
   input:not([type="checkbox"]):not([type="radio"]), select, textarea {

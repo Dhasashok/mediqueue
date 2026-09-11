@@ -1,16 +1,32 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import {
+  Heart,
+  Brain,
+  Activity,
+  Baby,
+  Pill,
+  Eye,
+  MapPin,
+  Phone,
+  Clock,
+  Zap,
+  Target,
+  Award,
+  CheckCircle2,
+  ArrowRight
+} from 'lucide-react';
 import './About.css';
 
 const departments = [
-  { name: 'Cardiology',     desc: 'Heart & vascular care',   icon: '❤️' },
-  { name: 'Neurology',      desc: 'Brain & nervous system',  icon: '🧠' },
-  { name: 'Orthopedics',    desc: 'Bones, joints & muscles', icon: '🦴' },
-  { name: 'Pediatrics',     desc: "Children's health",       icon: '👶' },
-  { name: 'Dermatology',    desc: 'Skin care & treatment',   icon: '💊' },
-  { name: 'Gynecology',     desc: "Women's health",          icon: '🌸' },
-  { name: 'ENT',            desc: 'Ear, Nose & Throat',      icon: '👂' },
-  { name: 'Ophthalmology',  desc: 'Eye care & surgery',      icon: '👁️' },
+  { name: 'Cardiology',     desc: 'Heart & vascular care',   icon: <Heart size={26} color="#ef4444" /> },
+  { name: 'Neurology',      desc: 'Brain & nervous system',  icon: <Brain size={26} color="#8b5cf6" /> },
+  { name: 'Orthopedics',    desc: 'Bones, joints & muscles', icon: <Activity size={26} color="#f59e0b" /> },
+  { name: 'Pediatrics',     desc: "Children's health",       icon: <Baby size={26} color="#f97316" /> },
+  { name: 'Dermatology',    desc: 'Skin care & treatment',   icon: <Pill size={26} color="#ec4899" /> },
+  { name: 'Gynecology',     desc: "Women's health",          icon: <Heart size={26} color="#f43f5e" /> },
+  { name: 'ENT',            desc: 'Ear, Nose & Throat',      icon: <Activity size={26} color="#06b6d4" /> },
+  { name: 'Ophthalmology',  desc: 'Eye care & surgery',      icon: <Eye size={26} color="#6366f1" /> },
 ];
 
 const accreditations = [
@@ -23,7 +39,7 @@ const accreditations = [
 ];
 
 const About = () => (
-  <div>
+  <div className="about-page">
 
     {/* ── Hero ──────────────────────────────────────────── */}
     <section className="about-hero">
@@ -34,15 +50,18 @@ const About = () => (
           <span style={{ color: '#cbd5e1' }}>About</span>
         </div>
         <h1>About City General Hospital</h1>
-        <p>NABH Accredited · 24/7 Emergency · 200+ Doctors · Pune, Maharashtra</p>
+        <p>NABH Accredited · 24/7 Emergency Care · 200+ Specialist Doctors · Pune, Maharashtra</p>
 
         {/* Pill Bar */}
         <div className="about-pill-bar">
-          <span className="about-pill">📍 MG Road, Pune – 411001</span>
-          <span className="about-pill">📞 020-1234-5678</span>
-          <span className="about-pill">⏰ Mon–Sat: 8AM–8PM</span>
-          <span className="about-pill emergency">🚨 Emergency: 24/7</span>
-          <span className="about-pill active">🟢 Online Booking Active</span>
+          <span className="about-pill"><MapPin size={13} /> MG Road, Pune – 411001</span>
+          <span className="about-pill"><Phone size={13} /> 020-1234-5678</span>
+          <span className="about-pill"><Clock size={13} /> Mon–Sat: 8AM–8PM</span>
+          <span className="about-pill emergency"><Zap size={13} /> Emergency: 24/7</span>
+          <span className="about-pill active">
+            <span className="hero-badge-dot" style={{ display: 'inline-block', marginRight: 4 }}></span>
+            Online Booking Active
+          </span>
         </div>
       </div>
     </section>
@@ -70,18 +89,24 @@ const About = () => (
 
           {/* Right: Vision + Accreditations */}
           <div className="vision-box">
-            <div className="vision-tag">🎯 Our Vision</div>
+            <div className="vision-tag">
+              <Target size={15} color="#0d9488" />
+              <span>Our Vision</span>
+            </div>
             <h3>India's Most Patient-Centric Hospital</h3>
             <p>To become India's most patient-centric hospital, where every patient receives timely, quality care with dignity and compassion.</p>
 
             <div className="divider"></div>
 
-            <div className="accred-title">🏆 Accreditations & Certifications</div>
+            <div className="accred-title">
+              <Award size={18} color="#0d9488" />
+              <span>Accreditations & Certifications</span>
+            </div>
             <ul className="accred-list">
               {accreditations.map((a, i) => (
                 <li key={i} className="accred-item">
-                  <span className="accred-check">✓</span>
-                  {a}
+                  <CheckCircle2 size={16} color="#0d9488" style={{ flexShrink: 0 }} />
+                  <span>{a}</span>
                 </li>
               ))}
             </ul>
@@ -108,8 +133,9 @@ const About = () => (
           ))}
         </div>
         <div style={{ textAlign: 'center', marginTop: 40 }}>
-          <Link to="/find-hospital" className="btn btn-primary btn-lg">
-            View All Departments & Book →
+          <Link to="/find-hospital" className="btn btn-primary btn-lg" style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+            <span>View All Departments & Book</span>
+            <ArrowRight size={18} />
           </Link>
         </div>
       </div>
@@ -124,17 +150,17 @@ const About = () => (
         </div>
         <div className="contact-grid-new">
           <div className="contact-card-new">
-            <div className="contact-icon-box">📍</div>
+            <div className="contact-icon-box"><MapPin size={24} color="#0d9488" /></div>
             <h3>Address</h3>
             <p>MG Road, Pune – 411001<br />Maharashtra, India</p>
           </div>
           <div className="contact-card-new">
-            <div className="contact-icon-box">📞</div>
+            <div className="contact-icon-box"><Phone size={24} color="#0d9488" /></div>
             <h3>Phone</h3>
             <p>General: 020-1234-5678<br />Emergency: 102 / 108</p>
           </div>
           <div className="contact-card-new">
-            <div className="contact-icon-box">⏰</div>
+            <div className="contact-icon-box"><Clock size={24} color="#0d9488" /></div>
             <h3>Working Hours</h3>
             <p>Mon–Sat: 8AM – 8PM<br />Emergency: 24/7</p>
           </div>

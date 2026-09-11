@@ -111,6 +111,34 @@
   box-shadow: 0 0 0 4px rgba(13,148,136,0.1);
 }
 .form-group input::placeholder { color: #94a3b8; }
+.password-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+.password-input-wrap input {
+  padding-right: 48px;
+}
+.password-toggle-btn {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: color 0.18s;
+  min-height: 40px;
+  min-width: 40px;
+}
+.password-toggle-btn:hover {
+  color: #0d9488;
+}
 .form-group .error {
   color: #ef4444; font-size: 0.75rem; margin-top: 5px;
   display: flex; align-items: center; gap: 4px;
@@ -252,10 +280,10 @@
     background: linear-gradient(135deg, #0f172a, #0d9488);
     border-radius: 16px;
     margin: 0 auto 14px;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ctext y='44' x='8' font-size='40'%3E%F0%9F%8F%A5%3C/text%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 24 24' fill='none' stroke='%235eead4' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 2v20M2 12h20'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: center;
-    background-size: 32px;
+    background-size: 28px;
     box-shadow: 0 8px 24px rgba(13,148,136,0.3);
   }
 

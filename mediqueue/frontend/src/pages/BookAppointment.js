@@ -1,10 +1,25 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import {
+  ArrowLeft,
+  Calendar,
+  Clock,
+  Star,
+  Globe,
+  IndianRupee,
+  ShieldCheck,
+  CheckCircle2,
+  User,
+  QrCode,
+  Check,
+  Bot,
+  AlertCircle
+} from 'lucide-react';
 import { getDoctorById, getDoctorSlots, bookAppointment } from '../services/api';
 import './BookAppointment.css';
 
-// Fix timezone — use local date not UTC
+// Local date formatting
 const formatLocalDate = (d) => {
   const year = d.getFullYear();
   const month = String(d.getMonth() + 1).padStart(2, '0');
@@ -12,11 +27,7 @@ const formatLocalDate = (d) => {
   return `${year}-${month}-${day}`;
 };
 
-// ── Arrival Time Calculator ────────────────────────────────
-// Dynamically divides each 2-hour slot according to department consultation capacity
-// Patient #1: Slot Start -> Slot Start + dist
-// Patient #2: Slot Start + dist -> Slot Start + 2*dist
-// Patient #k: Slot Start + (k-1)*dist -> Slot Start + k*dist
+// Arrival window calculation
 const calcArrivalWindow = (timeSlot, patientsBefore, distributedMins) => {
   if (!timeSlot) return null;
   const dist = (distributedMins && distributedMins > 0) ? distributedMins : 20;
@@ -28,7 +39,6 @@ const calcArrivalWindow = (timeSlot, patientsBefore, distributedMins) => {
   const position = (patientsBefore != null ? patientsBefore : 0) + 1;
   const turnStart = slotStart + (position - 1) * dist;
 
-  // Staggered arrival window: arrive 30 mins (or treatment duration) before turn starts
   const buffer = Math.max(15, Math.min(30, dist));
   const arriveFrom = Math.max(0, turnStart - buffer);
   const arriveBy   = turnStart;
@@ -61,14 +71,13 @@ const getDaysFromToday = (count = 7) => {
       label: dayNames[d.getDay()],
       date: d.getDate(),
       month: monthNames[d.getMonth()],
-      full: formatLocalDate(d),  // ← Fixed: local date
+      full: formatLocalDate(d),
       isToday: i === 0
     });
   }
   return days;
 };
 
-// Clean display date
 const displayDate = (dateStr) => {
   if (!dateStr) return '';
   return dateStr.split('T')[0];
@@ -76,8 +85,9 @@ const displayDate = (dateStr) => {
 
 const BookAppointment = () => {
   const { doctorId } = useParams();
-  //const { user } = useAuth();
   const navigate = useNavigate();
+  const formRef = useRef(null);
+
   const [doctor, setDoctor] = useState(null);
   const [days] = useState(getDaysFromToday(7));
   const [selectedDate, setSelectedDate] = useState(getDaysFromToday(7)[0].full);
@@ -117,8 +127,14 @@ const BookAppointment = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!validate()) return;
+    if (e) e.preventDefault();
+    if (!validate()) {
+      // If validation fails on mobile, scroll to form
+      if (formRef.current) {
+        formRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      return;
+    }
     setLoading(true);
     try {
       const res = await bookAppointment({
@@ -131,7 +147,8 @@ const BookAppointment = () => {
       });
       if (res.data.success) {
         setSuccessData(res.data.appointment);
-        toast.success('🎉 Appointment booked successfully!');
+        toast.success('Appointment booked successfully!');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     } catch (err) {
       toast.error(err.response?.data?.message || 'Booking failed. Try again.');
@@ -141,11 +158,13 @@ const BookAppointment = () => {
   };
 
   if (!doctor) return (
-    <div>
+    <div className="book-page">
       <section className="page-header">
         <div className="container">
-          <div className="breadcrumb"><span>Home</span> <span>›</span> <span>Find Hospital</span> <span>›</span> <span>Book Appointment</span></div>
-          <h1>📅 Schedule Appointment</h1>
+          <div className="breadcrumb">
+            <Link to="/">Home</Link> <span>›</span> <Link to="/find-hospital">Find Hospital</Link> <span>›</span> <span>Schedule</span>
+          </div>
+          <h1>Schedule Appointment</h1>
         </div>
       </section>
       <section className="section" style={{ paddingTop: 32 }}>
@@ -177,92 +196,98 @@ const BookAppointment = () => {
 
   // Success page
   if (successData) {
+    const arrival = calcArrivalWindow(
+      successData.time_slot,
+      successData.patients_before ?? 0,
+      parseFloat(successData.distributed_mins) || (120 / (successData.slot_capacity || 6))
+    );
+
     return (
       <div className="success-page">
-        <div className="success-card card">
-          <div className="success-confetti-ring">🎉</div>
-          <h2>Appointment Confirmed!</h2>
-          <p>Your booking is confirmed. Show your QR code at reception to join the queue.</p>
-          <div className="booking-summary">
-            <div className="summary-row"><span>Booking ID</span><strong>{successData.booking_id}</strong></div>
-            <div className="summary-row"><span>Doctor</span><strong>Dr. {successData.first_name} {successData.last_name}</strong></div>
-            <div className="summary-row"><span>Department</span><strong>{successData.dept_name}</strong></div>
-            <div className="summary-row"><span>Date</span><strong>{displayDate(successData.appointment_date)}</strong></div>
-            <div className="summary-row"><span>Time Slot</span><strong>{successData.time_slot}</strong></div>
-            <div className="summary-row"><span>Est. Wait</span><strong style={{color:'#0d9488'}}>~{successData.predicted_wait_time} min</strong></div>
-          </div>
-
-          {/* Arrival Time Guidance */}
-          {(() => {
-            const arrival = calcArrivalWindow(
-              successData.time_slot,
-              successData.patients_before ?? 0,
-              parseFloat(successData.distributed_mins) || (120 / (successData.slot_capacity || 6))
-            );
-            if (!arrival) return null;
-            return (
-              <div style={{
-                background: 'linear-gradient(135deg,#eff6ff,#f0fdf4)',
-                border: '1.5px solid #0d9488', borderRadius: 12,
-                padding: '16px 18px', marginBottom: 16, textAlign: 'left'
-              }}>
-                <p style={{ fontWeight: 800, color: '#0d9488', margin: '0 0 10px',
-                  fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: 8 }}>
-                  🏥 Suggested Arrival Time
-                </p>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  gap: 12, margin: '10px 0' }}>
-                  <div style={{ textAlign: 'center' }}>
-                    <p style={{ margin: 0, fontSize: '0.7rem', color: '#64748b',
-                      fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 }}>Arrive From</p>
-                    <p style={{ margin: '4px 0 0', fontSize: '1.4rem', fontWeight: 800,
-                      color: '#0f172a' }}>{arrival.arriveFrom}</p>
-                  </div>
-                  <div style={{ color: '#0d9488', fontSize: '1.5rem', fontWeight: 300 }}>—</div>
-                  <div style={{ textAlign: 'center' }}>
-                    <p style={{ margin: 0, fontSize: '0.7rem', color: '#64748b',
-                      fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 }}>Arrive By</p>
-                    <p style={{ margin: '4px 0 0', fontSize: '1.4rem', fontWeight: 800,
-                      color: '#0f172a' }}>{arrival.arriveBy}</p>
-                  </div>
-                </div>
-                <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: 10, marginTop: 6 }}>
-                  <p style={{ margin: 0, fontSize: '0.75rem', color: '#475569', lineHeight: 1.6 }}>
-                    📍 You are patient <strong>#{arrival.position}</strong> in this slot
-                    &nbsp;·&nbsp; Your turn starts around <strong>{arrival.turnTime}</strong>
-                  </p>
-                  <p style={{ margin: '4px 0 0', fontSize: '0.72rem', color: '#94a3b8' }}>
-                    Arrival window based on {successData.dept_name} avg consultation time
-                  </p>
-                </div>
-              </div>
-            );
-          })()}
-
-          {/* ML Wait Time Explanation */}
-          <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 10, padding: 16, marginBottom: 20, textAlign: 'left' }}>
-            <p style={{ fontWeight: 700, marginBottom: 6, color: '#15803d' }}>🤖 ML Predicted Wait Time</p>
-            <p style={{ fontSize: '0.82rem', color: '#166534' }}>
-              Estimated wait of <strong>~{successData.predicted_wait_time} minutes</strong> is calculated based on:
-            </p>
-            <ul style={{ fontSize: '0.8rem', color: '#166534', marginTop: 6, paddingLeft: 16 }}>
-              <li>Department average consultation time</li>
-              <li>Number of patients already booked</li>
-              <li>Time slot demand</li>
-            </ul>
-          </div>
-
-          {successData.qr_code_data && (
-            <div className="qr-section">
-              <p className="qr-section-title">📲 Your QR Entry Pass</p>
-              <p className="qr-section-sub">Show this at reception to skip the line instantly</p>
-              <img src={successData.qr_code_data} alt="QR Entry Pass" className="qr-img" />
+        <div className="success-ticket-card">
+          <div className="st-header">
+            <div className="st-icon-badge">
+              <CheckCircle2 size={36} color="#0d9488" />
             </div>
-          )}
+            <h2>Appointment Confirmed</h2>
+            <p>Show your digital QR pass at reception for instant queue entry</p>
+          </div>
 
-          <div className="success-actions">
+          <div className="st-body">
+            <div className="st-summary-grid">
+              <div className="st-item">
+                <span>Booking ID</span>
+                <strong>{successData.booking_id}</strong>
+              </div>
+              <div className="st-item">
+                <span>Doctor</span>
+                <strong>Dr. {successData.first_name} {successData.last_name}</strong>
+              </div>
+              <div className="st-item">
+                <span>Department</span>
+                <strong>{successData.dept_name}</strong>
+              </div>
+              <div className="st-item">
+                <span>Appointment Date</span>
+                <strong>{displayDate(successData.appointment_date)}</strong>
+              </div>
+              <div className="st-item">
+                <span>Time Slot</span>
+                <strong style={{ color: '#0d9488' }}>{successData.time_slot}</strong>
+              </div>
+              <div className="st-item">
+                <span>Est. Wait Time</span>
+                <strong style={{ color: '#0d9488' }}>~{successData.predicted_wait_time} min</strong>
+              </div>
+            </div>
+
+            {/* Arrival Guidance Card */}
+            {arrival && (
+              <div className="st-arrival-box">
+                <div className="st-arrival-title">
+                  <Clock size={16} color="#0d9488" />
+                  <span>Personalized Arrival Window</span>
+                </div>
+                <div className="st-arrival-times">
+                  <div>
+                    <span className="st-arrival-lbl">Arrive From</span>
+                    <strong className="st-arrival-val">{arrival.arriveFrom}</strong>
+                  </div>
+                  <span className="st-arrival-arrow">→</span>
+                  <div>
+                    <span className="st-arrival-lbl">Arrive By</span>
+                    <strong className="st-arrival-val">{arrival.arriveBy}</strong>
+                  </div>
+                </div>
+                <p className="st-arrival-note">
+                  Queue Position: <strong>#{arrival.position}</strong> · Estimated consultation start: <strong>{arrival.turnTime}</strong>
+                </p>
+              </div>
+            )}
+
+            {/* Perforated Divider */}
+            <div className="st-perforated">
+              <span className="st-notch st-notch-left"></span>
+              <div className="st-dashed-line"></div>
+              <span className="st-notch st-notch-right"></span>
+            </div>
+
+            {/* QR Section */}
+            {successData.qr_code_data && (
+              <div className="st-qr-wrap">
+                <div className="st-qr-title">
+                  <QrCode size={18} color="#0d9488" />
+                  <span>Digital Entry Pass</span>
+                </div>
+                <img src={successData.qr_code_data} alt="QR Entry Pass" className="st-qr-img" />
+                <span className="st-qr-hint">Scan at Hospital Kiosk / Reception</span>
+              </div>
+            )}
+          </div>
+
+          <div className="st-footer-actions">
             <button className="btn btn-primary btn-lg" onClick={() => navigate('/patient/dashboard')}>
-              📊 Go to Dashboard
+              Go to My Queue
             </button>
             <button className="btn btn-outline btn-lg" onClick={() => navigate('/find-hospital')}>
               Book Another
@@ -274,60 +299,116 @@ const BookAppointment = () => {
   }
 
   return (
-    <div>
-      <section className="page-header">
+    <div className="book-page">
+      {/* Mobile Top Navigation */}
+      <div className="book-mobile-topbar">
+        <div className="container book-topbar-inner">
+          <Link to={`/department/${doctor.department_id}`} className="book-back-link">
+            <ArrowLeft size={20} />
+            <span>Doctors</span>
+          </Link>
+          <span className="book-topbar-doc">Dr. {doctor.first_name} {doctor.last_name}</span>
+        </div>
+      </div>
+
+      <section className="page-header book-page-header">
         <div className="container">
           <div className="breadcrumb">
-            <a href="/">Home</a> <span>›</span>
-            <a href="/find-hospital">Find Hospital</a> <span>›</span>
-            <span>Schedule Appointment</span>
+            <Link to="/">Home</Link> <span>›</span>
+            <Link to="/find-hospital">Find Hospital</Link> <span>›</span>
+            <Link to={`/department/${doctor.department_id}`}>{doctor.department_name}</Link> <span>›</span>
+            <span>Schedule</span>
           </div>
-          <h1>📅 Schedule Appointment</h1>
-          <p>Select a date and 2-hour slot. Estimated wait time is predicted automatically.</p>
+          <h1>Schedule Appointment</h1>
+          <p>Choose your preferred date and slot. Wait times update automatically via ML model.</p>
         </div>
       </section>
 
-      <section className="section" style={{ paddingTop: 32 }}>
+      {/* Booking Step Indicator */}
+      <div className="container book-stepper-wrap">
+        <div className="book-stepper">
+          <div className={`step-node ${selectedSlot ? 'completed' : 'active'}`}>
+            <span className="step-circle">{selectedSlot ? <Check size={14} /> : '1'}</span>
+            <span className="step-text">Date & Slot</span>
+          </div>
+          <div className={`step-line-bar ${selectedSlot ? 'filled' : ''}`}></div>
+          <div className={`step-node ${selectedSlot ? 'active' : ''}`}>
+            <span className="step-circle">2</span>
+            <span className="step-text">Patient Details</span>
+          </div>
+          <div className="step-line-bar"></div>
+          <div className="step-node">
+            <span className="step-circle">3</span>
+            <span className="step-text">QR Pass</span>
+          </div>
+        </div>
+      </div>
+
+      <section className="section" style={{ paddingTop: 16 }}>
         <div className="container book-layout">
 
-          {/* Left: Doctor Info */}
+          {/* Left: Doctor Info Card */}
           <div className="book-left">
             <div className="card doc-info-card">
-              <div className="book-doc-photo">{doctor.first_name[0]}{doctor.last_name[0]}</div>
+              <div className="book-doc-avatar-wrap">
+                <div className="book-doc-photo">{doctor.first_name[0]}{doctor.last_name[0]}</div>
+                <span className="book-doc-verified" title="Verified Specialist">
+                  <ShieldCheck size={16} color="white" />
+                </span>
+              </div>
               <p className="book-doc-name">Dr. {doctor.first_name} {doctor.last_name}</p>
               <span className="book-spec">{doctor.specialization}</span>
+
               <div className="book-doc-meta">
-                <div className="book-doc-meta-row"><span>⭐</span><span>{doctor.years_of_experience} Years Experience</span></div>
-                <div className="book-doc-meta-row"><span>🗣️</span><span>{doctor.languages_known}</span></div>
-                <div className="book-doc-meta-row"><span>🏥</span><span>{doctor.department_name}</span></div>
-                <div className="book-doc-meta-row"><span>💰</span><span>₹{doctor.consultation_fee} Consultation Fee</span></div>
+                <div className="book-doc-meta-row">
+                  <Star size={15} color="#f59e0b" fill="#f59e0b" />
+                  <span>{doctor.years_of_experience} Years Experience</span>
+                </div>
+                <div className="book-doc-meta-row">
+                  <Globe size={15} color="#64748b" />
+                  <span>{doctor.languages_known}</span>
+                </div>
+                <div className="book-doc-meta-row">
+                  <IndianRupee size={15} color="#0d9488" />
+                  <strong>₹{doctor.consultation_fee} Consultation Fee</strong>
+                </div>
               </div>
+
               <div className="avail-bar" style={{ marginTop: 16 }}>
                 <div className="avail-label">
-                  <span>Today's Availability</span>
+                  <span>Today's Slot Occupancy</span>
                   <span>{slots.reduce((a, s) => a + s.booked, 0)} booked</span>
                 </div>
                 <div className="prog-bar">
-                  <div className="prog-fill" style={{ width: `${Math.min(90, slots.reduce((a, s) => a + s.booked, 0) * 6)}%` }}></div>
+                  <div className="prog-fill" style={{ width: `${Math.min(95, slots.reduce((a, s) => a + s.booked, 0) * 8)}%` }}></div>
                 </div>
               </div>
             </div>
+
             <div className="ml-info-box">
-              <h4>🤖 ML Wait Prediction</h4>
-              <p>Wait times are predicted using a <strong>Random Forest model</strong> trained on real hospital data. Each slot shows estimated wait based on current bookings.</p>
+              <h4>
+                <Bot size={18} color="#15803d" />
+                ML Queue Time Prediction
+              </h4>
+              <p>Wait times are forecasted via a Random Forest model trained on hospital throughput data. Each slot displays real-time expected wait.</p>
             </div>
           </div>
 
           {/* Right: Booking Form */}
           <div className="book-right">
-            <div className="card">
-              <h3>Choose Date &amp; Time Slot</h3>
+            <div className="card book-form-card">
+              <h3 className="book-card-heading">Select Date & Time Slot</h3>
 
-              <p className="book-sub">Select Date</p>
+              <div className="book-sub-header">
+                <Calendar size={16} color="#0d9488" />
+                <span>1. Select Appointment Date</span>
+              </div>
+
               <div className="date-picker">
                 {days.map(d => (
                   <button
                     key={d.full}
+                    type="button"
                     className={`date-btn ${selectedDate === d.full ? 'active' : ''}`}
                     onClick={() => { setSelectedDate(d.full); setSelectedSlot(''); }}
                   >
@@ -339,51 +420,80 @@ const BookAppointment = () => {
                 ))}
               </div>
 
-              <p className="book-sub">Select 2-Hour Slot</p>
+              <div className="book-sub-header" style={{ marginTop: 24 }}>
+                <Clock size={16} color="#0d9488" />
+                <span>2. Select 2-Hour Window Slot</span>
+              </div>
+
               {loadingSlots ? (
                 <div className="slot-skeleton-grid">
                   {[1,2,3,4,5,6].map(i => <div key={i} className="skeleton slot-skeleton"></div>)}
                 </div>
               ) : (
                 <div className="slots-grid">
-                  {slots.map(s => (
-                    <button
-                      key={s.slot}
-                      className={`slot-btn ${selectedSlot === s.slot ? 'active' : ''} ${(s.available === 0 || s.is_past || s.is_leave) ? 'full' : ''}`}
-                      onClick={() => !s.is_past && !s.is_leave && s.available > 0 && setSelectedSlot(s.slot)}
-                      disabled={s.available === 0 || s.is_past || !!s.is_leave}
-                    >
-                      <span className="slot-time">{s.slot}</span>
-                      {!s.is_past && !s.is_leave && (
-                        <span className="slot-count">{s.booked}/{s.booked + s.available} booked</span>
-                      )}
-                      {!s.is_past && !s.is_leave && s.available > 0 && (
-                        <span className="slot-wait">⏱ ~{s.predicted_wait}m</span>
-                      )}
-                      {s.is_past && <span className="slot-full">⏰ Ended</span>}
-                      {!s.is_past && !!s.is_leave && <span className="slot-full">🏖 Leave</span>}
-                      {!s.is_past && !s.is_leave && s.available === 0 && <span className="slot-full">Full</span>}
-                    </button>
-                  ))}
+                  {slots.map(s => {
+                    const isAvailable = s.available > 0 && !s.is_past && !s.is_leave;
+                    return (
+                      <button
+                        key={s.slot}
+                        type="button"
+                        className={`slot-btn ${selectedSlot === s.slot ? 'active' : ''} ${!isAvailable ? 'full' : ''}`}
+                        onClick={() => isAvailable && setSelectedSlot(s.slot)}
+                        disabled={!isAvailable}
+                      >
+                        <span className="slot-time">{s.slot}</span>
+                        {isAvailable && (
+                          <>
+                            <span className="slot-count">{s.booked}/{s.booked + s.available} booked</span>
+                            <span className="slot-wait">
+                              <Clock size={11} /> ~{s.predicted_wait}m wait
+                            </span>
+                          </>
+                        )}
+                        {s.is_past && <span className="slot-full">Ended</span>}
+                        {!s.is_past && !!s.is_leave && <span className="slot-full">Leave</span>}
+                        {!s.is_past && !s.is_leave && s.available === 0 && <span className="slot-full">Full</span>}
+                      </button>
+                    );
+                  })}
                 </div>
               )}
-              {errors.slot && <p className="error" style={{ marginTop: 6 }}>{errors.slot}</p>}
+              {errors.slot && (
+                <p className="error" style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <AlertCircle size={14} /> {errors.slot}
+                </p>
+              )}
 
               <div className="book-form-divider"></div>
 
-              <form onSubmit={handleSubmit}>
+              <form ref={formRef} onSubmit={handleSubmit}>
+                <div className="book-sub-header" style={{ marginBottom: 16 }}>
+                  <User size={16} color="#0d9488" />
+                  <span>3. Patient Details</span>
+                </div>
+
                 <div className="form-row">
                   <div className="form-group">
                     <label>Full Name *</label>
-                    <input placeholder="Your full name" value={form.full_name} onChange={e => setForm({ ...form, full_name: e.target.value })} />
+                    <input
+                      placeholder="e.g. Rahul Sharma"
+                      value={form.full_name}
+                      onChange={e => setForm({ ...form, full_name: e.target.value })}
+                    />
                     {errors.full_name && <p className="error">{errors.full_name}</p>}
                   </div>
                   <div className="form-group">
                     <label>Phone Number *</label>
-                    <input placeholder="10-digit number" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
+                    <input
+                      type="tel"
+                      placeholder="10-digit mobile number"
+                      value={form.phone}
+                      onChange={e => setForm({ ...form, phone: e.target.value })}
+                    />
                     {errors.phone && <p className="error">{errors.phone}</p>}
                   </div>
                 </div>
+
                 <div className="form-row">
                   <div className="form-group">
                     <label>Age *</label>
@@ -391,7 +501,7 @@ const BookAppointment = () => {
                       type="number"
                       min="1"
                       max="120"
-                      placeholder="25"
+                      placeholder="28"
                       value={form.age}
                       onChange={e => {
                         const cleaned = e.target.value.replace(/[^0-9]/g, '');
@@ -411,19 +521,54 @@ const BookAppointment = () => {
                     {errors.gender && <p className="error">{errors.gender}</p>}
                   </div>
                 </div>
+
                 <div className="form-group">
                   <label>Reason for Visit <span style={{ fontWeight: 400, color: 'var(--muted)' }}>(Optional)</span></label>
-                  <textarea rows={3} placeholder="Brief description of symptoms or reason for visit..." value={form.reason_for_visit} onChange={e => setForm({ ...form, reason_for_visit: e.target.value })} />
+                  <textarea
+                    rows={3}
+                    placeholder="Brief description of symptoms or consultation reason..."
+                    value={form.reason_for_visit}
+                    onChange={e => setForm({ ...form, reason_for_visit: e.target.value })}
+                  />
                 </div>
-                <button type="submit" className="book-submit-btn" disabled={loading}>
-                  {loading ? <><span>⏳</span> Booking your slot...</> : <><span>📅</span> Confirm Appointment</>}
+
+                <button type="submit" className="book-submit-btn desktop-submit-btn" disabled={loading}>
+                  {loading ? (
+                    <>Processing booking...</>
+                  ) : (
+                    <>
+                      <Calendar size={18} />
+                      <span>Confirm Appointment (₹{doctor.consultation_fee})</span>
+                    </>
+                  )}
                 </button>
-                <p className="book-submit-note">🔒 A QR entry pass will be generated after confirmation</p>
+                <p className="book-submit-note">
+                  <ShieldCheck size={14} color="#0d9488" />
+                  Instant QR Entry Pass generated upon booking
+                </p>
               </form>
             </div>
           </div>
         </div>
       </section>
+
+      {/* Floating Sticky Bottom Bar for Mobile Ergonomics */}
+      <div className={`mobile-floating-book-bar ${selectedSlot ? 'visible' : ''}`}>
+        <div className="mfb-left">
+          <div className="mfb-slot-lbl">Selected Slot</div>
+          <div className="mfb-slot-val">{selectedSlot || 'Select a slot'}</div>
+          <div className="mfb-fee">₹{doctor.consultation_fee} fee</div>
+        </div>
+        <button
+          type="button"
+          className="mfb-btn"
+          disabled={loading || !selectedSlot}
+          onClick={handleSubmit}
+        >
+          {loading ? 'Booking...' : 'Confirm'}
+        </button>
+      </div>
+
     </div>
   );
 };

@@ -1,18 +1,39 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { User, Stethoscope, Eye, EyeOff, ShieldCheck, Check, Lock } from 'lucide-react';
 import { registerPatient, registerDoctor, getDepartments } from '../services/api';
 import API from '../services/api';
 import './Auth.css';
 
 const bloodGroups = ['A+','A-','B+','B-','AB+','AB-','O+','O-'];
 
-const Field = ({ name, label, type, placeholder, required, value, onChange, error, children }) => (
+const Field = ({ name, label, type, placeholder, required, value, onChange, error, children, isPassword, showPassword, onTogglePassword }) => (
   <div className="form-group">
     <label>{label}{required && ' *'}</label>
     {children || (
-      <input type={type||'text'} placeholder={placeholder} value={value}
-        onChange={e => onChange(name, e.target.value)} autoComplete="new-password" />
+      isPassword ? (
+        <div className="password-input-wrap">
+          <input
+            type={showPassword ? 'text' : 'password'}
+            placeholder={placeholder}
+            value={value}
+            onChange={e => onChange(name, e.target.value)}
+            autoComplete="new-password"
+          />
+          <button
+            type="button"
+            className="password-toggle-btn"
+            onClick={onTogglePassword}
+            aria-label={showPassword ? 'Hide password' : 'Show password'}
+          >
+            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+          </button>
+        </div>
+      ) : (
+        <input type={type||'text'} placeholder={placeholder} value={value}
+          onChange={e => onChange(name, e.target.value)} autoComplete="new-password" />
+      )
     )}
     {error && <p className="error">⚠ {error}</p>}
   </div>
@@ -131,6 +152,8 @@ const Register = () => {
   const [errors, setErrors] = useState({});
   const [showOTP, setShowOTP] = useState(false);
   const [registeredEmail, setRegisteredEmail] = useState('');
+  const [showPass, setShowPass] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const [form, setForm] = useState({
     first_name:'', last_name:'', email:'', phone:'',
@@ -207,18 +230,20 @@ const Register = () => {
       {/* ── Left Panel ──────────────────────────────── */}
       <div className="auth-left">
         <div className="auth-left-content">
-          <span className="auth-left-icon">🏥</span>
+          <div className="auth-brand-badge">
+            <ShieldCheck size={36} color="#5eead4" />
+          </div>
           <h2>Join City General Hospital</h2>
           <p>Create your account to book appointments and manage your healthcare online.</p>
 
           <ul className="auth-benefits">
             {['Free to register and use', 'Book appointments instantly', 'Digital QR entry pass', 'Real-time queue tracking', 'Email notifications'].map((b, i) => (
-              <li key={i}><span>✓</span>{b}</li>
+              <li key={i}><span><Check size={13} strokeWidth={3} /></span>{b}</li>
             ))}
           </ul>
 
           <div className="auth-hospital-tag">
-            <span>🔒</span>
+            <span className="aht-icon"><Lock size={22} color="#5eead4" /></span>
             <div>
               <strong>Your data is secure</strong>
               <small>Your health data stays private and protected.</small>
@@ -234,9 +259,13 @@ const Register = () => {
 
           <div className="reg-tabs">
             <button type="button" className={`reg-tab ${role==='patient'?'active':''}`}
-              onClick={()=>{ setRole('patient'); setErrors({}); }}>👤 Patient</button>
+              onClick={()=>{ setRole('patient'); setErrors({}); }}>
+              <User size={16} style={{display:'inline',verticalAlign:'middle',marginRight:6}} /> Patient
+            </button>
             <button type="button" className={`reg-tab ${role==='doctor'?'active':''}`}
-              onClick={()=>{ setRole('doctor'); setErrors({}); }}>🩺 Doctor</button>
+              onClick={()=>{ setRole('doctor'); setErrors({}); }}>
+              <Stethoscope size={16} style={{display:'inline',verticalAlign:'middle',marginRight:6}} /> Doctor
+            </button>
           </div>
 
           <form onSubmit={handleSubmit} autoComplete="off" className="auth-scroll">
@@ -308,10 +337,16 @@ const Register = () => {
             )}
 
             <div className="form-row">
-              <Field name="password" label="Password" type="password" placeholder="Min. 8 characters" required
-                value={form.password} onChange={handleChange} error={errors.password} />
-              <Field name="confirm_password" label="Confirm Password" type="password" placeholder="Repeat password" required
-                value={form.confirm_password} onChange={handleChange} error={errors.confirm_password} />
+              <Field
+                name="password" label="Password" type="password" placeholder="Min. 8 characters" required
+                value={form.password} onChange={handleChange} error={errors.password}
+                isPassword showPassword={showPass} onTogglePassword={() => setShowPass(!showPass)}
+              />
+              <Field
+                name="confirm_password" label="Confirm Password" type="password" placeholder="Repeat password" required
+                value={form.confirm_password} onChange={handleChange} error={errors.confirm_password}
+                isPassword showPassword={showConfirm} onTogglePassword={() => setShowConfirm(!showConfirm)}
+              />
             </div>
 
             <div className="form-group">

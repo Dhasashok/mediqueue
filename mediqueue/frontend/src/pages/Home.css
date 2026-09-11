@@ -50,6 +50,8 @@
   color: #5eead4; padding: 8px 18px; border-radius: 999px;
   font-size: 0.8rem; font-weight: 700; margin-bottom: 28px;
   border: 1px solid rgba(94,234,212,0.2);
+  max-width: 100%;
+  box-sizing: border-box;
 }
 .hero-badge-dot {
   width: 8px; height: 8px; border-radius: 50%; background: #22c55e;
@@ -312,6 +314,19 @@
 .cta-v2-btns { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
 
 /* ════════════════════════════════════════════════════════
+   MOBILE SPECIFIC ENHANCEMENTS (Modern Health App UI)
+   Default: hidden on desktop (> 768px)
+════════════════════════════════════════════════════════ */
+.mobile-search-pill,
+.quick-actions-mobile,
+.mobile-live-glance {
+  display: none;
+}
+.desktop-only-btns {
+  display: flex;
+}
+
+/* ════════════════════════════════════════════════════════
    RESPONSIVE
 ════════════════════════════════════════════════════════ */
 @media (max-width: 1024px) {
@@ -331,6 +346,180 @@
   .steps-row { flex-direction: column; gap: 16px; }
   .step-arrow { display: none; }
   .features-grid-v2 { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 768px) {
+  .desktop-only-btns {
+    display: none !important;
+  }
+
+  /* Mobile Search Pill */
+  .mobile-search-pill {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(12px);
+    padding: 14px 20px;
+    border-radius: 999px;
+    color: #64748b;
+    font-size: 0.88rem;
+    font-weight: 500;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    margin: 18px auto 22px;
+    max-width: 440px;
+    width: 100%;
+    text-decoration: none;
+    border: 1px solid rgba(13, 148, 136, 0.25);
+    transition: transform 0.2s ease;
+  }
+  .mobile-search-pill:active {
+    transform: scale(0.98);
+  }
+
+  /* Mobile 4-Up Quick Actions Grid */
+  .quick-actions-mobile {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin: 0 auto 24px;
+    max-width: 440px;
+    width: 100%;
+  }
+  .qa-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    font-size: 0.74rem;
+    font-weight: 600;
+    color: #e2e8f0;
+    transition: transform 0.15s ease;
+  }
+  .qa-item:active {
+    transform: scale(0.94);
+  }
+  .qa-icon-circle {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+  }
+  .qa-teal {
+    background: rgba(13, 148, 136, 0.25);
+    color: #2dd4bf;
+    border: 1px solid rgba(45, 212, 191, 0.35);
+  }
+  .qa-blue {
+    background: rgba(37, 99, 235, 0.25);
+    color: #60a5fa;
+    border: 1px solid rgba(96, 165, 250, 0.35);
+  }
+  .qa-purple {
+    background: rgba(139, 92, 246, 0.25);
+    color: #c084fc;
+    border: 1px solid rgba(192, 132, 252, 0.35);
+  }
+  .qa-red {
+    background: rgba(239, 68, 68, 0.25);
+    color: #f87171;
+    border: 1px solid rgba(248, 113, 113, 0.35);
+  }
+
+  /* Mobile Live Queue Glance Card */
+  .mobile-live-glance {
+    display: block;
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(94, 234, 212, 0.25);
+    border-radius: 16px;
+    padding: 14px 18px;
+    margin: 0 auto 24px;
+    max-width: 440px;
+    width: 100%;
+    text-align: left;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+  }
+  .mlg-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .mlg-live-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #5eead4;
+    font-size: 0.82rem;
+  }
+  .mlg-pulse-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #22c55e;
+    animation: pulse-green 1.8s infinite;
+  }
+  .mlg-pill {
+    font-size: 0.68rem;
+    background: rgba(255, 255, 255, 0.12);
+    color: #cbd5e1;
+    padding: 3px 8px;
+    border-radius: 999px;
+    font-weight: 600;
+  }
+  .mlg-body {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .mlg-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .mlg-stat span {
+    font-size: 0.72rem;
+    color: #94a3b8;
+  }
+  .mlg-stat strong {
+    font-size: 0.95rem;
+    color: #f8fafc;
+    font-weight: 700;
+  }
+  .mlg-divider {
+    width: 1px;
+    height: 28px;
+    background: rgba(255, 255, 255, 0.15);
+  }
+
+  /* Horizontal Snapping Carousel on Mobile */
+  .horizontal-scroll-mobile {
+    display: flex !important;
+    overflow-x: auto !important;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    padding: 6px 12px 18px 12px !important;
+    gap: 16px !important;
+    scrollbar-width: none;
+    margin: 0 -16px;
+  }
+  .horizontal-scroll-mobile::-webkit-scrollbar {
+    display: none;
+  }
+  .horizontal-scroll-mobile .feature-card-v2 {
+    flex: 0 0 280px !important;
+    scroll-snap-align: center;
+    margin: 0 !important;
+  }
+  .horizontal-scroll-mobile .step-card-v2 {
+    flex: 0 0 280px !important;
+    scroll-snap-align: center;
+  }
 }
 
 @media (max-width: 600px) {
