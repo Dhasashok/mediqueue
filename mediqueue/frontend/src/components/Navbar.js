@@ -103,21 +103,14 @@ const Navbar = () => {
             )}
           </div>
 
-          <div className="nav-right-wrap">
-            <a href="tel:102" className="nav-sos-pill" aria-label="Emergency Ambulance 102">
-              <span className="sos-pulse-dot"></span>
-              <span className="sos-text">102</span>
-            </a>
-
-            <button
-              className={`hamburger ${menuOpen ? 'open' : ''}`}
-              onClick={() => setMenuOpen(!menuOpen)}
-              aria-label="Toggle menu"
-              type="button"
-            >
-              {menuOpen ? <X size={20} /> : <Menu size={20} />}
-            </button>
-          </div>
+          <button
+            className={`hamburger ${menuOpen ? 'open' : ''}`}
+            onClick={() => setMenuOpen(!menuOpen)}
+            aria-label="Toggle menu"
+            type="button"
+          >
+            {menuOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
         </div>
       </nav>
 

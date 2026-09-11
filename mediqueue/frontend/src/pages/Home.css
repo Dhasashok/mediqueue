@@ -317,13 +317,8 @@
    MOBILE SPECIFIC ENHANCEMENTS (Modern Health App UI)
    Default: hidden on desktop (> 768px)
 ════════════════════════════════════════════════════════ */
-.mobile-search-pill,
-.quick-actions-mobile,
-.mobile-live-glance {
+.quick-actions-mobile {
   display: none;
-}
-.desktop-only-btns {
-  display: flex;
 }
 
 /* ════════════════════════════════════════════════════════
@@ -349,34 +344,6 @@
 }
 
 @media (max-width: 768px) {
-  .desktop-only-btns {
-    display: none !important;
-  }
-
-  /* Mobile Search Pill */
-  .mobile-search-pill {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    background: rgba(255, 255, 255, 0.96);
-    backdrop-filter: blur(12px);
-    padding: 14px 20px;
-    border-radius: 999px;
-    color: #64748b;
-    font-size: 0.88rem;
-    font-weight: 500;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-    margin: 18px auto 22px;
-    max-width: 440px;
-    width: 100%;
-    text-decoration: none;
-    border: 1px solid rgba(13, 148, 136, 0.25);
-    transition: transform 0.2s ease;
-  }
-  .mobile-search-pill:active {
-    transform: scale(0.98);
-  }
-
   /* Mobile 4-Up Quick Actions Grid */
   .quick-actions-mobile {
     display: grid;
@@ -430,71 +397,21 @@
     border: 1px solid rgba(248, 113, 113, 0.35);
   }
 
-  /* Mobile Live Queue Glance Card */
-  .mobile-live-glance {
-    display: block;
-    background: rgba(15, 23, 42, 0.85);
-    backdrop-filter: blur(16px);
-    border: 1px solid rgba(94, 234, 212, 0.25);
-    border-radius: 16px;
-    padding: 14px 18px;
-    margin: 0 auto 24px;
-    max-width: 440px;
-    width: 100%;
-    text-align: left;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.2);
-  }
-  .mlg-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 10px;
-  }
-  .mlg-live-indicator {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: #5eead4;
-    font-size: 0.82rem;
-  }
-  .mlg-pulse-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: #22c55e;
-    animation: pulse-green 1.8s infinite;
-  }
-  .mlg-pill {
-    font-size: 0.68rem;
-    background: rgba(255, 255, 255, 0.12);
-    color: #cbd5e1;
-    padding: 3px 8px;
-    border-radius: 999px;
-    font-weight: 600;
-  }
-  .mlg-body {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  .mlg-stat {
-    display: flex;
+  /* Mobile Hero Action Buttons */
+  .hero-v2-btns {
+    display: flex !important;
     flex-direction: column;
-    gap: 2px;
+    gap: 12px;
+    width: 100%;
+    max-width: 440px;
+    margin: 0 auto 24px;
   }
-  .mlg-stat span {
-    font-size: 0.72rem;
-    color: #94a3b8;
-  }
-  .mlg-stat strong {
+  .btn-hero-primary,
+  .btn-hero-outline {
+    width: 100%;
+    justify-content: center;
+    padding: 13px 20px;
     font-size: 0.95rem;
-    color: #f8fafc;
-    font-weight: 700;
-  }
-  .mlg-divider {
-    width: 1px;
-    height: 28px;
-    background: rgba(255, 255, 255, 0.15);
   }
 
   /* Horizontal Snapping Carousel on Mobile */

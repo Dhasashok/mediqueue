@@ -68,7 +68,7 @@ const features = [
     icon: <Radio size={26} />,
     title: 'Real-Time Queue Tracking',
     desc: 'Watch your position update live — know exactly who\'s ahead of you.',
-    tag: 'Live Updates',
+    tag: 'Real-Time',
     color: '#0d9488',
     tagBg: '#ccfbf1',
     tagColor: '#0f766e',
@@ -132,7 +132,7 @@ const Home = () => {
             {/* Hospital badge */}
             <div className="hero-badge">
               <span className="hero-badge-dot"></span>
-              City General Hospital, Pune · Live OPD Active
+              City General Hospital, Pune
             </div>
 
             <h1 className="hero-v2-title">
@@ -145,12 +145,6 @@ const Home = () => {
               all from your phone. Our AI predicts real-time wait times.
             </p>
 
-            {/* Mobile Instant Search Pill */}
-            <Link to="/find-hospital" className="mobile-search-pill">
-              <Search size={18} color="#0d9488" />
-              <span>Search doctor, cardiology, or symptom...</span>
-            </Link>
-
             {/* Mobile 4-Up Quick Actions Grid */}
             <div className="quick-actions-mobile">
               <Link to="/find-hospital" className="qa-item">
@@ -159,7 +153,7 @@ const Home = () => {
               </Link>
               <Link to="/patient/dashboard" className="qa-item">
                 <div className="qa-icon-circle qa-blue"><QrCode size={20} /></div>
-                <span>Live Token</span>
+                <span>My Token</span>
               </Link>
               <Link to="/find-hospital" className="qa-item">
                 <div className="qa-icon-circle qa-purple"><Clock size={20} /></div>
@@ -171,36 +165,14 @@ const Home = () => {
               </a>
             </div>
 
-            {/* Desktop Hero Buttons */}
-            <div className="hero-v2-btns desktop-only-btns">
+            {/* Hero Buttons */}
+            <div className="hero-v2-btns">
               <Link to="/find-hospital" className="btn-hero-primary">
                 <Search size={18} /> Find Hospital & Book
               </Link>
               <Link to="/about" className="btn-hero-outline">
                 Learn More <ArrowRight size={16} />
               </Link>
-            </div>
-
-            {/* Mobile Live Queue Glance Card */}
-            <div className="mobile-live-glance">
-              <div className="mlg-top">
-                <div className="mlg-live-indicator">
-                  <span className="mlg-pulse-dot"></span>
-                  <strong>OPD Live Queue Status</strong>
-                </div>
-                <span className="mlg-pill">Updated Now</span>
-              </div>
-              <div className="mlg-body">
-                <div className="mlg-stat">
-                  <span>General Medicine</span>
-                  <strong>Now Serving: #14</strong>
-                </div>
-                <div className="mlg-divider"></div>
-                <div className="mlg-stat">
-                  <span>Avg. Wait Time</span>
-                  <strong style={{ color: '#0d9488' }}>~12 Mins</strong>
-                </div>
-              </div>
             </div>
 
             {/* Trust badges */}
@@ -220,7 +192,6 @@ const Home = () => {
                   <p className="hcard-title">City General Hospital</p>
                   <p className="hcard-sub">Pune, Maharashtra</p>
                 </div>
-                <span className="hcard-live">● Live</span>
               </div>
 
               <div className="hcard-stats">
@@ -239,7 +210,7 @@ const Home = () => {
               </div>
 
               <div className="hcard-queue">
-                <div className="hcard-queue-label">Live Queue Status</div>
+                <div className="hcard-queue-label">Queue Status</div>
                 <div className="hcard-queue-bars">
                   <div className="hcard-dept">
                     <span>Cardiology</span>
