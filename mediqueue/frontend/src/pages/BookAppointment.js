@@ -13,7 +13,8 @@ import {
   QrCode,
   Check,
   ArrowRight,
-  Edit3
+  Edit3,
+  Copy
 } from 'lucide-react';
 import { getDoctorById, getDoctorSlots, bookAppointment } from '../services/api';
 import './BookAppointment.css';
@@ -99,6 +100,15 @@ const BookAppointment = () => {
   const [successData, setSuccessData] = useState(null);
 
   const [step, setStep] = useState(1);
+  const [copiedId, setCopiedId] = useState(false);
+
+  const handleCopyBookingId = (id) => {
+    if (!id) return;
+    navigator.clipboard.writeText(id);
+    setCopiedId(true);
+    toast.success('Booking ID copied to clipboard!');
+    setTimeout(() => setCopiedId(false), 2000);
+  };
 
   useEffect(() => {
     getDoctorById(doctorId)
@@ -192,7 +202,7 @@ const BookAppointment = () => {
     </div>
   );
 
-  // Success screen
+  // Success screen — Premium Horizontal Digital Boarding Pass
   if (successData) {
     const arrival = successData.time_slot
       ? calcArrivalWindow(successData.time_slot, successData.queue_position || 1, successData.consultation_mins || 15)
@@ -201,93 +211,133 @@ const BookAppointment = () => {
     return (
       <div className="success-page">
         <div className="success-ticket-card">
-          <div className="st-header">
-            <div className="st-icon-badge">
-              <CheckCircle2 size={36} color="#10b981" />
+          {/* Main Details Column (Left on desktop) */}
+          <div className="st-main-section">
+            <div className="st-header">
+              <div className="st-header-badge-row">
+                <div className="st-icon-badge">
+                  <CheckCircle2 size={26} color="#10b981" />
+                </div>
+                <div className="st-header-text">
+                  <h2>Appointment Confirmed!</h2>
+                  <p>Your hospital OPD consultation slot has been reserved.</p>
+                </div>
+              </div>
             </div>
-            <h2>Appointment Confirmed!</h2>
-            <p>Your hospital OPD consultation slot has been reserved.</p>
+
+            <div className="st-body">
+              {/* Full-width Booking ID banner with 1-click Copy */}
+              <div className="st-booking-banner">
+                <div className="st-bb-info">
+                  <span className="st-bb-label">CONFIRMED BOOKING ID</span>
+                  <strong className="st-bb-code">{successData.booking_id}</strong>
+                </div>
+                <button
+                  type="button"
+                  className="btn-copy-booking"
+                  onClick={() => handleCopyBookingId(successData.booking_id)}
+                  title="Copy Booking ID"
+                >
+                  {copiedId ? <Check size={14} color="#10b981" /> : <Copy size={14} />}
+                  <span>{copiedId ? 'Copied' : 'Copy ID'}</span>
+                </button>
+              </div>
+
+              {/* Summary Details Grid (No text truncation) */}
+              <div className="st-summary-grid">
+                <div className="st-item">
+                  <span>Doctor</span>
+                  <strong>Dr. {successData.first_name} {successData.last_name}</strong>
+                </div>
+                <div className="st-item">
+                  <span>Department</span>
+                  <strong>{successData.dept_name}</strong>
+                </div>
+                <div className="st-item">
+                  <span>Appointment Date</span>
+                  <strong>{displayDate(successData.appointment_date)}</strong>
+                </div>
+                <div className="st-item">
+                  <span>Time Slot Window</span>
+                  <strong className="st-val-highlight">{successData.time_slot}</strong>
+                </div>
+                <div className="st-item">
+                  <span>Est. Wait Time</span>
+                  <strong style={{ color: '#0d9488' }}>~{successData.predicted_wait_time} min</strong>
+                </div>
+                {doctor?.consultation_fee && (
+                  <div className="st-item">
+                    <span>Consultation Fee</span>
+                    <strong style={{ color: '#0f766e' }}>₹{parseInt(doctor.consultation_fee, 10).toLocaleString('en-IN')}</strong>
+                  </div>
+                )}
+              </div>
+
+              {/* Personalized Arrival Window */}
+              {arrival && (
+                <div className="st-arrival-box">
+                  <div className="st-arrival-title">
+                    <Clock size={15} color="#0d9488" />
+                    <span>Personalized Arrival Window</span>
+                  </div>
+                  <div className="st-arrival-times">
+                    <div>
+                      <span className="st-arrival-lbl">Arrive From</span>
+                      <strong className="st-arrival-val">{arrival.arriveFrom}</strong>
+                    </div>
+                    <span className="st-arrival-arrow">→</span>
+                    <div>
+                      <span className="st-arrival-lbl">Arrive By</span>
+                      <strong className="st-arrival-val">{arrival.arriveBy}</strong>
+                    </div>
+                  </div>
+                  <p className="st-arrival-note">
+                    Queue Position: <strong>#{arrival.position}</strong> · Estimated consultation start: <strong>{arrival.turnTime}</strong>
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
 
-          <div className="st-body">
-            <div className="st-summary-grid">
-              <div className="st-item">
-                <span>Booking ID</span>
-                <strong>{successData.booking_id}</strong>
-              </div>
-              <div className="st-item">
-                <span>Doctor</span>
-                <strong>Dr. {successData.first_name} {successData.last_name}</strong>
-              </div>
-              <div className="st-item">
-                <span>Department</span>
-                <strong>{successData.dept_name}</strong>
-              </div>
-              <div className="st-item">
-                <span>Appointment Date</span>
-                <strong>{displayDate(successData.appointment_date)}</strong>
-              </div>
-              <div className="st-item">
-                <span>Time Slot</span>
-                <strong style={{ color: '#0d9488' }}>{successData.time_slot}</strong>
-              </div>
-              <div className="st-item">
-                <span>Est. Wait Time</span>
-                <strong style={{ color: '#0d9488' }}>~{successData.predicted_wait_time} min</strong>
-              </div>
-            </div>
+          {/* Perforated Divider (Vertical on desktop, horizontal on mobile) */}
+          <div className="st-perforated-wrap">
+            <span className="st-notch st-notch-top-or-left"></span>
+            <div className="st-divider-line"></div>
+            <span className="st-notch st-notch-bottom-or-right"></span>
+          </div>
 
-            {/* Arrival Guidance Card */}
-            {arrival && (
-              <div className="st-arrival-box">
-                <div className="st-arrival-title">
-                  <Clock size={16} color="#0d9488" />
-                  <span>Personalized Arrival Window</span>
-                </div>
-                <div className="st-arrival-times">
-                  <div>
-                    <span className="st-arrival-lbl">Arrive From</span>
-                    <strong className="st-arrival-val">{arrival.arriveFrom}</strong>
-                  </div>
-                  <span className="st-arrival-arrow">→</span>
-                  <div>
-                    <span className="st-arrival-lbl">Arrive By</span>
-                    <strong className="st-arrival-val">{arrival.arriveBy}</strong>
-                  </div>
-                </div>
-                <p className="st-arrival-note">
-                  Queue Position: <strong>#{arrival.position}</strong> · Estimated consultation start: <strong>{arrival.turnTime}</strong>
-                </p>
+          {/* QR Entry Pass & Actions Column (Right on desktop) */}
+          <div className="st-pass-section">
+            <div className="st-pass-content">
+              <div className="st-qr-title">
+                <QrCode size={18} color="#0d9488" />
+                <span>Digital Entry Pass</span>
               </div>
-            )}
-
-            {/* Perforated Divider */}
-            <div className="st-perforated">
-              <span className="st-notch st-notch-left"></span>
-              <div className="st-dashed-line"></div>
-              <span className="st-notch st-notch-right"></span>
-            </div>
-
-            {/* QR Section */}
-            {successData.qr_code_data && (
-              <div className="st-qr-wrap">
-                <div className="st-qr-title">
-                  <QrCode size={18} color="#0d9488" />
-                  <span>Digital Entry Pass</span>
-                </div>
+              {successData.qr_code_data ? (
                 <img src={successData.qr_code_data} alt="QR Entry Pass" className="st-qr-img" />
-                <span className="st-qr-hint">Scan at Hospital Kiosk / Reception</span>
-              </div>
-            )}
-          </div>
+              ) : (
+                <div className="st-qr-img skeleton" style={{ width: 140, height: 140 }}></div>
+              )}
+              <span className="st-qr-hint">Scan at Hospital Reception / OPD Kiosk</span>
+            </div>
 
-          <div className="st-footer-actions">
-            <button className="btn btn-primary btn-lg" onClick={() => navigate('/patient/dashboard')}>
-              Go to My Queue
-            </button>
-            <button className="btn btn-outline btn-lg" onClick={() => navigate('/find-hospital')}>
-              Book Another
-            </button>
+            <div className="st-footer-actions">
+              <button
+                type="button"
+                className="btn btn-primary st-btn-primary"
+                onClick={() => navigate('/patient/dashboard')}
+              >
+                <span>Go to My Queue</span>
+                <ArrowRight size={16} />
+              </button>
+              <button
+                type="button"
+                className="btn btn-outline st-btn-secondary"
+                onClick={() => navigate('/find-hospital')}
+              >
+                Book Another
+              </button>
+            </div>
           </div>
         </div>
       </div>
