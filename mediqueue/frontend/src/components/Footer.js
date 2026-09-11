@@ -89,22 +89,6 @@ const Footer = () => (
             <span className="fmm-badge"><ShieldCheck size={10} /> ISO</span>
           </div>
         </div>
-
-        <div className="fmm-chips">
-          <Link to="/" className="fmm-chip">Home</Link>
-          <Link to="/find-hospital" className="fmm-chip">Find Hospital</Link>
-          <Link to="/about" className="fmm-chip">About</Link>
-          <Link to="/login" className="fmm-chip">Sign In</Link>
-        </div>
-
-        <a href="tel:102" className="fmm-emergency-bar">
-          <div className="fmm-emergency-left">
-            <span className="fmm-pulse-dot"></span>
-            <Zap size={14} className="fmm-emergency-icon" />
-            <span className="fmm-emergency-title">24/7 Ambulance Hotline</span>
-          </div>
-          <strong className="fmm-emergency-num">102 / 108</strong>
-        </a>
       </div>
     </div>
 

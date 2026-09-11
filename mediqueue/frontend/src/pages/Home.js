@@ -230,14 +230,6 @@ const Home = () => {
                 </div>
               </div>
             </div>
-
-            {/* Floating badges */}
-            <div className="float-badge float-badge-1">
-              <QrCode size={16} color="#f59e0b" /> QR Pass Ready
-            </div>
-            <div className="float-badge float-badge-2">
-              <Clock size={16} color="#0d9488" /> ~15 min wait
-            </div>
           </div>
         </div>
 
