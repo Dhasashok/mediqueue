@@ -158,7 +158,7 @@ const FindHospital = () => {
                       </div>
 
                       {/* Mobile action button */}
-                      <span className="fhdc-mobile-tap-btn" style={{ background: meta.light, color: meta.color }}>
+                      <span className="fhdc-mobile-tap-btn">
                         Book
                       </span>
                     </div>
@@ -175,6 +175,8 @@ const FindHospital = () => {
         </div>
       </section>
 
+      {/* Guaranteed mobile bottom clearance spacer */}
+      <div className="fh-bottom-safe-spacer" style={{ height: '110px', width: '100%', clear: 'both' }}></div>
     </div>
   );
 };
