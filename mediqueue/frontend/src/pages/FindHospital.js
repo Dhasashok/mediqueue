@@ -5,8 +5,7 @@ import {
   MapPin,
   Phone,
   Clock,
-  Zap,
-  ChevronRight
+  Zap
 } from 'lucide-react';
 import { getDepartments } from '../services/api';
 import './FindHospital.css';
@@ -82,14 +81,16 @@ const FindHospital = () => {
       <div className="fh-search-bar">
         <div className="container fh-search-inner">
           <div className="fh-search-left">
-            <h3>Select a Department</h3>
-            <p>{filtered.length} department{filtered.length !== 1 ? 's' : ''} available</p>
+            <h2 className="fh-search-title">Book Appointment</h2>
+            <p className="fh-search-sub">
+              City General Hospital, Pune · {filtered.length} department{filtered.length !== 1 ? 's' : ''} available
+            </p>
           </div>
           <div className="fh-search-box">
-            <Search size={18} className="fh-search-icon" color="#0d9488" />
+            <Search size={16} className="fh-search-icon" color="#0d9488" />
             <input
               type="text"
-              placeholder="Search department, specialty or symptom..."
+              placeholder="Search department..."
               value={search}
               onChange={e => setSearch(e.target.value)}
             />
@@ -152,17 +153,11 @@ const FindHospital = () => {
                         <h3 className="fhdc-name">{d.name}</h3>
                         <p className="fhdc-desc">{d.description}</p>
                       </div>
-
-                      {/* Mobile Arrow */}
-                      <div className="fhdc-mobile-arrow">
-                        <ChevronRight size={20} color="#94a3b8" />
-                      </div>
                     </div>
 
                     {/* Book button / footer */}
                     <div className="fhdc-btn">
                       <span>Book Appointment</span>
-                      <ChevronRight size={15} />
                     </div>
                   </div>
                 );
