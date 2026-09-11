@@ -5,7 +5,6 @@ import {
   Search,
   Star,
   Globe,
-  IndianRupee,
   Clock,
   Users,
   ShieldCheck,
@@ -17,21 +16,19 @@ import { useAuth } from '../context/AuthContext';
 import './DepartmentPage.css';
 
 const DEPT_ICONS = {
-  Cardiology: { icon: '❤️', color: '#ef4444', light: '#fef2f2' },
-  Dermatology: { icon: '💊', color: '#ec4899', light: '#fdf2f8' },
-  Emergency: { icon: '🚑', color: '#dc2626', light: '#fef2f2' },
-  ENT: { icon: '👂', color: '#06b6d4', light: '#ecfeff' },
-  'General Medicine': { icon: '🩺', color: '#0d9488', light: '#f0fdf4' },
-  Gynecology: { icon: '🌸', color: '#f43f5e', light: '#fff1f2' },
-  Neurology: { icon: '🧠', color: '#8b5cf6', light: '#f5f3ff' },
-  Ophthalmology: { icon: '👁️', color: '#3b82f6', light: '#eff6ff' },
-  Orthopedics: { icon: '🦴', color: '#f59e0b', light: '#fffbeb' },
-  Pediatrics: { icon: '👶', color: '#f97316', light: '#fff7ed' },
-  Psychiatry: { icon: '🌱', color: '#10b981', light: '#ecfdf5' },
-  Radiology: { icon: '🔬', color: '#0ea5e9', light: '#f0f9ff' }
+  Cardiology: { icon: '❤️', color: '#ef4444', light: 'rgba(239, 68, 68, 0.15)' },
+  Dermatology: { icon: '💊', color: '#ec4899', light: 'rgba(236, 72, 153, 0.15)' },
+  Emergency: { icon: '🚑', color: '#dc2626', light: 'rgba(220, 38, 38, 0.15)' },
+  ENT: { icon: '👂', color: '#06b6d4', light: 'rgba(6, 182, 212, 0.15)' },
+  'General Medicine': { icon: '🩺', color: '#0d9488', light: 'rgba(13, 148, 136, 0.15)' },
+  Gynecology: { icon: '🌸', color: '#f43f5e', light: 'rgba(244, 63, 94, 0.15)' },
+  Neurology: { icon: '🧠', color: '#8b5cf6', light: 'rgba(139, 92, 246, 0.15)' },
+  Ophthalmology: { icon: '👁️', color: '#3b82f6', light: 'rgba(59, 130, 246, 0.15)' },
+  Orthopedics: { icon: '🦴', color: '#f59e0b', light: 'rgba(245, 158, 11, 0.15)' },
+  Pediatrics: { icon: '👶', color: '#f97316', light: 'rgba(249, 115, 22, 0.15)' },
+  Psychiatry: { icon: '🌱', color: '#10b981', light: 'rgba(16, 185, 129, 0.15)' },
+  Radiology: { icon: '🔬', color: '#0ea5e9', light: 'rgba(14, 165, 233, 0.15)' }
 };
-
-const loadColors = { Low: 'badge-green', Medium: 'badge-amber', High: 'badge-red' };
 
 const DepartmentPage = () => {
   const { id } = useParams();
@@ -64,21 +61,23 @@ const DepartmentPage = () => {
     (d.specialization && d.specialization.toLowerCase().includes(search.toLowerCase()))
   );
 
-  const deptMeta = dept?.name ? DEPT_ICONS[dept.name] || { icon: '🏥', color: '#0d9488', light: '#f0fdf4' } : null;
+  const deptMeta = dept?.name ? DEPT_ICONS[dept.name] || { icon: '🏥', color: '#0d9488', light: 'rgba(13, 148, 136, 0.15)' } : null;
 
   return (
     <div className="dept-page">
-      {/* Mobile Back Navigation Header */}
+      {/* Mobile Top Navigation Header */}
       <div className="dept-mobile-topbar">
         <div className="dept-topbar-inner">
-          <Link to="/find-hospital" className="dept-back-link">
+          <Link to="/find-hospital" className="dept-back-btn" aria-label="Back to departments">
             <ArrowLeft size={18} />
-            <span>Departments</span>
           </Link>
-          <div className="dept-topbar-right">
-            <span className="dept-topbar-title">{dept?.name || 'Department'}</span>
-            <span className="dept-topbar-badge">{doctors.length} Doctor{doctors.length !== 1 ? 's' : ''}</span>
+          <div className="dept-topbar-center">
+            <h1 className="dept-topbar-title">{dept?.name || 'Department'}</h1>
+            <span className="dept-topbar-subtitle">
+              {doctors.length} Specialist{doctors.length !== 1 ? 's' : ''} available
+            </span>
           </div>
+          <div className="dept-topbar-dummy"></div>
         </div>
       </div>
 
@@ -90,50 +89,45 @@ const DepartmentPage = () => {
               <Link to="/">Home</Link> <span>›</span> <Link to="/find-hospital">Book Appointment</Link> <span>›</span> <span>{dept?.name}</span>
             </div>
             <h1>{dept?.name || 'Department'} Specialists</h1>
-            <p>{dept?.description || 'Browse expert doctors and book instant appointments.'}</p>
+            <p>{dept?.description || 'Browse verified doctors and view real-time OPD waiting times.'}</p>
           </div>
           {deptMeta && (
-            <div className="dept-header-icon-badge" style={{ background: deptMeta.light, color: deptMeta.color }}>
+            <div className="dept-header-icon-badge" style={{ background: deptMeta.light, borderColor: deptMeta.color }}>
               <span className="dept-header-emoji">{deptMeta.icon}</span>
             </div>
           )}
         </div>
       </section>
 
-      {/* ML Prediction Banner */}
-      <div className="container dept-ml-container">
-        <div className="ml-banner">
-          <div className="ml-banner-icon">
-            <Bot size={18} color="#0d9488" />
-          </div>
-          <div className="ml-banner-text">
-            <strong>ML Live Prediction Active</strong>
-            <span>Wait times are calculated with ±5 min accuracy using real-time OPD hospital traffic.</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Doctors Section */}
+      {/* Main Section */}
       <section className="section dept-main-section">
         <div className="container">
-          <div className="dept-search-bar">
-            <div>
+          {/* Section Header Row: Title & Subtitle + AI Live Pill + Search */}
+          <div className="dept-sec-row">
+            <div className="dept-sec-left">
               <h2 className="dept-sec-title">
                 {filtered.length} Doctor{filtered.length !== 1 ? 's' : ''} Available
               </h2>
-              <span className="dept-sec-sub">Select a doctor to join queue</span>
+              <span className="dept-sec-sub">Select a doctor to book an OPD slot or join live queue</span>
             </div>
-            {doctors.length > 2 && (
-              <div className="dept-search-wrap">
-                <Search size={16} color="#94a3b8" />
-                <input
-                  className="search-input"
-                  placeholder="Search by doctor name..."
-                  value={search}
-                  onChange={e => setSearch(e.target.value)}
-                />
+
+            <div className="dept-sec-right">
+              <div className="ml-pill-badge" title="Wait times calculated using real-time OPD traffic">
+                <Bot size={15} color="#0d9488" />
+                <span><strong>AI Live Wait:</strong> ±5 min accuracy</span>
               </div>
-            )}
+              {doctors.length > 2 && (
+                <div className="dept-search-wrap">
+                  <Search size={15} color="#94a3b8" />
+                  <input
+                    className="search-input"
+                    placeholder="Search doctor..."
+                    value={search}
+                    onChange={e => setSearch(e.target.value)}
+                  />
+                </div>
+              )}
+            </div>
           </div>
 
           {loading ? (
@@ -147,66 +141,77 @@ const DepartmentPage = () => {
             <div className="doctors-list">
               {filtered.map(doc => (
                 <div key={doc.id} className="doctor-card card">
-                  {/* Doctor Left Column: Avatar + Info */}
-                  <div className="doc-left-col">
+                  {/* Column 1: Doctor Profile */}
+                  <div className="doc-profile-section">
                     <div className="doc-avatar-wrap">
                       <div className="doc-photo">{doc.first_name[0]}{doc.last_name[0]}</div>
                       <span className="doc-online-dot" title="Available for OPD"></span>
                     </div>
 
-                    <div className="doc-info">
+                    <div className="doc-profile-info">
                       <div className="doc-name-row">
-                        <div className="doc-name-title">
-                          <h3>Dr. {doc.first_name} {doc.last_name}</h3>
-                          <span className="doc-verified-badge" title="Verified Specialist">
-                            <ShieldCheck size={16} color="#0d9488" />
-                          </span>
-                        </div>
+                        <h3>Dr. {doc.first_name} {doc.last_name}</h3>
+                        <span className="doc-verified-badge" title="Verified Specialist">
+                          <ShieldCheck size={16} color="#0d9488" />
+                        </span>
+                      </div>
+
+                      <div className="doc-tag-line">
                         <span className="badge badge-teal">{doc.specialization}</span>
-                      </div>
-
-                      <div className="doc-meta">
-                        <span className="doc-meta-item">
-                          <Star size={13} color="#f59e0b" fill="#f59e0b" />
-                          {doc.years_of_experience} Yrs Exp.
-                        </span>
-                        <span className="doc-meta-item">
-                          <Globe size={13} color="#64748b" />
-                          {doc.languages_known}
-                        </span>
-                        <span className="doc-meta-item doc-fee doc-mobile-fee">
-                          <IndianRupee size={13} color="#0d9488" />
-                          {parseFloat(doc.consultation_fee).toLocaleString('en-IN')}
+                        <span className="doc-exp-tag">
+                          <Star size={12} color="#f59e0b" fill="#f59e0b" />
+                          {doc.years_of_experience} yrs exp
                         </span>
                       </div>
 
-                      <div className="doc-stats">
-                        <span className="doc-wait">
-                          <Clock size={13} />
-                          Est. Wait: ~{doc.estimated_wait} min
-                        </span>
-                        <span className={`badge ${loadColors[doc.load_level] || 'badge-gray'}`}>
-                          {doc.load_level} Demand
-                        </span>
-                        <span className="badge badge-gray doc-queue-badge">
-                          <Users size={12} />
-                          {doc.current_queue} waiting
-                        </span>
+                      <div className="doc-lang-tag">
+                        <Globe size={12} color="#64748b" />
+                        <span>{doc.languages_known}</span>
+                      </div>
+                    </div>
+
+                    {/* Mobile Price Highlight (Top right of card on mobile) */}
+                    <div className="doc-mobile-price">
+                      <span className="dmp-amount">₹{parseFloat(doc.consultation_fee).toLocaleString('en-IN')}</span>
+                      <span className="dmp-label">Fee</span>
+                    </div>
+                  </div>
+
+                  {/* Column 2: Live OPD Queue Status Center */}
+                  <div className="doc-queue-section">
+                    <div className="doc-queue-item">
+                      <Clock size={14} color="#0d9488" />
+                      <div className="dqi-text">
+                        <span className="dqi-label">Est. Wait</span>
+                        <span className="dqi-val highlight">~{doc.estimated_wait} min</span>
+                      </div>
+                    </div>
+
+                    <div className="doc-queue-item">
+                      <span className={`status-indicator ${doc.load_level?.toLowerCase()}`}></span>
+                      <div className="dqi-text">
+                        <span className="dqi-label">Traffic</span>
+                        <span className="dqi-val">{doc.load_level} Demand</span>
+                      </div>
+                    </div>
+
+                    <div className="doc-queue-item">
+                      <Users size={14} color="#64748b" />
+                      <div className="dqi-text">
+                        <span className="dqi-label">In Queue</span>
+                        <span className="dqi-val">{doc.current_queue} waiting</span>
                       </div>
                     </div>
                   </div>
 
-                  {/* Doctor Right Column: Pricing & Booking Action */}
-                  <div className="doc-action-col">
-                    <div className="doc-desktop-fee">
-                      <span className="doc-fee-label">Consultation Fee</span>
-                      <span className="doc-fee-amount">
-                        <IndianRupee size={16} />
-                        {parseFloat(doc.consultation_fee).toLocaleString('en-IN')}
-                      </span>
+                  {/* Column 3: Pricing & Action Button */}
+                  <div className="doc-booking-section">
+                    <div className="doc-desktop-price">
+                      <span className="ddp-label">Consultation Fee</span>
+                      <span className="ddp-amount">₹{parseFloat(doc.consultation_fee).toLocaleString('en-IN')}</span>
                     </div>
                     <button className="btn btn-primary doc-book-btn" onClick={() => handleBook(doc.id)}>
-                      <Calendar size={16} />
+                      <Calendar size={15} />
                       <span>Book Appointment</span>
                     </button>
                   </div>
