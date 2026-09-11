@@ -444,8 +444,11 @@
     flex-direction: column;
     align-items: stretch;
     padding: 16px;
-    gap: 14px;
+    gap: 12px;
     border-radius: 18px;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
   }
 
   /* Profile layout */
@@ -454,25 +457,47 @@
     align-items: flex-start;
     gap: 12px;
     width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+  .doc-profile-info {
+    min-width: 0;
+    flex: 1;
+    overflow: hidden;
   }
   .doc-photo {
-    width: 54px;
-    height: 54px;
+    width: 52px;
+    height: 52px;
     font-size: 1.15rem;
   }
+  .doc-name-row {
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 4px;
+  }
   .doc-name-row h3 {
-    font-size: 1.08rem;
+    font-size: 1.05rem;
+    white-space: normal;
   }
   .doc-tag-line {
     margin-bottom: 4px;
+    flex-wrap: wrap;
+    gap: 6px;
   }
   .doc-trust-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
     margin-bottom: 6px;
     font-size: 0.76rem;
+  }
+  .doc-dot-sep {
+    display: none;
   }
   .doc-perks-row {
     font-size: 0.74rem;
     gap: 8px;
+    flex-wrap: wrap;
   }
 
   /* Mobile Price Bar */
