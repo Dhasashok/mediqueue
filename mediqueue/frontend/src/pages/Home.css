@@ -480,17 +480,9 @@
     padding: 18px 16px;
   }
 
-  /* CTA compact */
+  /* Hide redundant CTA section on mobile */
   .cta-v2 {
-    padding: 44px 16px;
-  }
-  .cta-v2 h2 {
-    font-size: 1.75rem;
-    line-height: 1.25;
-  }
-  .cta-v2 p {
-    font-size: 0.88rem;
-    margin-bottom: 24px;
+    display: none !important;
   }
 }
 

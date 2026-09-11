@@ -1,19 +1,20 @@
 /* ════════════════════════════════════════════════════════
-   FOOTER — Compact Professional Footer
-   Desktop: Clean 4-column layout
-   Mobile: Ultra-compact Micro-Footer (~120px)
+   FOOTER — Clean Light Healthcare Footer
+   Desktop: Clean 4-column layout on light slate (#f8fafc)
+   Mobile: Ultra-compact Micro-Footer (~70px) merging seamlessly
+           with the white BottomNav
 ════════════════════════════════════════════════════════ */
 
 .footer-v2 {
-  background: #070d1d;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  color: #94a3b8;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+  color: #64748b;
   position: relative;
   z-index: 10;
 }
 
 .footer-body {
-  padding: 32px 0 20px;
+  padding: 36px 0 24px;
 }
 
 /* ── Desktop Grid ─────────────────────────────────────── */
@@ -36,34 +37,21 @@
   margin-bottom: 8px;
 }
 
-.footer-logo-badge {
-  width: 26px;
-  height: 26px;
-  border-radius: 7px;
-  background: linear-gradient(135deg, #0d9488, #0284c7);
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 8px rgba(13, 148, 136, 0.3);
-  flex-shrink: 0;
-}
-
 .footer-logo-text {
   font-family: 'DM Sans', -apple-system, sans-serif;
-  font-size: 1.12rem;
+  font-size: 1.15rem;
   font-weight: 800;
-  color: #f8fafc;
+  color: #0f172a;
   letter-spacing: -0.2px;
 }
 
 .footer-logo-text span {
-  color: #2dd4bf;
+  color: #0d9488;
 }
 
 .footer-tagline {
   color: #64748b;
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   line-height: 1.5;
   max-width: 260px;
   margin-bottom: 12px;
@@ -79,23 +67,24 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  background: rgba(255, 255, 255, 0.05);
-  color: #cbd5e1;
+  background: #ffffff;
+  color: #475569;
   padding: 3px 8px;
   border-radius: 6px;
   font-size: 0.68rem;
   font-weight: 600;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.03);
 }
 
 /* ── Column Titles & Links ────────────────────────────── */
 .footer-col-title {
-  color: #f8fafc;
+  color: #0f172a;
   font-family: 'DM Sans', sans-serif;
-  font-size: 0.72rem;
+  font-size: 0.74rem;
   font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 1.2px;
+  letter-spacing: 1.1px;
   margin-bottom: 12px;
   position: relative;
   padding-bottom: 8px;
@@ -126,7 +115,7 @@
 }
 
 .footer-links a:hover {
-  color: #2dd4bf;
+  color: #0d9488;
   transform: translateX(3px);
 }
 
@@ -141,8 +130,8 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.8rem;
-  color: #64748b;
+  font-size: 0.82rem;
+  color: #475569;
 }
 
 .fi-icon {
@@ -155,8 +144,8 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  background: rgba(239, 68, 68, 0.12);
-  border: 1px solid rgba(239, 68, 68, 0.25);
+  background: #fef2f2;
+  border: 1px solid #fecaca;
   border-radius: 12px;
   padding: 10px 14px;
   text-decoration: none;
@@ -164,8 +153,8 @@
 }
 
 .footer-emergency-pill:hover {
-  background: rgba(239, 68, 68, 0.2);
-  border-color: rgba(239, 68, 68, 0.4);
+  background: #fee2e2;
+  border-color: #fca5a5;
   transform: translateY(-1px);
 }
 
@@ -173,8 +162,8 @@
   width: 30px;
   height: 30px;
   border-radius: 8px;
-  background: rgba(239, 68, 68, 0.2);
-  color: #f87171;
+  background: #fee2e2;
+  color: #ef4444;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -190,27 +179,28 @@
   font-size: 0.65rem;
   font-weight: 700;
   text-transform: uppercase;
-  color: #fca5a5;
+  color: #ef4444;
   letter-spacing: 0.4px;
 }
 
 .fep-number {
   font-size: 1.05rem;
   font-weight: 800;
-  color: white;
+  color: #b91c1c;
   letter-spacing: 0.5px;
 }
 
 .fep-note {
   font-size: 0.7rem;
-  color: #64748b;
+  color: #94a3b8;
   margin-top: 6px;
 }
 
 /* ── Bottom Bar ───────────────────────────────────────── */
 .footer-bottom-v2 {
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
-  padding: 12px 0;
+  border-top: 1px solid #e2e8f0;
+  padding: 14px 0;
+  background: #ffffff;
 }
 
 .footer-bottom-inner {
@@ -240,11 +230,11 @@
 }
 
 .footer-bottom-links a:hover {
-  color: #2dd4bf;
+  color: #0d9488;
 }
 
 .footer-bottom-links span {
-  color: #334155;
+  color: #cbd5e1;
 }
 
 /* ════════════════════════════════════════════════════════
@@ -252,12 +242,14 @@
 ════════════════════════════════════════════════════════ */
 @media (max-width: 768px) {
   .footer-v2 {
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
     /* Space above fixed BottomNav (60px height + margin) */
     padding-bottom: 74px;
   }
 
   .footer-body {
-    padding: 16px 0 12px;
+    padding: 14px 0 6px;
   }
 
   /* Hide huge multi-column grid on mobile */
@@ -269,15 +261,15 @@
   .footer-mobile-micro {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 8px;
   }
 
   .fmm-top {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding-bottom: 10px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    padding-bottom: 8px;
+    border-bottom: 1px solid #e2e8f0;
   }
 
   .fmm-top .footer-logo-v2 {
@@ -293,18 +285,20 @@
     display: inline-flex;
     align-items: center;
     gap: 3px;
-    background: rgba(255, 255, 255, 0.04);
-    color: #94a3b8;
+    background: #ffffff;
+    color: #475569;
     padding: 2px 7px;
     border-radius: 5px;
     font-size: 0.65rem;
     font-weight: 600;
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    border: 1px solid #e2e8f0;
   }
 
   /* Bottom bar */
   .footer-bottom-v2 {
-    padding: 10px 0;
+    padding: 8px 0;
+    background: transparent;
+    border-top: none;
   }
 
   .footer-bottom-inner {
@@ -315,9 +309,11 @@
 
   .footer-bottom-inner p {
     font-size: 0.7rem;
+    color: #64748b;
   }
 
   .footer-bottom-links a {
     font-size: 0.7rem;
+    color: #64748b;
   }
 }
