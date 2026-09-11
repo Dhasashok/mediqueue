@@ -6,32 +6,24 @@ import {
   Phone,
   Clock,
   Zap,
-  ChevronRight,
-  Heart,
-  Stethoscope,
-  Brain,
-  Baby,
-  Pill,
-  Eye,
-  Smile,
-  Activity
+  ChevronRight
 } from 'lucide-react';
 import { getDepartments } from '../services/api';
 import './FindHospital.css';
 
 const DEPT_ICONS = {
-  'Dentistry':        { icon: <Smile size={28} />, color: '#3b82f6', light: '#eff6ff', wait: '15m' },
-  'Cardiology':       { icon: <Heart size={28} />, color: '#ef4444', light: '#fef2f2', wait: '20m' },
-  'Orthopedics':      { icon: <Activity size={28} />, color: '#f59e0b', light: '#fffbeb', wait: '12m' },
-  'General Medicine': { icon: <Stethoscope size={28} />, color: '#10b981', light: '#ecfdf5', wait: '8m' },
-  'Neurology':        { icon: <Brain size={28} />, color: '#8b5cf6', light: '#f5f3ff', wait: '25m' },
-  'Pediatrics':       { icon: <Baby size={28} />, color: '#f97316', light: '#fff7ed', wait: '10m' },
-  'Dermatology':      { icon: <Pill size={28} />, color: '#ec4899', light: '#fdf2f8', wait: '15m' },
-  'ENT':              { icon: <Activity size={28} />, color: '#06b6d4', light: '#ecfeff', wait: '10m' },
-  'Ophthalmology':    { icon: <Eye size={28} />, color: '#6366f1', light: '#eef2ff', wait: '18m' },
-  'Gynecology':       { icon: <Heart size={28} />, color: '#f43f5e', light: '#fff1f2', wait: '15m' },
-  'Radiology':        { icon: <Activity size={28} />, color: '#0ea5e9', light: '#f0f9ff', wait: '5m' },
-  'Emergency':        { icon: <Zap size={28} />, color: '#dc2626', light: '#fef2f2', wait: '< 2m' },
+  'Dentistry':        { icon: '🦷', color: '#3b82f6', light: '#eff6ff', wait: '15m' },
+  'Cardiology':       { icon: '❤️', color: '#ef4444', light: '#fef2f2', wait: '20m' },
+  'Orthopedics':      { icon: '🦴', color: '#f59e0b', light: '#fffbeb', wait: '12m' },
+  'General Medicine': { icon: '🩺', color: '#10b981', light: '#ecfdf5', wait: '8m' },
+  'Neurology':        { icon: '🧠', color: '#8b5cf6', light: '#f5f3ff', wait: '25m' },
+  'Pediatrics':       { icon: '👶', color: '#f97316', light: '#fff7ed', wait: '10m' },
+  'Dermatology':      { icon: '💊', color: '#ec4899', light: '#fdf2f8', wait: '15m' },
+  'ENT':              { icon: '👂', color: '#06b6d4', light: '#ecfeff', wait: '10m' },
+  'Ophthalmology':    { icon: '👁️', color: '#6366f1', light: '#eef2ff', wait: '18m' },
+  'Gynecology':       { icon: '🌸', color: '#f43f5e', light: '#fff1f2', wait: '15m' },
+  'Radiology':        { icon: '🔬', color: '#0ea5e9', light: '#f0f9ff', wait: '5m' },
+  'Emergency':        { icon: '🚑', color: '#dc2626', light: '#fef2f2', wait: '< 2m' },
 };
 
 const CATEGORIES = ['All', 'General Medicine', 'Cardiology', 'Pediatrics', 'Orthopedics', 'Emergency'];
@@ -175,7 +167,7 @@ const FindHospital = () => {
             <div className="fh-dept-grid">
               {filtered.map((d, idx) => {
                 const meta = DEPT_ICONS[d.name] || {
-                  icon: <Activity size={28} />,
+                  icon: '🏥',
                   color: '#0d9488',
                   light: '#f0fdf4',
                   wait: '15m'

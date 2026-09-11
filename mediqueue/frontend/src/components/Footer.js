@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import {
-  Activity,
   MapPin,
   Phone,
   Clock,
@@ -19,9 +18,7 @@ const Footer = () => (
         {/* Brand column */}
         <div className="footer-brand-col">
           <div className="footer-logo-v2">
-            <span className="footer-logo-badge">
-              <Activity size={16} />
-            </span>
+            <span className="footer-logo-icon">🏥</span>
             <span className="footer-logo-text">Medi<span>Queue</span></span>
           </div>
           <p className="footer-tagline">
@@ -84,9 +81,7 @@ const Footer = () => (
       <div className="container footer-mobile-micro">
         <div className="fmm-top">
           <div className="footer-logo-v2">
-            <span className="footer-logo-badge">
-              <Activity size={15} />
-            </span>
+            <span className="footer-logo-icon">🏥</span>
             <span className="footer-logo-text">Medi<span>Queue</span></span>
           </div>
           <div className="fmm-badges">

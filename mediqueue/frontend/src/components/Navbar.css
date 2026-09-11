@@ -40,17 +40,12 @@
   letter-spacing: -0.2px;
 }
 
-.logo-badge {
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
-  background: linear-gradient(135deg, #0d9488, #0284c7);
-  color: white;
+.logo-icon {
+  font-size: 1.3rem;
+  line-height: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 10px rgba(13, 148, 136, 0.35);
-  flex-shrink: 0;
 }
 
 .logo-text {

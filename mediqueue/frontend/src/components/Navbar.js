@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
-import { Activity, LayoutDashboard, LogOut, Menu, X } from 'lucide-react';
+import { LayoutDashboard, LogOut, Menu, X } from 'lucide-react';
 import './Navbar.css';
 
 const Navbar = () => {
@@ -54,9 +54,7 @@ const Navbar = () => {
       <nav className="navbar">
         <div className="nav-container">
           <Link to="/" className="nav-logo" onClick={() => { setMenuOpen(false); setDropOpen(false); }}>
-            <span className="logo-badge">
-              <Activity size={18} />
-            </span>
+            <span className="logo-icon">🏥</span>
             <span className="logo-text">Medi<span className="logo-accent">Queue</span></span>
           </Link>
 
