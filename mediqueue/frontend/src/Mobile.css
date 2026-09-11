@@ -8,8 +8,7 @@
   /* ── Global ─────────────────────────────────────────── */
   .container { padding: 0 16px; }
   .section { padding: 40px 0; }
-  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; gap: 14px; }
-  .app-main { padding-bottom: 68px; }
+  .app-main { padding-bottom: 0 !important; }
 
   /* Prevent iOS Safari automatic zoom on input focus */
   input:not([type="checkbox"]):not([type="radio"]), select, textarea {
@@ -116,8 +115,7 @@
   .stat-icon-box svg { width: 14px !important; height: 14px !important; }
   .ds-val { font-size: 1.05rem !important; line-height: 1 !important; margin: 0 !important; }
   .ds-label { font-size: 0.64rem !important; margin-top: 1px !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
-  .ds-trend { display: none !important; }
-  .dashboard-body { padding: 12px 16px 120px !important; gap: 14px !important; }
+  .dashboard-body { padding: 12px 16px 80px !important; gap: 14px !important; }
 
   /* Patient appointments card on mobile - no enclosing outer border box */
   .dashboard-body .card { background: transparent !important; border: none !important; box-shadow: none !important; padding: 0 !important; }

@@ -393,7 +393,7 @@
 
   /* Departments list */
   .fh-depts-section {
-    padding: 14px 0 110px !important;
+    padding: 14px 0 80px !important;
   }
   .fh-dept-grid {
     grid-template-columns: 1fr;

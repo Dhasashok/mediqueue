@@ -256,6 +256,7 @@ const Register = () => {
       <div className="auth-right">
         <div className="auth-right-inner">
           <h2 className="auth-title">Create Account</h2>
+          <p className="auth-sub">Sign up to manage your hospital visits & appointments online</p>
 
           <div className="reg-tabs">
             <button type="button" className={`reg-tab ${role==='patient'?'active':''}`}
@@ -350,11 +351,13 @@ const Register = () => {
             </div>
 
             <div className="form-group">
-              <label style={{display:'flex',alignItems:'flex-start',gap:10,cursor:'pointer',fontWeight:500}}>
+              <label style={{display:'flex',alignItems:'flex-start',gap:10,cursor:'pointer',fontWeight:500,lineHeight:1.45,fontSize:'0.82rem'}}>
                 <input type="checkbox" checked={form.terms}
                   onChange={e=>handleChange('terms',e.target.checked)}
-                  style={{width:'auto',marginTop:3,accentColor:'#0d9488'}} />
-                I agree to the <a href="#!" style={{color:'#0d9488',fontWeight:700}}>Terms of Service</a> and <a href="#!" style={{color:'#0d9488',fontWeight:700}}>Privacy Policy</a>
+                  style={{width:'auto',marginTop:2,accentColor:'#0d9488',flexShrink:0}} />
+                <span>
+                  I agree to the <a href="#!" style={{color:'#0d9488',fontWeight:700}}>Terms of Service</a> and <a href="#!" style={{color:'#0d9488',fontWeight:700}}>Privacy Policy</a>
+                </span>
               </label>
               {errors.terms && <p className="error">⚠ {errors.terms}</p>}
             </div>

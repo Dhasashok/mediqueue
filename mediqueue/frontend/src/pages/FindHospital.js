@@ -181,8 +181,6 @@ const FindHospital = () => {
         </div>
       </section>
 
-      {/* Guaranteed mobile bottom clearance spacer with anchor id */}
-      <div id="fh-bottom-anchor" className="fh-bottom-safe-spacer" style={{ height: '110px', width: '100%', clear: 'both' }}></div>
     </div>
   );
 };

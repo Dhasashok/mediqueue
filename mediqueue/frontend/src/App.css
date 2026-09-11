@@ -203,6 +203,5 @@ main { min-height: calc(100vh - 72px); }
 @media (max-width: 768px) {
   .form-row { grid-template-columns: 1fr; }
   .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
-  .section { padding: 48px 0; }
-  .app-main { padding-bottom: 96px !important; }
+  .app-main { padding-bottom: 0 !important; }
 }
