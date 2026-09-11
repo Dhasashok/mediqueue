@@ -348,7 +348,7 @@
   font-weight: 600;
 }
 
-.doc-mobile-price {
+.doc-mobile-price-bar {
   display: none;
 }
 
@@ -475,26 +475,29 @@
     gap: 8px;
   }
 
-  /* Mobile Price */
-  .doc-mobile-price {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    margin-left: auto;
-    flex-shrink: 0;
-    text-align: right;
+  /* Mobile Price Bar */
+  .doc-mobile-price-bar {
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    background: #f0fdfa;
+    border: 1px solid #ccfbf1;
+    padding: 8px 14px;
+    border-radius: 12px;
+    box-sizing: border-box;
+    margin-bottom: 2px;
   }
-  .dmp-amount {
+  .dmpb-label {
+    font-size: 0.76rem;
+    font-weight: 600;
+    color: #0f766e;
+  }
+  .dmpb-amount {
     font-size: 1.15rem;
     font-weight: 800;
     color: #0f766e;
     font-family: 'DM Sans', sans-serif;
-  }
-  .dmp-label {
-    font-size: 0.65rem;
-    font-weight: 600;
-    color: #94a3b8;
-    text-transform: uppercase;
   }
 
   /* Booking button */

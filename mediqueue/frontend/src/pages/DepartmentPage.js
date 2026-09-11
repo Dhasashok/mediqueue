@@ -185,12 +185,6 @@ const DepartmentPage = () => {
                         </span>
                       </div>
                     </div>
-
-                    {/* Mobile Price Highlight (Top right of card on mobile) */}
-                    <div className="doc-mobile-price">
-                      <span className="dmp-amount">₹{parseFloat(doc.consultation_fee).toLocaleString('en-IN')}</span>
-                      <span className="dmp-label">Fee</span>
-                    </div>
                   </div>
 
                   {/* Right Column: Pricing & Action Button */}
@@ -200,6 +194,13 @@ const DepartmentPage = () => {
                       <span className="ddp-amount">₹{parseFloat(doc.consultation_fee).toLocaleString('en-IN')}</span>
                       <span className="ddp-sub">Per Visit · No Extra Fee</span>
                     </div>
+
+                    {/* Mobile Price Row */}
+                    <div className="doc-mobile-price-bar">
+                      <span className="dmpb-label">Consultation Fee</span>
+                      <span className="dmpb-amount">₹{parseFloat(doc.consultation_fee).toLocaleString('en-IN')}</span>
+                    </div>
+
                     <button className="btn btn-primary doc-book-btn" onClick={() => handleBook(doc.id)}>
                       <Calendar size={16} />
                       <span>Book Appointment</span>
