@@ -86,24 +86,40 @@
   .fhdc-strip { width: 100% !important; }
 
   /* ── ABOUT ──────────────────────────────────────────── */
-  .about-hero { padding: 32px 0 44px; }
-  .about-hero h1 { font-size: 1.5rem !important; }
-  .about-pill-bar { gap: 6px; padding-top: 16px; }
-  .about-pill { font-size: 0.7rem; padding: 4px 10px; }
-  .mission-section { padding: 40px 0; }
+  .about-hero { padding: 36px 0 40px !important; overflow: hidden !important; }
+  .about-hero-inner { max-width: 100% !important; min-width: 0 !important; overflow: hidden !important; }
+  .about-hero h1 { font-size: 1.55rem !important; line-height: 1.2 !important; }
+  .about-hero-header { flex-direction: column !important; gap: 12px !important; align-items: flex-start !important; }
+  .about-hero-seal { width: fit-content !important; max-width: 100% !important; font-size: 0.74rem !important; padding: 6px 14px !important; }
+  .about-pill-bar {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    gap: 8px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin-top: 14px !important;
+    padding: 4px 0 8px !important;
+    box-sizing: border-box !important;
+  }
+  .about-pill-bar::-webkit-scrollbar { display: none !important; }
+  .about-pill { flex-shrink: 0 !important; white-space: nowrap !important; font-size: 0.76rem !important; padding: 7px 12px !important; }
+  .mission-section { padding: 36px 0 !important; }
   .mission-grid { grid-template-columns: 1fr !important; gap: 24px !important; }
-  .mission-grid h2 { font-size: 1.4rem !important; }
-  .mission-stats { grid-template-columns: repeat(2, 1fr) !important; }
-  .m-stat { padding: 16px 8px; }
-  .m-stat-val { font-size: 1.5rem; }
-  .depts-section { padding: 40px 0; }
-  .dept-cards-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; }
-  .dept-card-icon { width: 52px; height: 52px; font-size: 1.5rem; border-radius: 14px; }
-  .dept-card-mini { padding: 20px 12px; }
-  .dept-card-mini h3 { font-size: 0.82rem; }
-  .contact-section { padding: 40px 0; }
+  .mission-grid h2 { font-size: 1.38rem !important; line-height: 1.25 !important; word-break: break-word !important; }
+  .mission-stats { grid-template-columns: repeat(2, 1fr) !important; margin-top: 20px !important; }
+  .m-stat { padding: 14px 10px !important; min-width: 0 !important; }
+  .m-stat:nth-child(2) { border-right: none !important; }
+  .m-stat:nth-child(1), .m-stat:nth-child(2) { border-bottom: 1px solid #f1f5f9 !important; }
+  .m-stat-val { font-size: 1.45rem !important; }
+  .m-stat-label { font-size: 0.68rem !important; letter-spacing: 0.3px !important; }
+  .depts-section { padding: 36px 0 !important; }
+  .dept-cards-grid { grid-template-columns: 1fr !important; gap: 10px !important; }
+  .contact-section { padding: 36px 0 84px !important; }
   .contact-grid-new { grid-template-columns: 1fr !important; gap: 12px !important; }
-  .contact-card-new { padding: 28px 20px; }
 
   /* ── DASHBOARDS ─────────────────────────────────────── */
   .dashboard-header { padding: 14px 0 16px !important; }
