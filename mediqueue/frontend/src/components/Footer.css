@@ -94,11 +94,11 @@
 .footer-bottom-inner {
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
 }
-.footer-bottom-inner p { font-size: 0.75rem; color: #334155; }
+.footer-bottom-inner p { font-size: 0.75rem; color: #94a3b8; }
 .footer-bottom-links { display: flex; align-items: center; gap: 10px; }
-.footer-bottom-links a { font-size: 0.75rem; color: #334155; transition: color 0.2s; }
+.footer-bottom-links a { font-size: 0.75rem; color: #94a3b8; transition: color 0.2s; padding: 6px 4px; min-height: 36px; display: inline-flex; align-items: center; }
 .footer-bottom-links a:hover { color: #5eead4; }
-.footer-bottom-links span { color: #1e293b; }
+.footer-bottom-links span { color: #475569; }
 
 /* ── Responsive ───────────────────────────────────────── */
 @media (max-width: 1024px) {

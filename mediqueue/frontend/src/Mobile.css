@@ -10,6 +10,12 @@
   .section { padding: 40px 0; }
   .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; gap: 14px; }
 
+  /* Prevent iOS Safari automatic zoom on input focus */
+  input:not([type="checkbox"]):not([type="radio"]), select, textarea {
+    font-size: 16px !important;
+  }
+  .role-tab { min-height: 44px !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; }
+
   /* ── HOME HERO ──────────────────────────────────────── */
   .hero-v2 { min-height: auto; }
   .hero-v2-inner {
@@ -23,7 +29,7 @@
   .hero-v2-desc { font-size: 0.9rem !important; max-width: 100% !important; margin-bottom: 24px !important; }
   .hero-v2-btns { justify-content: center; flex-direction: column; align-items: center; gap: 10px; }
   .btn-hero-primary, .btn-hero-outline { width: 100%; max-width: 300px; justify-content: center; font-size: 0.95rem; padding: 13px 24px; }
-  .hero-trust { justify-content: center; gap: 12px; }
+  .hero-trust { justify-content: center; flex-wrap: wrap !important; gap: 8px 12px !important; }
   .hero-badge { font-size: 0.72rem; padding: 6px 12px; }
   .hero-stats-inner { grid-template-columns: repeat(2, 1fr) !important; }
   .hero-stat-val { font-size: 1.5rem; }
@@ -63,7 +69,13 @@
   .fh-pill { font-size: 0.7rem; padding: 4px 10px; }
   .fh-search-inner { flex-direction: column !important; gap: 10px !important; padding: 12px 0; }
   .fh-search-box { min-width: unset !important; width: 100%; }
+  .fh-search-bar { top: 68px !important; z-index: 40 !important; }
   .fh-depts-section { padding: 24px 0 48px; }
+
+  /* ── PAGE HEADER / DOCTOR LISTINGS ───────────────────── */
+  .page-header { padding: 36px 0 28px !important; }
+  .page-header h1 { font-size: clamp(1.3rem, 5vw, 1.8rem) !important; line-height: 1.25 !important; }
+  .breadcrumb a { min-height: 44px; display: inline-flex; align-items: center; }
   .fh-dept-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; }
   .fhdc-icon-wrap { width: 60px; height: 60px; border-radius: 16px; }
   .fhdc-icon { font-size: 1.8rem; }
@@ -175,4 +187,21 @@
   .contact-card-new:hover { transform: none !important; }
   .dept-card-mini:hover { transform: none !important; }
   .fhdc-strip { width: 100% !important; }
+}
+
+/* ── Smartphone Landscape Optimization ────────────────── */
+@media (max-height: 520px) and (orientation: landscape) {
+  .navbar { height: 56px !important; }
+  .nav-container { height: 56px !important; }
+  .nav-links { top: 56px !important; }
+  .hero-v2-inner { padding-top: 24px !important; padding-bottom: 20px !important; }
+  .hero-v2-title { font-size: 1.8rem !important; margin-bottom: 10px !important; }
+  .hero-v2-desc { margin-bottom: 14px !important; font-size: 0.85rem !important; }
+  .about-hero { padding: 24px 0 28px !important; }
+  .fh-hero { padding: 20px 0 24px !important; }
+  .page-header { padding: 18px 0 !important; }
+  .page-header h1 { font-size: 1.35rem !important; }
+  .ml-banner { padding: 8px 12px !important; font-size: 0.78rem !important; }
+  .section { padding: 24px 0 !important; }
+  .fh-search-bar { top: 56px !important; }
 }
