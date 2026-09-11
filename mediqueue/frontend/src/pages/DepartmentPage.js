@@ -5,11 +5,10 @@ import {
   Search,
   Star,
   Globe,
-  Clock,
-  Users,
   ShieldCheck,
   Calendar,
-  Bot
+  Building2,
+  CheckCircle2
 } from 'lucide-react';
 import { getDoctorsByDept, getDepartments } from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -89,7 +88,7 @@ const DepartmentPage = () => {
               <Link to="/">Home</Link> <span>›</span> <Link to="/find-hospital">Book Appointment</Link> <span>›</span> <span>{dept?.name}</span>
             </div>
             <h1>{dept?.name || 'Department'} Specialists</h1>
-            <p>{dept?.description || 'Browse verified doctors and view real-time OPD waiting times.'}</p>
+            <p>{dept?.description || 'Browse verified doctors and book instant appointments.'}</p>
           </div>
           {deptMeta && (
             <div className="dept-header-icon-badge" style={{ background: deptMeta.light, borderColor: deptMeta.color }}>
@@ -102,32 +101,26 @@ const DepartmentPage = () => {
       {/* Main Section */}
       <section className="section dept-main-section">
         <div className="container">
-          {/* Section Header Row: Title & Subtitle + AI Live Pill + Search */}
+          {/* Section Header Row */}
           <div className="dept-sec-row">
             <div className="dept-sec-left">
               <h2 className="dept-sec-title">
                 {filtered.length} Doctor{filtered.length !== 1 ? 's' : ''} Available
               </h2>
-              <span className="dept-sec-sub">Select a doctor to book an OPD slot or join live queue</span>
+              <span className="dept-sec-sub">Verified hospital specialists ready for consultation</span>
             </div>
 
-            <div className="dept-sec-right">
-              <div className="ml-pill-badge" title="Wait times calculated using real-time OPD traffic">
-                <Bot size={15} color="#0d9488" />
-                <span><strong>AI Live Wait:</strong> ±5 min accuracy</span>
+            {doctors.length > 2 && (
+              <div className="dept-search-wrap">
+                <Search size={15} color="#94a3b8" />
+                <input
+                  className="search-input"
+                  placeholder="Search doctor name..."
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                />
               </div>
-              {doctors.length > 2 && (
-                <div className="dept-search-wrap">
-                  <Search size={15} color="#94a3b8" />
-                  <input
-                    className="search-input"
-                    placeholder="Search doctor..."
-                    value={search}
-                    onChange={e => setSearch(e.target.value)}
-                  />
-                </div>
-              )}
-            </div>
+            )}
           </div>
 
           {loading ? (
@@ -141,32 +134,55 @@ const DepartmentPage = () => {
             <div className="doctors-list">
               {filtered.map(doc => (
                 <div key={doc.id} className="doctor-card card">
-                  {/* Column 1: Doctor Profile */}
+                  {/* Left Column: Doctor Profile & Credentials */}
                   <div className="doc-profile-section">
                     <div className="doc-avatar-wrap">
                       <div className="doc-photo">{doc.first_name[0]}{doc.last_name[0]}</div>
-                      <span className="doc-online-dot" title="Available for OPD"></span>
+                      <span className="doc-online-dot" title="Available for consultation"></span>
                     </div>
 
                     <div className="doc-profile-info">
+                      {/* Name & Verified Badge */}
                       <div className="doc-name-row">
                         <h3>Dr. {doc.first_name} {doc.last_name}</h3>
-                        <span className="doc-verified-badge" title="Verified Specialist">
+                        <span className="doc-verified-badge" title="Verified Hospital Specialist">
                           <ShieldCheck size={16} color="#0d9488" />
+                          <span className="verified-text">Verified</span>
                         </span>
                       </div>
 
+                      {/* Specialization & Experience */}
                       <div className="doc-tag-line">
                         <span className="badge badge-teal">{doc.specialization}</span>
                         <span className="doc-exp-tag">
-                          <Star size={12} color="#f59e0b" fill="#f59e0b" />
-                          {doc.years_of_experience} yrs exp
+                          {doc.years_of_experience} Years Experience
                         </span>
                       </div>
 
-                      <div className="doc-lang-tag">
-                        <Globe size={12} color="#64748b" />
-                        <span>{doc.languages_known}</span>
+                      {/* Trust & Review Metric */}
+                      <div className="doc-trust-row">
+                        <span className="doc-rating-badge">
+                          <Star size={13} color="#f59e0b" fill="#f59e0b" />
+                          <strong>4.9</strong>
+                          <span className="review-count">(120+ reviews)</span>
+                        </span>
+                        <span className="doc-dot-sep">•</span>
+                        <span className="doc-lang-tag">
+                          <Globe size={13} color="#64748b" />
+                          <span>{doc.languages_known}</span>
+                        </span>
+                      </div>
+
+                      {/* Hospital & Availability Perks */}
+                      <div className="doc-perks-row">
+                        <span className="doc-perk-item">
+                          <Building2 size={13} color="#0f766e" />
+                          <span>City General OPD</span>
+                        </span>
+                        <span className="doc-perk-item active">
+                          <CheckCircle2 size={13} color="#16a34a" />
+                          <span>Available Today</span>
+                        </span>
                       </div>
                     </div>
 
@@ -177,41 +193,15 @@ const DepartmentPage = () => {
                     </div>
                   </div>
 
-                  {/* Column 2: Live OPD Queue Status Center */}
-                  <div className="doc-queue-section">
-                    <div className="doc-queue-item">
-                      <Clock size={14} color="#0d9488" />
-                      <div className="dqi-text">
-                        <span className="dqi-label">Est. Wait</span>
-                        <span className="dqi-val highlight">~{doc.estimated_wait} min</span>
-                      </div>
-                    </div>
-
-                    <div className="doc-queue-item">
-                      <span className={`status-indicator ${doc.load_level?.toLowerCase()}`}></span>
-                      <div className="dqi-text">
-                        <span className="dqi-label">Traffic</span>
-                        <span className="dqi-val">{doc.load_level} Demand</span>
-                      </div>
-                    </div>
-
-                    <div className="doc-queue-item">
-                      <Users size={14} color="#64748b" />
-                      <div className="dqi-text">
-                        <span className="dqi-label">In Queue</span>
-                        <span className="dqi-val">{doc.current_queue} waiting</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Column 3: Pricing & Action Button */}
+                  {/* Right Column: Pricing & Action Button */}
                   <div className="doc-booking-section">
                     <div className="doc-desktop-price">
                       <span className="ddp-label">Consultation Fee</span>
                       <span className="ddp-amount">₹{parseFloat(doc.consultation_fee).toLocaleString('en-IN')}</span>
+                      <span className="ddp-sub">Per Visit · No Extra Fee</span>
                     </div>
                     <button className="btn btn-primary doc-book-btn" onClick={() => handleBook(doc.id)}>
-                      <Calendar size={15} />
+                      <Calendar size={16} />
                       <span>Book Appointment</span>
                     </button>
                   </div>
