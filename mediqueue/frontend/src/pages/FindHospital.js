@@ -38,6 +38,14 @@ const FindHospital = () => {
       .finally(() => setLoading(false));
   }, []);
 
+  useEffect(() => {
+    if (!loading && window.location.hash === '#bottom') {
+      setTimeout(() => {
+        document.getElementById('fh-bottom-anchor')?.scrollIntoView();
+      }, 100);
+    }
+  }, [loading]);
+
   const filtered = departments.filter(d => {
     return d.name.toLowerCase().includes(search.toLowerCase()) ||
       (d.description && d.description.toLowerCase().includes(search.toLowerCase()));
