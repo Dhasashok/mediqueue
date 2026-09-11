@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
+import { Activity, LayoutDashboard, LogOut, Menu, X } from 'lucide-react';
 import './Navbar.css';
 
 const Navbar = () => {
@@ -53,8 +54,10 @@ const Navbar = () => {
       <nav className="navbar">
         <div className="nav-container">
           <Link to="/" className="nav-logo" onClick={() => { setMenuOpen(false); setDropOpen(false); }}>
-            <span className="logo-icon">🏥</span>
-            <span className="logo-text">MediQueue</span>
+            <span className="logo-badge">
+              <Activity size={18} />
+            </span>
+            <span className="logo-text">Medi<span className="logo-accent">Queue</span></span>
           </Link>
 
           <div className={`nav-links ${menuOpen ? 'open' : ''}`}>
@@ -87,9 +90,11 @@ const Navbar = () => {
                       <p className="drop-role">{user.role}</p>
                     </div>
                     <Link to={dashboardPath} className="dropdown-item" onClick={() => { setDropOpen(false); setMenuOpen(false); }}>
-                      📊 Dashboard
+                      <LayoutDashboard size={15} /> Dashboard
                     </Link>
-                    <button className="dropdown-item danger" onClick={handleLogout}>🚪 Logout</button>
+                    <button className="dropdown-item danger" onClick={handleLogout}>
+                      <LogOut size={15} /> Logout
+                    </button>
                   </div>
                 )}
               </div>
@@ -100,16 +105,21 @@ const Navbar = () => {
             )}
           </div>
 
-          <button
-            className={`hamburger ${menuOpen ? 'open' : ''}`}
-            onClick={() => setMenuOpen(!menuOpen)}
-            aria-label="Toggle menu"
-            type="button"
-          >
-            <span className="bar"></span>
-            <span className="bar"></span>
-            <span className="bar"></span>
-          </button>
+          <div className="nav-right-wrap">
+            <a href="tel:102" className="nav-sos-pill" aria-label="Emergency Ambulance 102">
+              <span className="sos-pulse-dot"></span>
+              <span className="sos-text">102</span>
+            </a>
+
+            <button
+              className={`hamburger ${menuOpen ? 'open' : ''}`}
+              onClick={() => setMenuOpen(!menuOpen)}
+              aria-label="Toggle menu"
+              type="button"
+            >
+              {menuOpen ? <X size={20} /> : <Menu size={20} />}
+            </button>
+          </div>
         </div>
       </nav>
 

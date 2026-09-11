@@ -62,15 +62,15 @@
   .fh-subtitle { font-size: 0.9rem; }
   .fh-hero-stats {
     display: grid !important; grid-template-columns: repeat(2, 1fr) !important;
-    width: 100%; border-radius: 14px;
+    width: 100%; border-radius: 14px; box-sizing: border-box;
   }
-  .fh-hstat { padding: 12px 8px; }
+  .fh-hstat { padding: 12px 8px; min-width: 0; box-sizing: border-box; }
   .fh-hstat-val { font-size: 1.2rem; }
   .fh-meta-pills { gap: 6px; }
   .fh-pill { font-size: 0.7rem; padding: 4px 10px; }
   .fh-search-inner { flex-direction: column !important; gap: 10px !important; padding: 12px 0; }
   .fh-search-box { min-width: unset !important; width: 100%; }
-  .fh-search-bar { top: 54px !important; z-index: 40 !important; }
+  .fh-search-bar { top: 48px !important; z-index: 40 !important; }
   .fh-depts-section { padding: 24px 0 48px; }
 
   /* ── PAGE HEADER / DOCTOR LISTINGS ───────────────────── */
