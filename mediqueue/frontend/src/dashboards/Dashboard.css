@@ -294,78 +294,126 @@
   .doctor-queue-row { grid-template-columns: 1fr; }
   .analytics-grid { grid-template-columns: repeat(2, 1fr); }
 }
-@media (max-width: 680px) {
-  .dash-stats { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-  .dash-stat-card { padding: 14px 12px; gap: 10px; }
-  .stat-icon-box { width: 42px; height: 42px; border-radius: 12px; }
-  .ds-val { font-size: 1.45rem; }
-  .dash-header-row { flex-direction: column; align-items: flex-start; gap: 12px; }
-  .dash-header-row .btn { width: 100%; justify-content: center; }
+@media (max-width: 768px) {
+  .dash-stats {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+  .dash-stat-card {
+    padding: 10px 12px !important;
+    gap: 10px !important;
+    border-radius: 12px !important;
+  }
+  .stat-icon-box {
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 10px !important;
+  }
+  .stat-icon-box svg {
+    width: 18px !important;
+    height: 18px !important;
+  }
+  .ds-val {
+    font-size: 1.25rem !important;
+  }
+  .ds-label {
+    font-size: 0.72rem !important;
+  }
+  .ds-trend {
+    display: none !important;
+  }
+  .dash-header-row {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+  }
+  .dash-header-row h1 {
+    font-size: 1.35rem !important;
+    margin-bottom: 2px !important;
+  }
+  .dash-header-row p {
+    font-size: 0.8rem !important;
+  }
+  .dashboard-header {
+    padding: 20px 0 !important;
+  }
+  .dashboard-body {
+    padding: 16px 0 110px !important;
+    gap: 16px !important;
+  }
+  .dash-header-row .btn {
+    width: 100% !important;
+    justify-content: center !important;
+    padding: 10px 16px !important;
+    font-size: 0.86rem !important;
+  }
   .checkin-input-row { flex-direction: column; }
 
   /* Appt Row on Mobile */
   .appt-row {
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 16px;
-    gap: 12px;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    padding: 14px 12px !important;
+    gap: 10px !important;
+    border-radius: 14px !important;
   }
   .appt-dept-icon {
-    display: none;
+    display: none !important;
   }
   .appt-main {
-    width: 100%;
+    width: 100% !important;
   }
   .appt-actions-col {
-    width: 100%;
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
-    margin-top: 4px;
-    border-top: 1px solid #f1f5f9;
-    padding-top: 10px;
+    width: 100% !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+    margin-top: 4px !important;
+    border-top: 1px solid #f1f5f9 !important;
+    padding-top: 10px !important;
+  }
+  .appt-actions-col button:only-child {
+    grid-column: 1 / -1 !important;
   }
   .appt-action-btn {
-    width: 100%;
-    justify-content: center;
-    padding: 8px 12px;
-    font-size: 0.82rem;
+    width: 100% !important;
+    justify-content: center !important;
+    padding: 9px 12px !important;
+    font-size: 0.82rem !important;
+    box-sizing: border-box !important;
   }
 
   /* Live queue card on mobile */
   .live-queue-card {
-    padding: 18px 16px;
+    padding: 16px 14px !important;
   }
   .lq-body {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 14px;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
   }
   .lq-position {
-    order: 1;
-    margin-bottom: 4px;
+    order: 1 !important;
+    margin-bottom: 2px !important;
   }
   .lq-info {
-    order: 2;
+    order: 2 !important;
   }
   .lq-timer {
-    order: 3;
-    padding: 12px;
-    background: #f8fafc;
-    border-radius: 14px;
-    border: 1px solid #e2e8f0;
+    order: 3 !important;
+    padding: 10px !important;
+    background: #f8fafc !important;
+    border-radius: 12px !important;
+    border: 1px solid #e2e8f0 !important;
   }
 
   /* Bottom clearance so bottom nav bar never covers cards or actions */
   .dashboard-page {
     padding-bottom: 110px !important;
   }
-  .dashboard-body {
-    padding-bottom: 110px !important;
-  }
   .appt-list {
-    padding-bottom: 24px !important;
+    padding-bottom: 16px !important;
   }
 }
 

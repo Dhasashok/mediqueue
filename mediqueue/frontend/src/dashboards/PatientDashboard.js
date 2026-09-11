@@ -567,6 +567,9 @@ const PatientDashboard = () => {
             </div>
           )}
         </div>
+
+        {/* Guaranteed clearance spacer for mobile bottom navigation bar */}
+        <div className="dash-bottom-safe-spacer" style={{ height: '90px', width: '100%', clear: 'both' }}></div>
       </div>
 
       {/* Prescription View Modal */}
