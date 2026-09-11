@@ -7,69 +7,156 @@
   min-height: 100vh;
 }
 
-/* Mobile top bar with back navigation */
+/* ── Mobile top bar with back navigation ─────────────── */
 .dept-mobile-topbar {
   display: none;
   background: white;
   border-bottom: 1px solid #e2e8f0;
-  position: sticky;
-  top: 48px;
-  z-index: 35;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
 }
 .dept-topbar-inner {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 12px 16px;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 .dept-back-link {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  color: #0f766e;
+  gap: 6px;
+  color: #0d9488;
   text-decoration: none;
-  font-weight: 600;
-  font-size: 0.88rem;
+  font-weight: 700;
+  font-size: 0.85rem;
+  padding: 6px 12px;
+  background: #f0fdfa;
+  border-radius: 999px;
+  border: 1px solid #ccfbf1;
+  transition: all 0.2s ease;
+}
+.dept-back-link:hover {
+  background: #ccfbf1;
+  color: #0f766e;
+}
+.dept-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 .dept-topbar-title {
-  font-weight: 700;
+  font-weight: 800;
   color: #0f172a;
-  font-size: 0.95rem;
+  font-size: 1rem;
+  font-family: 'DM Sans', sans-serif;
   max-width: 160px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.dept-topbar-badge {
+  font-size: 0.72rem;
+  font-weight: 600;
+  background: #f1f5f9;
+  color: #475569;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid #e2e8f0;
+}
 
-/* ML Prediction Banner */
+/* ── Desktop Page Header ──────────────────────────────── */
+.dept-page-header {
+  background: linear-gradient(135deg, #091325 0%, #0f2240 60%, #112d55 100%);
+  color: white;
+  padding: 36px 0 40px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.dept-header-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+.dept-header-left {
+  max-width: 700px;
+}
+.dept-page-header .breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 12px;
+}
+.dept-page-header .breadcrumb a {
+  color: rgba(255, 255, 255, 0.75);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.dept-page-header .breadcrumb a:hover {
+  color: #2dd4bf;
+}
+.dept-page-header h1 {
+  font-size: 2.1rem;
+  font-weight: 800;
+  margin: 0 0 8px;
+  color: #ffffff;
+  font-family: 'DM Sans', sans-serif;
+  letter-spacing: -0.02em;
+}
+.dept-page-header p {
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.75);
+  margin: 0;
+  line-height: 1.5;
+}
+.dept-header-icon-badge {
+  width: 76px;
+  height: 76px;
+  border-radius: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  flex-shrink: 0;
+}
+.dept-header-emoji {
+  font-size: 2.4rem;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
+}
+
+/* ── ML Prediction Banner ─────────────────────────────── */
+.dept-ml-container {
+  padding: 16px 24px 0;
+}
 .ml-banner {
   display: flex;
-  gap: 14px;
+  gap: 12px;
   align-items: center;
   background: #f0fdfa;
   border: 1.5px solid #ccfbf1;
-  padding: 14px 18px;
-  border-radius: 14px;
+  padding: 12px 18px;
+  border-radius: 12px;
   color: #0f766e;
-  box-shadow: 0 2px 6px rgba(13,148,136,0.05);
+  box-shadow: 0 2px 6px rgba(13, 148, 136, 0.04);
 }
 .ml-banner-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
   background: white;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 2px 6px rgba(13,148,136,0.1);
+  box-shadow: 0 2px 5px rgba(13, 148, 136, 0.1);
 }
 .ml-banner-text {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  font-size: 0.84rem;
+  gap: 1px;
+  font-size: 0.82rem;
 }
 .ml-banner-text strong {
   font-weight: 700;
@@ -77,84 +164,105 @@
 }
 .ml-banner-text span {
   color: #0d9488;
-  line-height: 1.4;
+  line-height: 1.35;
 }
 
-/* Search bar */
+/* ── Main Section & Search ────────────────────────────── */
+.dept-main-section {
+  padding: 20px 0 60px;
+}
 .dept-search-bar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 14px;
+}
+.dept-sec-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #0f172a;
+  font-family: 'DM Sans', sans-serif;
+}
+.dept-sec-sub {
+  font-size: 0.8rem;
+  color: #64748b;
+  font-weight: 500;
 }
 .dept-search-wrap {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   background: white;
   border: 1.5px solid #cbd5e1;
   border-radius: 999px;
-  padding: 8px 18px;
-  min-width: 280px;
+  padding: 8px 16px;
+  min-width: 260px;
   transition: all 0.2s;
 }
 .dept-search-wrap:focus-within {
-  border-color: var(--teal);
-  box-shadow: 0 0 0 4px rgba(13,148,136,0.12);
+  border-color: #0d9488;
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.12);
 }
 .dept-search-wrap .search-input {
   border: none;
   outline: none;
-  font-size: 0.9rem;
-  color: var(--navy);
+  font-size: 0.88rem;
+  color: #0f172a;
   width: 100%;
   font-family: inherit;
   padding: 0;
-  min-width: unset;
 }
 
-/* Doctors List */
+/* ── Doctors List ─────────────────────────────────────── */
 .doctors-list {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 16px;
 }
 .doctor-card {
   display: flex;
-  gap: 24px;
   align-items: center;
+  justify-content: space-between;
   background: white;
-  border-radius: 20px;
+  border-radius: 18px;
   border: 1.5px solid #e2e8f0;
-  padding: 22px 24px;
-  transition: all 0.25s ease;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+  padding: 20px 24px;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+  gap: 20px;
 }
 .doctor-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 12px 28px rgba(0,0,0,0.07);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
   border-color: #cbd5e1;
 }
 
-/* Avatar Wrap */
+/* Left column: Avatar + Info */
+.doc-left-col {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex: 1;
+}
 .doc-avatar-wrap {
   position: relative;
   flex-shrink: 0;
 }
 .doc-photo {
-  width: 68px;
-  height: 68px;
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #0d9488 0%, #0891b2 100%);
+  background: linear-gradient(135deg, #0d9488 0%, #0284c7 100%);
   color: white;
-  font-size: 1.4rem;
+  font-size: 1.35rem;
   font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(13,148,136,0.25);
+  box-shadow: 0 4px 12px rgba(13, 148, 136, 0.2);
 }
 .doc-online-dot {
   position: absolute;
@@ -174,9 +282,9 @@
 .doc-name-row {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   flex-wrap: wrap;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 .doc-name-title {
   display: flex;
@@ -188,6 +296,7 @@
   font-size: 1.15rem;
   font-weight: 800;
   color: #0f172a;
+  font-family: 'DM Sans', sans-serif;
 }
 .doc-verified-badge {
   display: inline-flex;
@@ -197,107 +306,187 @@
 /* Meta */
 .doc-meta {
   display: flex;
-  gap: 16px;
-  font-size: 0.84rem;
+  gap: 14px;
+  font-size: 0.82rem;
   color: #64748b;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
   flex-wrap: wrap;
+  align-items: center;
 }
 .doc-meta-item {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   font-weight: 500;
 }
 .doc-fee {
   color: #0f766e;
   font-weight: 700;
 }
+.doc-mobile-fee {
+  display: none;
+}
 
 /* Stats */
 .doc-stats {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   align-items: center;
   flex-wrap: wrap;
 }
 .doc-wait {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  font-size: 0.82rem;
+  gap: 4px;
+  font-size: 0.78rem;
   color: #0f766e;
   font-weight: 700;
   background: #f0fdf4;
-  padding: 4px 10px;
+  padding: 3px 9px;
   border-radius: 999px;
   border: 1px solid #bbf7d0;
 }
 .doc-queue-badge {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  font-size: 0.76rem;
+  gap: 4px;
+  font-size: 0.75rem;
 }
 
-/* CTA */
-.doc-action {
+/* Right column: Fee + CTA */
+.doc-action-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
   flex-shrink: 0;
+}
+.doc-desktop-fee {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.doc-fee-label {
+  font-size: 0.72rem;
+  color: #64748b;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.doc-fee-amount {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #0f766e;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1px;
 }
 .doc-book-btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 12px 24px;
+  padding: 10px 22px;
   border-radius: 12px;
   font-weight: 700;
-  font-size: 0.92rem;
-  box-shadow: 0 4px 14px rgba(13,148,136,0.3);
+  font-size: 0.9rem;
+  background: #0d9488;
+  color: white;
+  border: none;
+  box-shadow: 0 4px 12px rgba(13, 148, 136, 0.25);
   transition: all 0.2s ease;
+  cursor: pointer;
 }
 .doc-book-btn:hover {
+  background: #0f766e;
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(13,148,136,0.4);
+  box-shadow: 0 6px 16px rgba(13, 148, 136, 0.35);
 }
 
-/* Responsive */
+/* ── Responsive Design (Mobile) ───────────────────────── */
 @media (max-width: 768px) {
+  /* Show clean topbar on mobile */
   .dept-mobile-topbar {
-    display: block;
+    display: block !important;
+    position: static !important;
   }
+
+  /* Completely hide the bulky dark hero on mobile */
   .dept-page-header {
-    padding-top: 24px;
+    display: none !important;
+  }
+
+  .dept-ml-container {
+    padding: 12px 16px 0;
+  }
+  .ml-banner {
+    padding: 10px 14px;
+    gap: 10px;
+  }
+  .ml-banner-text {
+    font-size: 0.78rem;
+  }
+
+  .dept-main-section {
+    padding: 14px 0 40px;
   }
   .dept-search-bar {
     flex-direction: column;
-    align-items: stretch;
+    align-items: flex-start;
+    gap: 4px;
+    margin-bottom: 14px;
+  }
+  .dept-sec-title {
+    font-size: 1.1rem;
   }
   .dept-search-wrap {
     width: 100%;
-    min-width: unset;
+    box-sizing: border-box;
+    margin-top: 8px;
   }
+
+  /* Mobile Doctor Card */
   .doctor-card {
     flex-direction: column;
-    align-items: flex-start;
-    padding: 18px;
-    gap: 16px;
+    align-items: stretch;
+    padding: 16px;
+    gap: 14px;
+    border-radius: 16px;
   }
-  .doc-avatar-wrap {
-    display: flex;
-    align-items: center;
+  .doc-left-col {
+    align-items: flex-start;
     gap: 14px;
   }
   .doc-photo {
-    width: 56px;
-    height: 56px;
-    font-size: 1.2rem;
+    width: 52px;
+    height: 52px;
+    font-size: 1.15rem;
   }
-  .doc-action {
+  .doc-name-title h3 {
+    font-size: 1.05rem;
+  }
+  .doc-meta {
+    gap: 10px;
+    font-size: 0.78rem;
+    margin-bottom: 8px;
+  }
+  .doc-mobile-fee {
+    display: inline-flex;
+  }
+  .doc-desktop-fee {
+    display: none;
+  }
+  .doc-stats {
+    gap: 6px;
+  }
+  .doc-action-col {
     width: 100%;
   }
   .doc-book-btn {
     width: 100%;
     justify-content: center;
-    padding: 13px;
+    padding: 12px;
+    font-size: 0.92rem;
   }
 }
