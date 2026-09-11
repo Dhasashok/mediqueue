@@ -341,7 +341,7 @@ const PatientDashboard = () => {
           <div className="dash-header-row">
             <div>
               <h1>Patient Dashboard</h1>
-              <p>Welcome back, <strong>{user?.name}</strong></p>
+              <p>Welcome back, <strong>{user?.name || user?.first_name || (user?.email ? user.email.split('@')[0] : 'Patient')}</strong></p>
             </div>
             <button className="btn btn-primary" onClick={() => navigate('/find-hospital')}>
               + Book Appointment
@@ -500,8 +500,12 @@ const PatientDashboard = () => {
           ) : (
             <div className="appt-list">
               {displayed.map(a => {
-                const sb = statusBadge[a.status] || { cls:'badge-gray', label: a.status };
-                const statusClass = 'status-' + (a.status || '').toLowerCase().replace(/[^a-z]/g, '-');
+                const isPast = displayDate(a.appointment_date) < today;
+                let sb = statusBadge[a.status] || { cls:'badge-gray', label: a.status };
+                if (isPast && a.status === 'Booked') {
+                  sb = { cls: 'badge-gray', label: 'Expired' };
+                }
+                const statusClass = 'status-' + (isPast && a.status === 'Booked' ? 'expired' : (a.status || '').toLowerCase().replace(/[^a-z]/g, '-'));
                 return (
                   <div key={a.id} className={`appt-row ${statusClass}`}>
                     <div className="appt-dept-icon">{a.dept_name?.[0]}</div>
@@ -522,9 +526,9 @@ const PatientDashboard = () => {
                       )}
                     </div>
                     <div className="appt-actions-col">
-                      {/* QR — only for active appointments */}
-                      {a.qr_code_data && a.status !== 'Completed' && a.status !== 'Cancelled' && a.status !== 'No-Show' && (
-                        <button className="btn btn-outline btn-sm appt-action-btn" onClick={()=>setQrModal(a)}>
+                      {/* QR Pass — Primary filled button, only for active upcoming appointments */}
+                      {a.qr_code_data && !isPast && a.status !== 'Completed' && a.status !== 'Cancelled' && a.status !== 'No-Show' && (
+                        <button className="btn btn-primary btn-sm appt-action-btn" onClick={()=>setQrModal(a)}>
                           <QrCode size={14} />
                           <span>QR Pass</span>
                         </button>
@@ -540,15 +544,15 @@ const PatientDashboard = () => {
                         </button>
                       )}
 
-                      {/* Cancel — Booked appointments */}
-                      {a.status==='Booked' && (
-                        <button className="btn btn-danger btn-sm appt-action-btn" onClick={()=>handleCancel(a)}>
+                      {/* Cancel — Secondary subtle outline button, only for future Booked appointments */}
+                      {a.status==='Booked' && !isPast && (
+                        <button className="btn btn-outline btn-sm appt-action-btn btn-action-cancel" onClick={()=>handleCancel(a)}>
                           <X size={14} />
                           <span>Cancel</span>
                         </button>
                       )}
-                      {/* Rebook — Completed, Cancelled, No-Show */}
-                      {['Completed','Cancelled','No-Show'].includes(a.status) && (
+                      {/* Rebook — Completed, Cancelled, No-Show, or past unfulfilled Booked */}
+                      {(['Completed','Cancelled','No-Show'].includes(a.status) || (isPast && a.status === 'Booked')) && (
                         <button className="btn btn-outline btn-sm appt-action-btn"
                           style={{borderColor:'#0d9488',color:'#0d9488'}}
                           onClick={()=>navigate(`/book/${a.doctor_id}`)}>
@@ -752,46 +756,46 @@ const PatientDashboard = () => {
             </div>
 
             {/* Appointment details */}
-            <div style={{ padding: '20px 28px' }}>
+            <div style={{ padding: '16px 20px' }}>
               <div style={{
                 background: '#f8fafc', border: '1px solid #e2e8f0',
-                borderRadius: 12, padding: '14px 16px', marginBottom: 20
+                borderRadius: 12, padding: '12px 14px', marginBottom: 16
               }}>
                 {/* Doctor */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
                   <div style={{
-                    width: 42, height: 42, borderRadius: '50%',
+                    width: 40, height: 40, borderRadius: '50%',
                     background: 'linear-gradient(135deg,#0f172a,#0d9488)',
                     color: '#fff', display: 'flex', alignItems: 'center',
-                    justifyContent: 'center', fontWeight: 800, fontSize: '0.95rem', flexShrink: 0
+                    justifyContent: 'center', fontWeight: 800, fontSize: '0.9rem', flexShrink: 0
                   }}>
                     {(cancelModal.first_name?.[0] || '') + (cancelModal.last_name?.[0] || '')}
                   </div>
                   <div>
-                    <p style={{ fontWeight: 700, margin: 0, color: '#0f172a', fontSize: '0.95rem' }}>
+                    <p style={{ fontWeight: 700, margin: 0, color: '#0f172a', fontSize: '0.92rem' }}>
                       Dr. {cancelModal.first_name} {cancelModal.last_name}
                     </p>
-                    <p style={{ margin: '2px 0 0', fontSize: '0.78rem', color: '#64748b' }}>
+                    <p style={{ margin: '2px 0 0', fontSize: '0.76rem', color: '#64748b' }}>
                       {cancelModal.dept_name}
                     </p>
                   </div>
                 </div>
-                {/* Date & Slot */}
+                {/* Date & Slot (nowrap to prevent hyphen breaks) */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                  <div style={{ background: '#fff', borderRadius: 8, padding: '8px 12px', border: '1px solid #e2e8f0' }}>
-                    <p style={{ margin: 0, fontSize: '0.68rem', color: '#64748b', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.4 }}>Date</p>
-                    <p style={{ margin: '3px 0 0', fontWeight: 600, color: '#0f172a', fontSize: '0.85rem' }}>
+                  <div style={{ background: '#fff', borderRadius: 8, padding: '8px 8px', border: '1px solid #e2e8f0', minWidth: 0, textAlign: 'center' }}>
+                    <p style={{ margin: 0, fontSize: '0.66rem', color: '#64748b', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.4 }}>Date</p>
+                    <p style={{ margin: '3px 0 0', fontWeight: 700, color: '#0f172a', fontSize: '0.78rem', whiteSpace: 'nowrap' }}>
                       📅 {displayDate(cancelModal.appointment_date)}
                     </p>
                   </div>
-                  <div style={{ background: '#fff', borderRadius: 8, padding: '8px 12px', border: '1px solid #e2e8f0' }}>
-                    <p style={{ margin: 0, fontSize: '0.68rem', color: '#64748b', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.4 }}>Slot</p>
-                    <p style={{ margin: '3px 0 0', fontWeight: 600, color: '#0f172a', fontSize: '0.85rem' }}>
+                  <div style={{ background: '#fff', borderRadius: 8, padding: '8px 8px', border: '1px solid #e2e8f0', minWidth: 0, textAlign: 'center' }}>
+                    <p style={{ margin: 0, fontSize: '0.66rem', color: '#64748b', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.4 }}>Slot</p>
+                    <p style={{ margin: '3px 0 0', fontWeight: 700, color: '#0f172a', fontSize: '0.78rem', whiteSpace: 'nowrap' }}>
                       🕐 {cancelModal.time_slot}
                     </p>
                   </div>
                 </div>
-                <p style={{ margin: '10px 0 0', fontSize: '0.72rem', color: '#94a3b8', textAlign: 'center' }}>
+                <p style={{ margin: '8px 0 0', fontSize: '0.72rem', color: '#94a3b8', textAlign: 'center' }}>
                   🎫 {cancelModal.booking_id}
                 </p>
               </div>
@@ -799,10 +803,10 @@ const PatientDashboard = () => {
               {/* Cancel only */}
               <button onClick={confirmCancel} disabled={cancelling}
                 style={{
-                  width: '100%', padding: '13px', marginBottom: 10,
+                  width: '100%', padding: '11px', marginBottom: 8,
                   background: cancelling ? '#94a3b8' : '#ef4444',
                   color: '#fff', border: 'none', borderRadius: 10,
-                  fontWeight: 700, fontSize: '0.92rem', cursor: 'pointer'
+                  fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer'
                 }}>
                 {cancelling ? '⏳ Cancelling...' : '🚫 Yes, Cancel Appointment'}
               </button>
@@ -824,10 +828,10 @@ const PatientDashboard = () => {
                   } finally { setCancelling(false); }
                 }}
                 style={{
-                  width: '100%', padding: '13px', marginBottom: 10,
+                  width: '100%', padding: '11px', marginBottom: 8,
                   background: '#f0fdf4', color: '#0d9488',
-                  border: '2px solid #0d9488', borderRadius: 10,
-                  fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer'
+                  border: '1.5px solid #0d9488', borderRadius: 10,
+                  fontWeight: 700, fontSize: '0.88rem', cursor: 'pointer'
                 }}>
                 📅 Cancel &amp; Rebook with Same Doctor
               </button>
@@ -835,10 +839,10 @@ const PatientDashboard = () => {
               {/* Keep */}
               <button onClick={() => setCancelModal(null)} disabled={cancelling}
                 style={{
-                  width: '100%', padding: '11px',
+                  width: '100%', padding: '10px',
                   background: 'none', color: '#64748b',
                   border: '1.5px solid #e2e8f0', borderRadius: 10,
-                  fontWeight: 600, fontSize: '0.88rem', cursor: 'pointer'
+                  fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer'
                 }}>
                 Keep Appointment
               </button>

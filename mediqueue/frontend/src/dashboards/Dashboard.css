@@ -356,6 +356,17 @@
     border-radius: 14px;
     border: 1px solid #e2e8f0;
   }
+
+  /* Bottom clearance so bottom nav bar never covers cards or actions */
+  .dashboard-page {
+    padding-bottom: 110px !important;
+  }
+  .dashboard-body {
+    padding-bottom: 110px !important;
+  }
+  .appt-list {
+    padding-bottom: 24px !important;
+  }
 }
 
 /* ── Digital QR Pass Modal Styling ───────────────────── */
@@ -393,6 +404,26 @@
   font-weight: 600;
   border-radius: 10px;
 }
+.appt-actions-col .btn-primary {
+  background: #0d9488 !important;
+  border-color: #0d9488 !important;
+  color: white !important;
+}
+.appt-actions-col .btn-primary:hover {
+  background: #0f766e !important;
+  border-color: #0f766e !important;
+}
+.btn-action-cancel {
+  border-color: #fecaca !important;
+  color: #dc2626 !important;
+  background: #fff !important;
+  font-weight: 600 !important;
+}
+.btn-action-cancel:hover {
+  background: #fef2f2 !important;
+  border-color: #ef4444 !important;
+  color: #b91c1c !important;
+}
 .spin-slow {
   animation: spin 5s linear infinite;
 }
@@ -405,7 +436,7 @@
 .qr-scanner-overlay {
   position: fixed; inset: 0; background: rgba(15,23,42,0.7);
   display: flex; align-items: center; justify-content: center;
-  z-index: 1000; padding: 20px; backdrop-filter: blur(4px);
+  z-index: 10000; padding: 20px; backdrop-filter: blur(4px);
 }
 .qr-scanner-modal {
   background: white; border-radius: 24px; padding: 28px;
