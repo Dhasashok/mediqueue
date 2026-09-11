@@ -94,9 +94,6 @@ const FindHospital = () => {
             <p className="fh-search-sub">
               City General Hospital, Pune · {filtered.length} department{filtered.length !== 1 ? 's' : ''} available
             </p>
-            <p className="fh-mobile-instruction">
-              👉 Tap any department to select a doctor & book
-            </p>
           </div>
           <div className="fh-search-box">
             <Search size={16} className="fh-search-icon" color="#0d9488" />

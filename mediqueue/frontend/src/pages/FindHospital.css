@@ -357,11 +357,15 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 2px;
-    padding: 16px 0 14px;
+    padding: 14px 16px !important;
+    box-sizing: border-box;
+    width: 100%;
   }
   .fh-search-left {
     width: 100%;
     text-align: left;
+    padding: 0;
+    margin: 0;
   }
   .fh-search-title {
     font-size: 1.25rem !important;
@@ -370,6 +374,7 @@
     font-family: 'DM Sans', sans-serif !important;
     margin: 0 0 2px !important;
     text-align: left;
+    padding: 0;
   }
   .fh-search-sub {
     font-size: 0.78rem !important;
@@ -378,20 +383,7 @@
     margin: 0 !important;
     text-align: left;
     line-height: 1.35;
-  }
-
-  /* Instruction pill on mobile */
-  .fh-mobile-instruction {
-    display: inline-flex !important;
-    align-items: center;
-    margin-top: 8px !important;
-    font-size: 0.76rem !important;
-    font-weight: 600 !important;
-    color: #0f766e !important;
-    background: #f0fdfa !important;
-    border: 1px solid #ccfbf1 !important;
-    padding: 5px 12px !important;
-    border-radius: 999px !important;
+    padding: 0;
   }
 
   /* Remove search box on mobile completely */

@@ -107,30 +107,27 @@
   .contact-card-new { padding: 28px 20px; }
 
   /* ── DASHBOARDS ─────────────────────────────────────── */
-  .dashboard-header { padding: 20px 0; }
-  .dashboard-header h1 { font-size: 1.3rem !important; }
-  .dash-header-row { flex-direction: column !important; align-items: flex-start !important; gap: 12px !important; }
-  .dash-stats { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
-  .dash-stat-card { padding: 14px 12px; gap: 10px; }
-  .stat-icon-box { width: 40px; height: 40px; font-size: 1.1rem; border-radius: 10px; }
-  .ds-val { font-size: 1.4rem; }
-  .ds-label { font-size: 0.72rem; }
-  .dashboard-body { padding: 16px 0; gap: 14px; }
-  .card { padding: 16px; }
-  .card-header-row { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .dashboard-header { padding: 14px 0 16px !important; }
+  .dashboard-header h1 { font-size: 1.18rem !important; }
+  .dash-header-row { flex-direction: row !important; align-items: center !important; justify-content: space-between !important; gap: 8px !important; }
+  .dash-stats { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; gap: 6px !important; margin-bottom: 0 !important; }
+  .dash-stat-card { padding: 8px 4px !important; gap: 4px !important; border-radius: 12px !important; flex-direction: column !important; align-items: center !important; text-align: center !important; min-width: 0 !important; }
+  .stat-icon-box { width: 28px !important; height: 28px !important; border-radius: 8px !important; margin-bottom: 2px !important; }
+  .stat-icon-box svg { width: 14px !important; height: 14px !important; }
+  .ds-val { font-size: 1.05rem !important; line-height: 1 !important; margin: 0 !important; }
+  .ds-label { font-size: 0.64rem !important; margin-top: 1px !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
+  .ds-trend { display: none !important; }
+  .dashboard-body { padding: 10px 0 120px !important; gap: 12px !important; }
 
-  /* Live queue */
-  .live-queue-card { padding: 14px; }
-  .lq-body { grid-template-columns: 1fr !important; gap: 12px !important; }
-  .lq-info-row { flex-direction: column; gap: 2px; }
-  .lq-key { min-width: unset; font-size: 0.72rem; }
-  .lq-val { font-size: 0.82rem; }
+  /* Patient appointments card on mobile - no enclosing outer border box */
+  .dashboard-body .card { background: transparent !important; border: none !important; box-shadow: none !important; padding: 0 !important; }
+  .card-header-row { flex-direction: row !important; align-items: center !important; justify-content: space-between !important; border-bottom: none !important; padding-bottom: 4px !important; margin-bottom: 10px !important; }
+  .card-header-row h3 { font-size: 1.08rem !important; margin: 0 !important; font-weight: 800 !important; }
 
-  /* Appointment list */
-  .appt-row { flex-wrap: wrap; gap: 10px; padding: 12px 0; }
-  .appt-actions-col { width: 100%; justify-content: flex-end; }
-  .dash-tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  .dash-tab { padding: 8px 12px; font-size: 0.78rem; white-space: nowrap; }
+  /* Segmented pill tabs on mobile - completely removes any lines around history button */
+  .dash-tabs { display: inline-flex !important; background: #f1f5f9 !important; padding: 3px !important; border-radius: 999px !important; border: none !important; border-bottom: none !important; margin-bottom: 0 !important; gap: 2px !important; overflow: visible !important; }
+  .dash-tab { padding: 6px 14px !important; border-radius: 999px !important; border: none !important; border-bottom: none !important; margin-bottom: 0 !important; font-size: 0.78rem !important; font-weight: 600 !important; color: #64748b !important; background: transparent !important; white-space: nowrap !important; outline: none !important; box-shadow: none !important; }
+  .dash-tab.active { background: #ffffff !important; color: #0d9488 !important; font-weight: 700 !important; border: none !important; border-bottom: none !important; box-shadow: 0 1px 4px rgba(0,0,0,0.08) !important; }
 
   /* Doctor queue */
   .doctor-queue-row { grid-template-columns: 1fr !important; gap: 10px !important; padding: 14px !important; }
@@ -163,7 +160,7 @@
   .hero-v2-title { font-size: 1.8rem !important; }
   .otp-input { width: 38px !important; height: 46px !important; font-size: 1.1rem !important; }
   .otp-container { gap: 5px !important; }
-  .dash-stats { grid-template-columns: 1fr 1fr !important; }
+  .dash-stats { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
   .dept-cards-grid { grid-template-columns: 1fr !important; }
 }
 
