@@ -40,9 +40,7 @@ const FindHospital = () => {
 
   useEffect(() => {
     if (!loading && window.location.hash === '#bottom') {
-      window.scrollTo(0, 999999);
-      const el = document.getElementById('fh-bottom-anchor');
-      if (el) el.scrollIntoView();
+      window.scrollTo(0, document.body.scrollHeight);
     }
   }, [loading]);
 
