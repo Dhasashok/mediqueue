@@ -39,7 +39,7 @@
 /* Hero inner */
 .hero-v2-inner {
   display: grid; grid-template-columns: 1fr 1fr; gap: 60px;
-  align-items: center; padding-top: 100px; padding-bottom: 60px;
+  align-items: center; padding-top: 100px; padding-bottom: 90px;
   position: relative; z-index: 2; flex: 1;
 }
 
@@ -172,61 +172,7 @@
   50% { transform: translateY(-8px); }
 }
 
-/* ── Floating Stats Card (Option A) ────────────────────────── */
-.hero-stats-wrap {
-  position: relative;
-  z-index: 10;
-  margin-top: -46px;
-  padding: 0 16px;
-  width: 100%;
-}
-.hero-stats-card {
-  background: #ffffff;
-  border-radius: 20px;
-  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08), 0 2px 8px rgba(15, 23, 42, 0.04);
-  border: 1.5px solid #e2e8f0;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  padding: 24px 28px;
-  gap: 16px;
-}
-.hero-stat-item {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 8px 16px;
-  border-right: 1px solid #f1f5f9;
-}
-.hero-stat-item:last-child {
-  border-right: none;
-}
-.hero-stat-icon-wrap {
-  width: 48px;
-  height: 48px;
-  border-radius: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-.hero-stat-info {
-  display: flex;
-  flex-direction: column;
-}
-.hero-stat-val {
-  font-size: 1.75rem;
-  font-weight: 800;
-  color: #0f172a;
-  font-family: 'DM Sans', sans-serif;
-  line-height: 1.1;
-  letter-spacing: -0.5px;
-}
-.hero-stat-label {
-  font-size: 0.78rem;
-  color: #64748b;
-  font-weight: 600;
-  margin-top: 2px;
-}
+
 
 /* ════════════════════════════════════════════════════════
    HOW IT WORKS
@@ -371,7 +317,6 @@
   .hero-v2-btns { justify-content: center; }
   .hero-trust { justify-content: center; }
   .hero-v2-card-wrap { display: none; }
-  .hero-stats-card { grid-template-columns: repeat(2, 1fr); }
   .steps-row { flex-direction: column; gap: 16px; }
   .step-arrow { display: none; }
   .features-grid-v2 { grid-template-columns: 1fr; }
@@ -398,114 +343,30 @@
     margin-bottom: 20px;
   }
 
-  /* Mobile 4-Up Quick Actions Grid */
-  .quick-actions-mobile {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
-    margin: 0 auto 20px;
-    max-width: 440px;
-    width: 100%;
-  }
-  .qa-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 7px;
-    text-decoration: none;
-    font-size: 0.72rem;
-    font-weight: 600;
-    color: #e2e8f0;
-    transition: transform 0.15s ease;
-  }
-  .qa-item:active {
-    transform: scale(0.94);
-  }
-  .qa-icon-circle {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-  }
-  .qa-teal {
-    background: rgba(13, 148, 136, 0.25);
-    color: #2dd4bf;
-    border: 1px solid rgba(45, 212, 191, 0.35);
-  }
-  .qa-blue {
-    background: rgba(37, 99, 235, 0.25);
-    color: #60a5fa;
-    border: 1px solid rgba(96, 165, 250, 0.35);
-  }
-  .qa-purple {
-    background: rgba(139, 92, 246, 0.25);
-    color: #c084fc;
-    border: 1px solid rgba(192, 132, 252, 0.35);
-  }
-  .qa-red {
-    background: rgba(239, 68, 68, 0.25);
-    color: #f87171;
-    border: 1px solid rgba(248, 113, 113, 0.35);
-  }
-
   /* Mobile Hero Action Buttons */
+  .hero-v2 {
+    min-height: auto;
+  }
+  .hero-v2-inner {
+    padding-top: 40px;
+    padding-bottom: 40px;
+  }
   .hero-v2-btns {
     display: flex !important;
-    flex-direction: column;
-    gap: 10px;
     width: 100%;
-    max-width: 440px;
-    margin: 0 auto 20px;
+    max-width: 380px;
+    margin: 0 auto 16px;
   }
   .btn-hero-primary {
     width: 100%;
     justify-content: center;
-    padding: 12px 20px;
-    font-size: 0.92rem;
+    padding: 14px 24px;
+    font-size: 0.96rem;
+    font-weight: 700;
   }
-  .btn-hero-outline {
-    width: 100%;
-    justify-content: center;
-    padding: 10px 20px;
-    font-size: 0.88rem;
-    background: transparent;
-    border-color: rgba(255, 255, 255, 0.15);
-  }
-
-  /* Floating Stats Card Mobile (Option A) */
-  .hero-v2 {
-    min-height: auto;
-  }
-  .hero-stats-wrap {
-    margin-top: -30px;
-    padding: 0 16px;
-    margin-bottom: 6px;
-  }
-  .hero-stats-card {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-    padding: 16px 14px;
-    border-radius: 18px;
-    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
-  }
-  .hero-stat-item {
-    padding: 6px 4px;
-    border-right: none;
-    gap: 10px;
-  }
-  .hero-stat-icon-wrap {
-    width: 40px;
-    height: 40px;
-    border-radius: 12px;
-  }
-  .hero-stat-val {
-    font-size: 1.35rem;
-  }
-  .hero-stat-label {
-    font-size: 0.72rem;
+  .hero-trust {
+    margin-top: 8px;
+    margin-bottom: 0;
   }
 
   /* Clean Vertical Stack for Steps and Features on Mobile (Option 1) */

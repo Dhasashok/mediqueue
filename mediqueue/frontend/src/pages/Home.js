@@ -1,31 +1,19 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import {
   Building2,
-  UserCheck,
-  Heart,
-  Zap,
-  Search,
   CalendarCheck,
   QrCode,
   ArrowRight,
-  Clock,
   Cpu,
   Radio,
   Lock,
   CheckCircle2,
-  Sparkles,
-  PhoneCall,
-  Activity
+  Zap,
+  Activity,
+  Sparkles
 } from 'lucide-react';
 import './Home.css';
-
-const stats = [
-  { value: '12+',  label: 'Departments',      icon: <Building2 size={22} color="#0d9488" />, bg: '#ccfbf1' },
-  { value: '200+', label: 'Expert Doctors',    icon: <UserCheck size={22} color="#0284c7" />, bg: '#e0f2fe' },
-  { value: '50k+', label: 'Patients Served',   icon: <Heart size={22} color="#e11d48" />, bg: '#ffe4e6' },
-  { value: '70%',  label: 'Wait Time Reduced', icon: <Zap size={22} color="#d97706" />, bg: '#fef3c7' },
-];
 
 const steps = [
   {
@@ -94,27 +82,6 @@ const features = [
 ];
 
 const Home = () => {
-  const countersRef = useRef([]);
-
-  // Animate counters on mount
-  useEffect(() => {
-    const targets = [12, 200, 50000, 70];
-    const suffixes = ['+', '+', 'k+', '%'];
-    countersRef.current.forEach((el, i) => {
-      if (!el) return;
-      let start = 0;
-      const end = targets[i];
-      const duration = 1800;
-      const step = end / (duration / 16);
-      const timer = setInterval(() => {
-        start += step;
-        if (start >= end) { start = end; clearInterval(timer); }
-        const display = i === 2 ? Math.floor(start / 1000) : Math.floor(start);
-        el.textContent = display + suffixes[i];
-      }, 16);
-    });
-  }, []);
-
   return (
     <div className="home">
 
@@ -146,25 +113,6 @@ const Home = () => {
             </p>
 
             {/* Mobile 4-Up Quick Actions Grid */}
-            <div className="quick-actions-mobile">
-              <Link to="/find-hospital" className="qa-item">
-                <div className="qa-icon-circle qa-teal"><Search size={20} /></div>
-                <span>Find Hospital</span>
-              </Link>
-              <Link to="/patient/dashboard" className="qa-item">
-                <div className="qa-icon-circle qa-blue"><QrCode size={20} /></div>
-                <span>My Token</span>
-              </Link>
-              <Link to="/find-hospital" className="qa-item">
-                <div className="qa-icon-circle qa-purple"><Clock size={20} /></div>
-                <span>Wait Times</span>
-              </Link>
-              <a href="tel:102" className="qa-item">
-                <div className="qa-icon-circle qa-red"><PhoneCall size={20} /></div>
-                <span>Emergency</span>
-              </a>
-            </div>
-
             {/* Hero Primary Action Button */}
             <div className="hero-v2-btns">
               <Link to="/find-hospital" className="btn-hero-primary">
@@ -226,30 +174,6 @@ const Home = () => {
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Floating Stats Card (Option A) */}
-        <div className="hero-stats-wrap">
-          <div className="container">
-            <div className="hero-stats-card">
-              {stats.map((s, i) => (
-                <div key={i} className="hero-stat-item">
-                  <div className="hero-stat-icon-wrap" style={{ background: s.bg }}>
-                    {s.icon}
-                  </div>
-                  <div className="hero-stat-info">
-                    <span
-                      className="hero-stat-val"
-                      ref={el => countersRef.current[i] = el}
-                    >
-                      {s.value}
-                    </span>
-                    <span className="hero-stat-label">{s.label}</span>
-                  </div>
-                </div>
-              ))}
             </div>
           </div>
         </div>
