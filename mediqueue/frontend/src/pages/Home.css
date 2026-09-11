@@ -454,30 +454,44 @@
     font-size: 0.72rem;
   }
 
-  /* Horizontal Snapping Carousel on Mobile */
-  .horizontal-scroll-mobile {
+  /* Clean Vertical Stack for Steps and Features on Mobile (Option 1) */
+  .steps-row {
     display: flex !important;
-    overflow-x: auto !important;
-    scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch;
-    padding: 6px 12px 18px 12px !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+    width: 100% !important;
+    align-items: stretch !important;
+  }
+  .step-arrow {
+    display: none !important;
+  }
+  .step-card-v2 {
+    width: 100% !important;
+    flex: none !important;
+    padding: 24px 20px !important;
+    border-radius: 18px !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04) !important;
+  }
+  .step-icon-v2 {
+    width: 64px !important;
+    height: 64px !important;
+    font-size: 1.8rem !important;
+    border-radius: 18px !important;
+    margin-bottom: 14px !important;
+  }
+  .features-grid-v2 {
+    display: flex !important;
+    flex-direction: column !important;
     gap: 14px !important;
-    scrollbar-width: none;
-    margin: 0 -16px;
+    width: 100% !important;
   }
-  .horizontal-scroll-mobile::-webkit-scrollbar {
-    display: none;
-  }
-  .horizontal-scroll-mobile .feature-card-v2 {
-    flex: 0 0 270px !important;
-    scroll-snap-align: center;
+  .feature-card-v2 {
+    width: 100% !important;
+    flex: none !important;
+    padding: 20px 18px !important;
+    border-radius: 18px !important;
     margin: 0 !important;
-    padding: 18px 16px;
-  }
-  .horizontal-scroll-mobile .step-card-v2 {
-    flex: 0 0 270px !important;
-    scroll-snap-align: center;
-    padding: 18px 16px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04) !important;
   }
 
   /* Tighten section padding to eliminate gap above footer */

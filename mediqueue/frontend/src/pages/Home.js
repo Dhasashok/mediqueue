@@ -263,7 +263,7 @@ const Home = () => {
             <p>Three steps to a smarter, faster hospital visit</p>
           </div>
 
-          <div className="steps-row horizontal-scroll-mobile">
+          <div className="steps-row">
             {steps.map((s, i) => (
               <React.Fragment key={i}>
                 <div className="step-card-v2">
@@ -295,7 +295,7 @@ const Home = () => {
             <p>Cutting-edge technology meets compassionate care</p>
           </div>
 
-          <div className="features-grid-v2 horizontal-scroll-mobile">
+          <div className="features-grid-v2">
             {features.map((f, i) => (
               <div key={i} className="feature-card-v2">
                 <div className="fc-top">
