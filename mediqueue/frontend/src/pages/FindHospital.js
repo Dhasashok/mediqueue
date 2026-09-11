@@ -26,13 +26,10 @@ const DEPT_ICONS = {
   'Emergency':        { icon: '🚑', color: '#dc2626', light: '#fef2f2', wait: '< 2m' },
 };
 
-const CATEGORIES = ['All', 'General Medicine', 'Cardiology', 'Pediatrics', 'Orthopedics', 'Emergency'];
-
 const FindHospital = () => {
   const [departments, setDepartments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('All');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -43,74 +40,50 @@ const FindHospital = () => {
   }, []);
 
   const filtered = departments.filter(d => {
-    const matchesSearch = d.name.toLowerCase().includes(search.toLowerCase()) ||
+    return d.name.toLowerCase().includes(search.toLowerCase()) ||
       (d.description && d.description.toLowerCase().includes(search.toLowerCase()));
-    const matchesCategory = selectedCategory === 'All' || d.name.toLowerCase().includes(selectedCategory.toLowerCase());
-    return matchesSearch && matchesCategory;
   });
 
   return (
     <div className="fh-page">
 
-      {/* ── Hero Header ─────────────────────────────── */}
+      {/* ── Compact Professional Hospital Header ─────────────────────────────── */}
       <section className="fh-hero">
         <div className="fh-hero-bg"></div>
         <div className="container fh-hero-inner">
-          <div className="breadcrumb" style={{ marginBottom: 20 }}>
-            <a href="/" style={{ color: '#94a3b8' }}>Home</a>
-            <span style={{ color: '#475569' }}>›</span>
-            <span style={{ color: '#cbd5e1' }}>Find Hospital</span>
+          <div className="breadcrumb">
+            <a href="/">Home</a>
+            <span>›</span>
+            <span>Book Appointment</span>
           </div>
 
-          <div className="fh-hero-content">
-            <div className="fh-hero-left">
-              <div className="fh-live-tag">
-                <span className="fh-live-dot"></span>
-                Online Booking & Queue Active
+          <div className="fh-hero-compact">
+            <div className="fh-hero-main">
+              <div className="fh-title-row">
+                <h1 className="fh-title">City General Hospital</h1>
+                <span className="fh-live-badge">
+                  <span className="fh-live-dot"></span> Online Booking Active
+                </span>
               </div>
-              <h1 className="fh-title">City General Hospital</h1>
-              <p className="fh-subtitle">Pune, Maharashtra</p>
-              <p className="fh-desc">
-                NABH Accredited · 24/7 Emergency Care · 200+ Specialist Doctors
-              </p>
-
-              <div className="fh-meta-pills">
-                <span className="fh-pill"><MapPin size={13} /> MG Road, Pune – 411001</span>
-                <span className="fh-pill"><Phone size={13} /> 020-1234-5678</span>
-                <span className="fh-pill"><Clock size={13} /> Mon–Sat 8AM–8PM</span>
-                <span className="fh-pill fh-pill-red"><Zap size={13} /> Emergency 24/7</span>
-              </div>
+              <p className="fh-subtitle">Pune, Maharashtra · NABH Accredited</p>
             </div>
 
-            {/* Quick stats on right */}
-            <div className="fh-hero-stats">
-              <div className="fh-hstat">
-                <span className="fh-hstat-val">12+</span>
-                <span className="fh-hstat-label">Departments</span>
-              </div>
-              <div className="fh-hstat">
-                <span className="fh-hstat-val">200+</span>
-                <span className="fh-hstat-label">Doctors</span>
-              </div>
-              <div className="fh-hstat">
-                <span className="fh-hstat-val">50k+</span>
-                <span className="fh-hstat-label">Patients</span>
-              </div>
-              <div className="fh-hstat">
-                <span className="fh-hstat-val">24/7</span>
-                <span className="fh-hstat-label">Emergency</span>
-              </div>
+            <div className="fh-meta-pills">
+              <span className="fh-pill"><MapPin size={13} /> MG Road, Pune – 411001</span>
+              <span className="fh-pill"><Phone size={13} /> 020-1234-5678</span>
+              <span className="fh-pill"><Clock size={13} /> Mon–Sat 8AM–8PM</span>
+              <span className="fh-pill fh-pill-red"><Zap size={13} /> Emergency 24/7</span>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ── Search + Quick Filter Chips Bar ──────────────────── */}
+      {/* ── Search Bar ──────────────────── */}
       <div className="fh-search-bar">
         <div className="container fh-search-inner">
           <div className="fh-search-left">
             <h3>Select a Department</h3>
-            <p>{filtered.length} departments available</p>
+            <p>{filtered.length} department{filtered.length !== 1 ? 's' : ''} available</p>
           </div>
           <div className="fh-search-box">
             <Search size={18} className="fh-search-icon" color="#0d9488" />
@@ -123,28 +96,12 @@ const FindHospital = () => {
             {search && (
               <button 
                 onClick={() => setSearch('')}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', fontSize: '1.1rem' }}
+                className="fh-search-clear"
                 aria-label="Clear search"
               >
                 ×
               </button>
             )}
-          </div>
-        </div>
-
-        {/* Mobile-Friendly Category Filter Chips */}
-        <div className="container fh-category-scroll">
-          <div className="fh-category-chips">
-            {CATEGORIES.map(cat => (
-              <button
-                key={cat}
-                type="button"
-                className={`fh-cat-chip ${selectedCategory === cat ? 'active' : ''}`}
-                onClick={() => setSelectedCategory(cat)}
-              >
-                {cat}
-              </button>
-            ))}
           </div>
         </div>
       </div>
@@ -159,8 +116,8 @@ const FindHospital = () => {
               <Search size={48} color="#94a3b8" />
               <h3>No departments found</h3>
               <p>We couldn't find any department matching "{search}". Try searching for another symptom or department.</p>
-              <button className="btn-primary" onClick={() => { setSearch(''); setSelectedCategory('All'); }}>
-                Reset Filters
+              <button className="btn-primary" onClick={() => setSearch('')}>
+                Reset Search
               </button>
             </div>
           ) : (
@@ -169,8 +126,7 @@ const FindHospital = () => {
                 const meta = DEPT_ICONS[d.name] || {
                   icon: '🏥',
                   color: '#0d9488',
-                  light: '#f0fdf4',
-                  wait: '15m'
+                  light: '#f0fdf4'
                 };
                 return (
                   <div
@@ -193,15 +149,6 @@ const FindHospital = () => {
 
                       {/* Info */}
                       <div className="fhdc-info">
-                        <div className="fhdc-badge-row">
-                          <span className="fhdc-count" style={{ background: meta.light, color: meta.color }}>
-                            {d.doctor_count || 1} Doctor{(d.doctor_count || 1) !== 1 ? 's' : ''}
-                          </span>
-                          <span className="fhdc-wait-pill">
-                            <span className="fhdc-live-dot"></span>
-                            ~{meta.wait} wait
-                          </span>
-                        </div>
                         <h3 className="fhdc-name">{d.name}</h3>
                         <p className="fhdc-desc">{d.description}</p>
                       </div>
@@ -213,9 +160,9 @@ const FindHospital = () => {
                     </div>
 
                     {/* Book button / footer */}
-                    <div className="fhdc-btn" style={{ background: meta.color }}>
+                    <div className="fhdc-btn">
                       <span>Book Appointment</span>
-                      <ChevronRight size={16} />
+                      <ChevronRight size={15} />
                     </div>
                   </div>
                 );
