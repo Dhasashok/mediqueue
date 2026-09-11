@@ -1,17 +1,17 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import {
+  MapPin,
+  Phone,
+  Clock,
+  Zap,
+  ShieldCheck,
+  Award
+} from 'lucide-react';
 import './Footer.css';
 
 const Footer = () => (
   <footer className="footer-v2">
-
-    {/* Top wave divider */}
-    <div className="footer-wave">
-      <svg viewBox="0 0 1440 60" preserveAspectRatio="none">
-        <path d="M0,60 C360,0 1080,60 1440,0 L1440,60 Z" fill="#0f172a"/>
-      </svg>
-    </div>
-
     <div className="footer-body">
       <div className="container footer-grid-v2">
 
@@ -22,70 +22,57 @@ const Footer = () => (
             <span className="footer-logo-text">Medi<span>Queue</span></span>
           </div>
           <p className="footer-tagline">
-            India's smartest hospital queue management system. Skip the wait, not the care.
+            Smart hospital queue management & ML wait predictions.
           </p>
           <div className="footer-badges">
-            <span className="footer-badge">🏆 NABH Accredited</span>
-            <span className="footer-badge">✅ ISO Certified</span>
+            <span className="footer-badge"><Award size={12} /> NABH Accredited</span>
+            <span className="footer-badge"><ShieldCheck size={12} /> ISO Certified</span>
           </div>
         </div>
 
-        {/* Links */}
+        {/* Quick Links */}
         <div className="footer-col-v2">
-          <h4 className="footer-col-title">Quick Links</h4>
+          <h4 className="footer-col-title">Navigation</h4>
           <div className="footer-links">
             <Link to="/">Home</Link>
             <Link to="/find-hospital">Find Hospital</Link>
-            <Link to="/about">About Us</Link>
-            <Link to="/login">Login</Link>
-            <Link to="/register">Register</Link>
+            <Link to="/about">About Hospital</Link>
+            <Link to="/login">Sign In / Register</Link>
           </div>
         </div>
 
-        {/* Hospital */}
+        {/* Hospital Contact */}
         <div className="footer-col-v2">
-          <h4 className="footer-col-title">Hospital</h4>
+          <h4 className="footer-col-title">Hospital Info</h4>
           <div className="footer-info-list">
             <div className="footer-info-item">
-              <span className="fi-icon">🏥</span>
-              <span>City General Hospital</span>
-            </div>
-            <div className="footer-info-item">
-              <span className="fi-icon">📍</span>
+              <MapPin size={14} className="fi-icon" />
               <span>MG Road, Pune – 411001</span>
             </div>
             <div className="footer-info-item">
-              <span className="fi-icon">📞</span>
+              <Phone size={14} className="fi-icon" />
               <span>020-1234-5678</span>
             </div>
             <div className="footer-info-item">
-              <span className="fi-icon">⏰</span>
+              <Clock size={14} className="fi-icon" />
               <span>Mon–Sat: 8AM – 8PM</span>
             </div>
           </div>
         </div>
 
-        {/* Emergency */}
-        <div className="footer-col-v2">
-          <h4 className="footer-col-title">Emergency</h4>
-          <div className="footer-emergency-card">
-            <div className="fe-header">
-              <span>🚨</span>
-              <span>24/7 Emergency</span>
+        {/* Emergency Hotline */}
+        <div className="footer-col-v2 footer-emergency-col">
+          <h4 className="footer-col-title">24/7 Emergency</h4>
+          <a href="tel:102" className="footer-emergency-pill">
+            <div className="fep-icon">
+              <Zap size={16} />
             </div>
-            <div className="fe-number">102 / 108</div>
-            <p className="fe-sub">Available round the clock</p>
-          </div>
-          <div className="footer-info-list" style={{ marginTop: 16 }}>
-            <div className="footer-info-item">
-              <span className="fi-icon">✅</span>
-              <span>NABH Accredited</span>
+            <div className="fep-text">
+              <span className="fep-label">Immediate Ambulance</span>
+              <strong className="fep-number">102 / 108</strong>
             </div>
-            <div className="footer-info-item">
-              <span className="fi-icon">👨‍⚕️</span>
-              <span>200+ Doctors Online</span>
-            </div>
-          </div>
+          </a>
+          <p className="fep-note">Available 24/7 round the clock</p>
         </div>
 
       </div>
@@ -94,15 +81,16 @@ const Footer = () => (
     {/* Bottom bar */}
     <div className="footer-bottom-v2">
       <div className="container footer-bottom-inner">
-        <p>© 2024 MediQueue · City General Hospital, Pune · All Rights Reserved</p>
+        <p>© 2026 MediQueue · City General Hospital, Pune</p>
         <div className="footer-bottom-links">
-          <a href="#!">Privacy Policy</a>
+          <a href="#!">Privacy</a>
           <span>·</span>
-          <a href="#!">Terms of Service</a>
+          <a href="#!">Terms</a>
+          <span>·</span>
+          <a href="#!">NABH Standards</a>
         </div>
       </div>
     </div>
-
   </footer>
 );
 

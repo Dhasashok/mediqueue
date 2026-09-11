@@ -13,7 +13,7 @@
   background: white;
   border-bottom: 1px solid #e2e8f0;
   position: sticky;
-  top: 68px;
+  top: 54px;
   z-index: 35;
   box-shadow: 0 2px 8px rgba(0,0,0,0.03);
 }
@@ -108,7 +108,7 @@
   gap: 28px;
   align-items: start;
 }
-.book-left { position: sticky; top: 88px; }
+.book-left { position: sticky; top: 76px; }
 
 /* ── Skeleton Loader ─────────────────────────────────── */
 @keyframes shimmer {

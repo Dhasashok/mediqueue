@@ -1,111 +1,253 @@
 /* ════════════════════════════════════════════════════════
-   FOOTER v2 — Compact Premium Design
+   FOOTER — Professional, Compact Healthcare Footer
+   Sleek 1px divider, tight padding, clean typography
 ════════════════════════════════════════════════════════ */
 
-.footer-v2 { background: #0f172a; position: relative; }
-
-/* Wave — smaller height */
-.footer-wave {
-  display: block; line-height: 0; overflow: hidden;
-  background: #f1f5f9;
+.footer-v2 {
+  background: #0f172a;
+  border-top: 1px solid #1e293b;
+  position: relative;
+  color: #94a3b8;
 }
-.footer-wave svg { display: block; width: 100%; height: 36px; }
 
-/* Body — tighter padding */
-.footer-body { padding: 36px 0 28px; }
+/* Body */
+.footer-body {
+  padding: 32px 0 22px;
+}
 
 .footer-grid-v2 {
-  display: grid; grid-template-columns: 1.8fr 1fr 1.2fr 1.2fr; gap: 36px;
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1.3fr 1.3fr;
+  gap: 28px;
   align-items: start;
 }
 
 /* ── Brand ────────────────────────────────────────────── */
 .footer-logo-v2 {
-  display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
 }
-.footer-logo-icon { font-size: 1.6rem; }
+.footer-logo-icon {
+  font-size: 1.25rem;
+  line-height: 1;
+}
 .footer-logo-text {
-  font-family: 'Fraunces', serif; font-size: 1.2rem; font-weight: 800; color: white;
+  font-family: 'Fraunces', serif;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: white;
 }
 .footer-logo-text span { color: #5eead4; }
 
 .footer-tagline {
-  color: #64748b; font-size: 0.82rem; line-height: 1.65;
-  max-width: 240px; margin-bottom: 14px;
+  color: #64748b;
+  font-size: 0.8rem;
+  line-height: 1.55;
+  max-width: 260px;
+  margin-bottom: 12px;
 }
 
-.footer-badges { display: flex; gap: 8px; flex-wrap: wrap; }
+.footer-badges {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
 .footer-badge {
-  display: inline-flex; align-items: center; gap: 5px;
-  background: rgba(255,255,255,0.05); color: #94a3b8;
-  padding: 4px 10px; border-radius: 6px; font-size: 0.72rem; font-weight: 600;
-  border: 1px solid rgba(255,255,255,0.07);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #cbd5e1;
+  padding: 3px 9px;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-/* ── Column ───────────────────────────────────────────── */
+/* ── Columns ──────────────────────────────────────────── */
 .footer-col-title {
-  color: white; font-family: 'DM Sans', sans-serif;
-  font-size: 0.72rem; font-weight: 800;
-  text-transform: uppercase; letter-spacing: 1.5px;
-  margin-bottom: 14px; position: relative; padding-bottom: 10px;
+  color: white;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  margin-bottom: 12px;
+  position: relative;
+  padding-bottom: 8px;
 }
 .footer-col-title::after {
-  content: ''; position: absolute; bottom: 0; left: 0;
-  width: 24px; height: 2px;
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 20px;
+  height: 2px;
   background: linear-gradient(90deg, #0d9488, #0891b2);
   border-radius: 1px;
 }
 
 /* Links */
-.footer-links { display: flex; flex-direction: column; gap: 8px; }
-.footer-links a {
-  color: #64748b; font-size: 0.82rem; transition: all 0.18s;
+.footer-links {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
 }
-.footer-links a:hover { color: #5eead4; padding-left: 4px; }
+.footer-links a {
+  color: #64748b;
+  font-size: 0.82rem;
+  transition: all 0.18s ease;
+  text-decoration: none;
+}
+.footer-links a:hover {
+  color: #5eead4;
+  transform: translateX(3px);
+}
 
 /* Info list */
-.footer-info-list { display: flex; flex-direction: column; gap: 8px; }
+.footer-info-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
 .footer-info-item {
-  display: flex; align-items: center; gap: 8px;
-  font-size: 0.82rem; color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: #64748b;
 }
-.fi-icon { font-size: 0.9rem; flex-shrink: 0; width: 18px; text-align: center; }
+.fi-icon {
+  color: #0d9488;
+  flex-shrink: 0;
+}
 
-/* ── Emergency Card ───────────────────────────────────── */
-.footer-emergency-card {
-  background: rgba(239,68,68,0.1);
-  border: 1px solid rgba(239,68,68,0.2); border-radius: 12px;
-  padding: 12px 14px; margin-bottom: 12px;
+/* ── Emergency Pill ───────────────────────────────────── */
+.footer-emergency-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: 12px;
+  padding: 10px 14px;
+  text-decoration: none;
+  transition: all 0.2s ease;
 }
-.fe-header {
-  display: flex; align-items: center; gap: 6px;
-  font-size: 0.72rem; font-weight: 700; color: #fca5a5; margin-bottom: 4px;
+.footer-emergency-pill:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.4);
+  transform: translateY(-1px);
 }
-.fe-number {
-  font-size: 1.4rem; font-weight: 800; color: white;
-  font-family: 'Fraunces', serif; line-height: 1; margin-bottom: 2px;
+.fep-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
-.fe-sub { font-size: 0.68rem; color: #64748b; }
+.fep-text {
+  display: flex;
+  flex-direction: column;
+}
+.fep-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #fca5a5;
+  letter-spacing: 0.4px;
+}
+.fep-number {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: white;
+  letter-spacing: 0.5px;
+}
+.fep-note {
+  font-size: 0.7rem;
+  color: #64748b;
+  margin-top: 8px;
+}
 
 /* ── Bottom bar ───────────────────────────────────────── */
 .footer-bottom-v2 {
-  border-top: 1px solid #1e293b; padding: 14px 0;
+  border-top: 1px solid #1e293b;
+  padding: 12px 0;
 }
 .footer-bottom-inner {
-  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
 }
-.footer-bottom-inner p { font-size: 0.75rem; color: #94a3b8; }
-.footer-bottom-links { display: flex; align-items: center; gap: 10px; }
-.footer-bottom-links a { font-size: 0.75rem; color: #94a3b8; transition: color 0.2s; padding: 6px 4px; min-height: 36px; display: inline-flex; align-items: center; }
+.footer-bottom-inner p {
+  font-size: 0.74rem;
+  color: #64748b;
+}
+.footer-bottom-links {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.footer-bottom-links a {
+  font-size: 0.74rem;
+  color: #64748b;
+  transition: color 0.18s;
+  text-decoration: none;
+}
 .footer-bottom-links a:hover { color: #5eead4; }
-.footer-bottom-links span { color: #475569; }
+.footer-bottom-links span { color: #334155; }
 
-/* ── Responsive ───────────────────────────────────────── */
-@media (max-width: 1024px) {
-  .footer-grid-v2 { grid-template-columns: 1fr 1fr; gap: 28px; }
+/* ── Responsive Refinements ───────────────────────────── */
+@media (max-width: 900px) {
+  .footer-grid-v2 {
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
 }
+
 @media (max-width: 600px) {
-  .footer-grid-v2 { grid-template-columns: 1fr; gap: 24px; }
-  .footer-bottom-inner { flex-direction: column; text-align: center; }
-  .footer-badges { flex-direction: row; }
+  /* Extra bottom padding to stay above fixed BottomNav */
+  .footer-v2 {
+    padding-bottom: 74px;
+  }
+  .footer-body {
+    padding: 20px 0 14px;
+  }
+  /* Streamlined 2-column mobile layout */
+  .footer-grid-v2 {
+    grid-template-columns: 1fr 1fr;
+    gap: 18px 14px;
+  }
+  .footer-brand-col {
+    grid-column: span 2;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
+  .footer-tagline {
+    max-width: 100%;
+    margin-bottom: 8px;
+  }
+  .footer-emergency-col {
+    grid-column: span 2;
+    margin-top: 4px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+  }
+  .footer-emergency-pill {
+    padding: 8px 12px;
+  }
+  .footer-bottom-inner {
+    flex-direction: column;
+    text-align: center;
+    gap: 6px;
+  }
 }

@@ -72,7 +72,7 @@
 /* ── Search Bar + Chips ───────────────────────────────── */
 .fh-search-bar {
   background: white; border-bottom: 1px solid #e2e8f0;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.04); position: sticky; top: 68px; z-index: 40;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.04); position: sticky; top: 60px; z-index: 40;
 }
 .fh-search-inner {
   display: flex; align-items: center; justify-content: space-between;
