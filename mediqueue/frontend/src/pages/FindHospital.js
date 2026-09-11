@@ -40,7 +40,10 @@ const FindHospital = () => {
 
   useEffect(() => {
     if (!loading && window.location.hash === '#bottom') {
-      window.scrollTo(0, document.body.scrollHeight);
+      const cards = document.querySelectorAll('.fh-dept-card');
+      if (cards.length > 0) {
+        cards[cards.length - 1].scrollIntoView({ behavior: 'instant', block: 'center' });
+      }
     }
   }, [loading]);
 
