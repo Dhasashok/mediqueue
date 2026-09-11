@@ -21,10 +21,10 @@ import {
 import './Home.css';
 
 const stats = [
-  { value: '12+',  label: 'Departments',      icon: <Building2 size={24} color="#5eead4" /> },
-  { value: '200+', label: 'Expert Doctors',    icon: <UserCheck size={24} color="#38bdf8" /> },
-  { value: '50k+', label: 'Patients Served',   icon: <Heart size={24} color="#f472b6" /> },
-  { value: '70%',  label: 'Wait Time Reduced', icon: <Zap size={24} color="#facc15" /> },
+  { value: '12+',  label: 'Departments',      icon: <Building2 size={22} color="#0d9488" />, bg: '#ccfbf1' },
+  { value: '200+', label: 'Expert Doctors',    icon: <UserCheck size={22} color="#0284c7" />, bg: '#e0f2fe' },
+  { value: '50k+', label: 'Patients Served',   icon: <Heart size={22} color="#e11d48" />, bg: '#ffe4e6' },
+  { value: '70%',  label: 'Wait Time Reduced', icon: <Zap size={22} color="#d97706" />, bg: '#fef3c7' },
 ];
 
 const steps = [
@@ -148,8 +148,8 @@ const Home = () => {
             {/* Mobile 4-Up Quick Actions Grid */}
             <div className="quick-actions-mobile">
               <Link to="/find-hospital" className="qa-item">
-                <div className="qa-icon-circle qa-teal"><CalendarCheck size={20} /></div>
-                <span>Book Slot</span>
+                <div className="qa-icon-circle qa-teal"><Search size={20} /></div>
+                <span>Find Hospital</span>
               </Link>
               <Link to="/patient/dashboard" className="qa-item">
                 <div className="qa-icon-circle qa-blue"><QrCode size={20} /></div>
@@ -165,13 +165,10 @@ const Home = () => {
               </a>
             </div>
 
-            {/* Hero Buttons */}
+            {/* Hero Primary Action Button */}
             <div className="hero-v2-btns">
               <Link to="/find-hospital" className="btn-hero-primary">
-                <Search size={18} /> Find Hospital & Book
-              </Link>
-              <Link to="/about" className="btn-hero-outline">
-                Learn More <ArrowRight size={16} />
+                <CalendarCheck size={18} /> Book Appointment
               </Link>
             </div>
 
@@ -233,21 +230,27 @@ const Home = () => {
           </div>
         </div>
 
-        {/* Stats bar */}
-        <div className="hero-stats-bar">
-          <div className="container hero-stats-inner">
-            {stats.map((s, i) => (
-              <div key={i} className="hero-stat-item">
-                <span className="hero-stat-icon">{s.icon}</span>
-                <span
-                  className="hero-stat-val"
-                  ref={el => countersRef.current[i] = el}
-                >
-                  {s.value}
-                </span>
-                <span className="hero-stat-label">{s.label}</span>
-              </div>
-            ))}
+        {/* Floating Stats Card (Option A) */}
+        <div className="hero-stats-wrap">
+          <div className="container">
+            <div className="hero-stats-card">
+              {stats.map((s, i) => (
+                <div key={i} className="hero-stat-item">
+                  <div className="hero-stat-icon-wrap" style={{ background: s.bg }}>
+                    {s.icon}
+                  </div>
+                  <div className="hero-stat-info">
+                    <span
+                      className="hero-stat-val"
+                      ref={el => countersRef.current[i] = el}
+                    >
+                      {s.value}
+                    </span>
+                    <span className="hero-stat-label">{s.label}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>

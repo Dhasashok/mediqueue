@@ -172,27 +172,61 @@
   50% { transform: translateY(-8px); }
 }
 
-/* ── Stats Bar ────────────────────────────────────────── */
-.hero-stats-bar {
-  background: rgba(0,0,0,0.3); backdrop-filter: blur(10px);
-  border-top: 1px solid rgba(255,255,255,0.06);
-  position: relative; z-index: 2;
+/* ── Floating Stats Card (Option A) ────────────────────────── */
+.hero-stats-wrap {
+  position: relative;
+  z-index: 10;
+  margin-top: -46px;
+  padding: 0 16px;
+  width: 100%;
 }
-.hero-stats-inner {
-  display: grid; grid-template-columns: repeat(4, 1fr); padding: 28px 0;
+.hero-stats-card {
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08), 0 2px 8px rgba(15, 23, 42, 0.04);
+  border: 1.5px solid #e2e8f0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  padding: 24px 28px;
+  gap: 16px;
 }
 .hero-stat-item {
-  display: flex; flex-direction: column; align-items: center; gap: 4px;
-  padding: 8px; border-right: 1px solid rgba(255,255,255,0.07);
-  text-align: center;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 16px;
+  border-right: 1px solid #f1f5f9;
 }
-.hero-stat-item:last-child { border-right: none; }
-.hero-stat-icon { font-size: 1.4rem; margin-bottom: 2px; }
+.hero-stat-item:last-child {
+  border-right: none;
+}
+.hero-stat-icon-wrap {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.hero-stat-info {
+  display: flex;
+  flex-direction: column;
+}
 .hero-stat-val {
-  font-size: 2rem; font-weight: 800; color: #5eead4;
-  font-family: 'Fraunces', serif; line-height: 1;
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #0f172a;
+  font-family: 'DM Sans', sans-serif;
+  line-height: 1.1;
+  letter-spacing: -0.5px;
 }
-.hero-stat-label { font-size: 0.75rem; color: #64748b; font-weight: 500; }
+.hero-stat-label {
+  font-size: 0.78rem;
+  color: #64748b;
+  font-weight: 600;
+  margin-top: 2px;
+}
 
 /* ════════════════════════════════════════════════════════
    HOW IT WORKS
@@ -337,7 +371,7 @@
   .hero-v2-btns { justify-content: center; }
   .hero-trust { justify-content: center; }
   .hero-v2-card-wrap { display: none; }
-  .hero-stats-inner { grid-template-columns: repeat(2, 1fr); }
+  .hero-stats-card { grid-template-columns: repeat(2, 1fr); }
   .steps-row { flex-direction: column; gap: 16px; }
   .step-arrow { display: none; }
   .features-grid-v2 { grid-template-columns: 1fr; }
@@ -441,14 +475,34 @@
     border-color: rgba(255, 255, 255, 0.15);
   }
 
-  /* Compact Stats Bar */
-  .hero-stats-inner {
+  /* Floating Stats Card Mobile (Option A) */
+  .hero-v2 {
+    min-height: auto;
+  }
+  .hero-stats-wrap {
+    margin-top: -30px;
+    padding: 0 16px;
+    margin-bottom: 6px;
+  }
+  .hero-stats-card {
     grid-template-columns: repeat(2, 1fr);
     gap: 12px;
-    padding: 14px 12px;
+    padding: 16px 14px;
+    border-radius: 18px;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+  }
+  .hero-stat-item {
+    padding: 6px 4px;
+    border-right: none;
+    gap: 10px;
+  }
+  .hero-stat-icon-wrap {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
   }
   .hero-stat-val {
-    font-size: 1.5rem;
+    font-size: 1.35rem;
   }
   .hero-stat-label {
     font-size: 0.72rem;
