@@ -480,6 +480,14 @@
     padding: 18px 16px;
   }
 
+  /* Tighten section padding to eliminate gap above footer */
+  .features-v2 {
+    padding: 24px 0 10px !important;
+  }
+  .how-section {
+    padding: 24px 0 14px !important;
+  }
+
   /* Hide redundant CTA section on mobile */
   .cta-v2 {
     display: none !important;

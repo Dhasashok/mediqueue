@@ -6,7 +6,8 @@ import {
   Clock,
   Zap,
   ShieldCheck,
-  Award
+  Award,
+  Building2
 } from 'lucide-react';
 import './Footer.css';
 
@@ -77,18 +78,51 @@ const Footer = () => (
 
       </div>
 
-      {/* Mobile-Only Micro Layout (< 768px) */}
+      {/* Mobile-Only Healthcare Layout (< 768px) */}
       <div className="container footer-mobile-micro">
+        {/* Brand & Accreditations */}
         <div className="fmm-top">
           <div className="footer-logo-v2">
             <span className="footer-logo-icon">🏥</span>
             <span className="footer-logo-text">Medi<span>Queue</span></span>
           </div>
           <div className="fmm-badges">
-            <span className="fmm-badge"><Award size={10} /> NABH</span>
-            <span className="fmm-badge"><ShieldCheck size={10} /> ISO</span>
+            <span className="fmm-badge"><Award size={11} color="#0d9488" /> NABH</span>
+            <span className="fmm-badge"><ShieldCheck size={11} color="#0284c7" /> ISO</span>
           </div>
         </div>
+
+        {/* Hospital Info & Contact Card */}
+        <div className="fmm-hosp-card">
+          <div className="fmm-hosp-header">
+            <Building2 size={15} color="#0d9488" />
+            <span>City General Hospital, Pune</span>
+          </div>
+          <div className="fmm-hosp-details">
+            <div className="fmm-hosp-item">
+              <MapPin size={12} color="#0d9488" />
+              <span>MG Road, Pune – 411001</span>
+            </div>
+            <div className="fmm-hosp-item">
+              <Phone size={12} color="#0d9488" />
+              <span>020-1234-5678</span>
+            </div>
+            <div className="fmm-hosp-item">
+              <Clock size={12} color="#0d9488" />
+              <span>24/7 OPD & Emergency</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Emergency Hotline Bar */}
+        <a href="tel:102" className="fmm-emergency-bar">
+          <div className="fmm-emergency-left">
+            <span className="fmm-pulse-dot"></span>
+            <Zap size={14} className="fmm-emergency-icon" />
+            <span className="fmm-emergency-title">24/7 Ambulance Hotline</span>
+          </div>
+          <strong className="fmm-emergency-num">102 / 108</strong>
+        </a>
       </div>
     </div>
 
