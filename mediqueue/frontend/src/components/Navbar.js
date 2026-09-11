@@ -64,38 +64,64 @@ const Navbar = () => {
             <NavLink to="/about" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'} onClick={() => setMenuOpen(false)}>About</NavLink>
 
             {isLoggedIn ? (
-              <div
-                className="nav-user"
-                ref={userMenuRef}
-                onMouseEnter={() => setDropOpen(true)}
-                onMouseLeave={() => setDropOpen(false)}
-              >
-                <button
-                  className="user-btn"
-                  onClick={() => setDropOpen(prev => !prev)}
-                  aria-expanded={dropOpen}
-                  aria-label="User menu"
-                  type="button"
+              <>
+                {/* Desktop User Dropdown */}
+                <div
+                  className="nav-user desktop-only-user"
+                  ref={userMenuRef}
+                  onMouseEnter={() => setDropOpen(true)}
+                  onMouseLeave={() => setDropOpen(false)}
                 >
-                  <span className="user-avatar">{user.name?.[0]?.toUpperCase()}</span>
-                  <span className="user-name">{user.name?.split(' ')[0]}</span>
-                  <span>▾</span>
-                </button>
-                {dropOpen && (
-                  <div className="dropdown">
-                    <div className="dropdown-header">
-                      <p className="drop-name">{user.name}</p>
-                      <p className="drop-role">{user.role}</p>
+                  <button
+                    className="user-btn"
+                    onClick={() => setDropOpen(prev => !prev)}
+                    aria-expanded={dropOpen}
+                    aria-label="User menu"
+                    type="button"
+                  >
+                    <span className="user-avatar">{(user.name || user.first_name || 'U')[0].toUpperCase()}</span>
+                    <span className="user-name">{(user.name || user.first_name || 'User').split(' ')[0]}</span>
+                    <span>▾</span>
+                  </button>
+                  {dropOpen && (
+                    <div className="dropdown">
+                      <div className="dropdown-header">
+                        <p className="drop-name">{user.name || user.first_name || 'User'}</p>
+                        <p className="drop-role">{user.role}</p>
+                      </div>
+                      <Link to={dashboardPath} className="dropdown-item" onClick={() => { setDropOpen(false); setMenuOpen(false); }}>
+                        <LayoutDashboard size={15} /> Dashboard
+                      </Link>
+                      <button className="dropdown-item danger" onClick={handleLogout}>
+                        <LogOut size={15} /> Logout
+                      </button>
                     </div>
-                    <Link to={dashboardPath} className="dropdown-item" onClick={() => { setDropOpen(false); setMenuOpen(false); }}>
-                      <LayoutDashboard size={15} /> Dashboard
+                  )}
+                </div>
+
+                {/* Mobile Drawer User Card */}
+                <div className="mobile-only-user">
+                  <div className="mobile-user-profile">
+                    <div className="mobile-user-avatar">
+                      {(user.name || user.first_name || 'U')[0].toUpperCase()}
+                    </div>
+                    <div className="mobile-user-info">
+                      <p className="mup-name">{user.name || user.first_name || 'User'}</p>
+                      <span className="mup-role">{user.role}</span>
+                    </div>
+                  </div>
+                  <div className="mobile-user-links">
+                    <Link to={dashboardPath} className="mobile-user-link" onClick={() => setMenuOpen(false)}>
+                      <LayoutDashboard size={16} />
+                      <span>Dashboard</span>
                     </Link>
-                    <button className="dropdown-item danger" onClick={handleLogout}>
-                      <LogOut size={15} /> Logout
+                    <button className="mobile-user-link danger" onClick={handleLogout}>
+                      <LogOut size={16} />
+                      <span>Logout</span>
                     </button>
                   </div>
-                )}
-              </div>
+                </div>
+              </>
             ) : (
               <Link to="/login" className="btn btn-primary" onClick={() => setMenuOpen(false)}>
                 Login / Register

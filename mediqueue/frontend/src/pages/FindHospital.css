@@ -401,7 +401,7 @@
 
   /* Departments list */
   .fh-depts-section {
-    padding: 14px 0 60px;
+    padding: 14px 0 110px !important;
   }
   .fh-dept-grid {
     grid-template-columns: 1fr;
@@ -450,6 +450,7 @@
     margin-bottom: 0;
     font-size: 0.76rem;
   }
+  /* Standardized Branded MediQueue Teal Button */
   .fhdc-mobile-tap-btn {
     display: flex !important;
     align-items: center;
@@ -459,7 +460,14 @@
     font-size: 0.78rem;
     font-weight: 700;
     flex-shrink: 0;
-    border: 1.5px solid currentColor;
+    background: #f0fdfa !important;
+    border: 1.5px solid #0d9488 !important;
+    color: #0f766e !important;
+    transition: all 0.18s ease;
+  }
+  .fhdc-mobile-tap-btn:active {
+    background: #0d9488 !important;
+    color: white !important;
   }
   .fhdc-btn {
     display: none;

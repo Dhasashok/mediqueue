@@ -295,57 +295,77 @@
   .analytics-grid { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 768px) {
-  .dash-stats {
-    grid-template-columns: repeat(2, 1fr) !important;
+  .dashboard-header {
+    padding: 14px 0 16px !important;
+  }
+  .dash-header-row {
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
     gap: 8px !important;
   }
+  .dash-header-row h1 {
+    font-size: 1.18rem !important;
+    margin-bottom: 2px !important;
+    letter-spacing: -0.2px !important;
+  }
+  .dash-header-row p {
+    font-size: 0.74rem !important;
+    margin: 0 !important;
+  }
+  .dash-header-row .btn {
+    width: auto !important;
+    padding: 7px 13px !important;
+    font-size: 0.78rem !important;
+    border-radius: 999px !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+  }
+  .dashboard-body {
+    padding: 10px 0 120px !important;
+    gap: 12px !important;
+  }
+
+  /* Compact 4-Column Stat Bar on Mobile */
+  .dash-stats {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 6px !important;
+    margin-bottom: 0 !important;
+  }
   .dash-stat-card {
-    padding: 10px 12px !important;
-    gap: 10px !important;
+    padding: 8px 4px !important;
+    gap: 4px !important;
     border-radius: 12px !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    min-width: 0 !important;
   }
   .stat-icon-box {
-    width: 36px !important;
-    height: 36px !important;
-    border-radius: 10px !important;
+    width: 28px !important;
+    height: 28px !important;
+    border-radius: 8px !important;
+    margin-bottom: 2px !important;
   }
   .stat-icon-box svg {
-    width: 18px !important;
-    height: 18px !important;
+    width: 14px !important;
+    height: 14px !important;
   }
   .ds-val {
-    font-size: 1.25rem !important;
+    font-size: 1.05rem !important;
+    line-height: 1 !important;
+    margin: 0 !important;
   }
   .ds-label {
-    font-size: 0.72rem !important;
+    font-size: 0.64rem !important;
+    margin-top: 1px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    max-width: 100% !important;
   }
   .ds-trend {
     display: none !important;
-  }
-  .dash-header-row {
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    gap: 10px !important;
-  }
-  .dash-header-row h1 {
-    font-size: 1.35rem !important;
-    margin-bottom: 2px !important;
-  }
-  .dash-header-row p {
-    font-size: 0.8rem !important;
-  }
-  .dashboard-header {
-    padding: 20px 0 !important;
-  }
-  .dashboard-body {
-    padding: 16px 0 110px !important;
-    gap: 16px !important;
-  }
-  .dash-header-row .btn {
-    width: 100% !important;
-    justify-content: center !important;
-    padding: 10px 16px !important;
-    font-size: 0.86rem !important;
   }
   .checkin-input-row { flex-direction: column; }
 
