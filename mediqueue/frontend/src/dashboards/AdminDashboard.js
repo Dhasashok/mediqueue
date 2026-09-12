@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { getPendingDoctors, approveDoctor, getAllDoctors, getAnalytics } from '../services/api';
 
 import {
   QrCode, Camera, RefreshCw, CheckCircle2, XCircle, X, ArrowRight, AlertCircle,
-  CalendarCheck, Clock, Users, FileText, BarChart3, UserCheck, Stethoscope, Cpu, CalendarX, Menu, ChevronRight, Search
+  CalendarCheck, Clock, Users, FileText, BarChart3, UserCheck, Stethoscope, Cpu, CalendarX, Menu, ChevronRight, Search, LogOut
 } from 'lucide-react';
 import API from '../services/api';
 import './Dashboard.css';
@@ -270,6 +272,17 @@ const ManualEntry = ({ onScan, onClose }) => {
 
 // ── Main AdminDashboard ────────────────────────────────────────────────────────
 const AdminDashboard = () => {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/login');
+    } catch {
+      navigate('/login');
+    }
+  };
 
   // Toast state
   const [toasts, setToasts] = useState([]);
@@ -542,6 +555,15 @@ const AdminDashboard = () => {
                 <h1>Reception & Queue Desk</h1>
               </div>
               <div className="dash-header-actions">
+                <button
+                  type="button"
+                  className="btn-dash-menu-toggle"
+                  onClick={() => setMobileMenuOpen(prev => !prev)}
+                  title="Toggle Navigation Menu"
+                >
+                  <Menu size={15} />
+                  <span>Menu</span>
+                </button>
                 <button type="button" className="btn-refresh" onClick={loadAll} title="Reload live data">
                   <RefreshCw size={13} className={loading ? "spin-slow" : ""} />
                   <span>Refresh</span>
@@ -552,88 +574,6 @@ const AdminDashboard = () => {
         </div>
 
         <div className="container dashboard-body">
-
-          {/* Stats */}
-          {analytics && (
-            <div className="dash-stats">
-              <div className="dash-stat-card">
-                <div className="stat-icon-box blue"><span>👥</span></div>
-                <div className="ds-content">
-                  <p className="ds-val">{analytics.total_patients}</p>
-                  <p className="ds-label">Total Patients</p>
-                </div>
-              </div>
-              <div className="dash-stat-card">
-                <div className="stat-icon-box teal"><span>🩺</span></div>
-                <div className="ds-content">
-                  <p className="ds-val">{analytics.total_doctors}</p>
-                  <p className="ds-label">Active Doctors</p>
-                </div>
-              </div>
-              <div className="dash-stat-card">
-                <div className="stat-icon-box green"><span>📅</span></div>
-                <div className="ds-content">
-                  <p className="ds-val">{analytics.today_appointments}</p>
-                  <p className="ds-label">Today's Bookings</p>
-                </div>
-              </div>
-              <div className="dash-stat-card">
-                <div className="stat-icon-box red"><span>🔴</span></div>
-                <div className="ds-content">
-                  <p className="ds-val">{allQueues.length}</p>
-                  <p className="ds-label">In Queue Now</p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Pending alert */}
-          {pending.length > 0 && (
-            <div className="pending-doctor-banner">
-              <div className="pdb-text">
-                <span>🔔</span>
-                <strong>{pending.length} doctor{pending.length > 1 ? 's' : ''} awaiting approval</strong>
-              </div>
-              <button className="btn btn-primary btn-sm" onClick={() => setActiveTab('pending')}>Review Now</button>
-            </div>
-          )}
-
-          {/* Check-In Card: Compact, Perfectly Aligned */}
-          <div className="checkin-box">
-            <div className="checkin-header-row">
-              <h3 className="checkin-title">🏥 Patient Check-In</h3>
-            </div>
-            <div className="checkin-action-group">
-              <div className="checkin-input-wrapper">
-                <Search size={15} className="checkin-input-icon" />
-                <input
-                  placeholder="e.g. MQ-725240-4562"
-                  value={checkInId}
-                  onChange={e => setCheckInId(e.target.value.toUpperCase())}
-                  onKeyDown={e => e.key === 'Enter' && handleCheckIn()}
-                  className="checkin-input"
-                />
-              </div>
-              <button
-                type="button"
-                className="btn btn-primary checkin-submit-btn"
-                onClick={() => handleCheckIn()}
-                disabled={!!checkingIn || !checkInId.trim()}
-              >
-                {checkingIn ? '⏳ Checking in...' : <><CheckCircle2 size={15} /> <span>Check In</span></>}
-              </button>
-              <span className="checkin-or-divider">OR</span>
-              <button
-                type="button"
-                className="btn btn-outline checkin-scan-btn"
-                onClick={() => setShowScanner(true)}
-              >
-                <Camera size={15} />
-                <span>Scan QR Code</span>
-              </button>
-            </div>
-          </div>
-
           {/* Main 2-Column Dashboard Shell with Left Sidebar */}
           <div className="dash-shell">
             {/* Mobile Section Switcher Bar */}
@@ -659,128 +599,240 @@ const AdminDashboard = () => {
               <div className="dash-sidebar-backdrop" onClick={() => setMobileMenuOpen(false)} />
             )}
 
-            {/* Left Sidebar */}
+            {/* Left Sidebar / Drawer */}
             <aside className={`dash-sidebar ${mobileMenuOpen ? 'mobile-open' : ''}`}>
               <div className="dash-sidebar-header">
-                <span className="dash-sidebar-title">NAVIGATION</span>
+                <div className="dash-sidebar-brand">
+                  <span className="dash-sidebar-brand-icon">🏥</span>
+                  <div>
+                    <span className="dash-sidebar-brand-title">MediQueue</span>
+                    <span className="dash-sidebar-brand-sub">Staff Desk</span>
+                  </div>
+                </div>
                 {mobileMenuOpen && (
-                  <button type="button" className="dash-sidebar-close-btn" onClick={() => setMobileMenuOpen(false)}>
-                    <X size={16} />
+                  <button type="button" className="dash-sidebar-close-btn" onClick={() => setMobileMenuOpen(false)} aria-label="Close menu">
+                    <X size={18} />
                   </button>
                 )}
               </div>
-              <nav className="dash-sidebar-nav">
-                {NAV_ITEMS.map(t => {
-                  const Icon = t.icon;
-                  const isActive = activeTab === t.key;
-                  return (
-                    <button
-                      key={t.key}
-                      type="button"
-                      className={`dash-sidebar-item ${isActive ? 'active' : ''}`}
-                      onClick={() => {
-                        setActiveTab(t.key);
-                        setMobileMenuOpen(false);
-                      }}
-                    >
-                      <div className="dash-sidebar-item-left">
-                        <Icon size={16} className="dash-sidebar-icon" />
-                        <span className="dash-sidebar-label">{t.label}</span>
-                      </div>
-                      {typeof t.count === 'number' && t.count > 0 && (
-                        <span className={`dash-sidebar-badge ${t.badgeType || ''}`}>
-                          {t.count}
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
-              </nav>
+
+              <div className="dash-sidebar-nav-wrap">
+                <span className="dash-sidebar-section-label">NAVIGATION</span>
+                <nav className="dash-sidebar-nav">
+                  {NAV_ITEMS.map(t => {
+                    const Icon = t.icon;
+                    const isActive = activeTab === t.key;
+                    return (
+                      <button
+                        key={t.key}
+                        type="button"
+                        className={`dash-sidebar-item ${isActive ? 'active' : ''}`}
+                        onClick={() => {
+                          setActiveTab(t.key);
+                          setMobileMenuOpen(false);
+                        }}
+                      >
+                        <div className="dash-sidebar-item-left">
+                          <Icon size={16} className="dash-sidebar-icon" />
+                          <span className="dash-sidebar-label">{t.label}</span>
+                        </div>
+                        {typeof t.count === 'number' && t.count > 0 && (
+                          <span className={`dash-sidebar-badge ${t.badgeType || ''}`}>
+                            {t.count}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </nav>
+              </div>
+
+              {/* Drawer Footer with User Info & Logout Button */}
+              <div className="dash-sidebar-footer">
+                <div className="drawer-user-card">
+                  <div className="drawer-user-avatar">
+                    {(user?.name || user?.first_name || 'A')[0].toUpperCase()}
+                  </div>
+                  <div className="drawer-user-info">
+                    <p className="drawer-user-name">{user?.name || user?.first_name || 'Desk Staff'}</p>
+                    <span className="drawer-user-role">Hospital Admin</span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  className="drawer-logout-btn"
+                  onClick={handleLogout}
+                  title="Log out of staff portal"
+                >
+                  <LogOut size={16} />
+                  <span>Logout</span>
+                </button>
+              </div>
             </aside>
 
             {/* Main Content Area */}
             <div className="dash-content-area">
-              <div className="dash-section-header">
-                <h2 className="dash-section-title">
-                  {NAV_ITEMS.find(n => n.key === activeTab)?.label}
-                </h2>
-              </div>
-
               {loading ? <div className="loading-screen"><div className="spinner"></div></div> : (
                 <>
                 {/* TODAY'S ARRIVALS */}
                 {activeTab === 'reception' && (
-                  todayAppointments.length === 0 ? (
-                    <div className="empty-dash">
-                      <div className="empty-icon">✅</div>
-                      <p>No patients waiting for check-in today</p>
-                      <span>All patients are checked in or no bookings for today</span>
-                      <button className="btn btn-outline btn-sm" onClick={() => setActiveTab('upcoming')}>
-                        View Upcoming →
-                      </button>
-                    </div>
-                  ) : (() => {
-                    // Group by department so admin can clearly see which dept each patient belongs to
-                    const byDept = todayAppointments.reduce((acc, a) => {
-                      const dept = a.dept_name || 'Unknown';
-                      if (!acc[dept]) acc[dept] = [];
-                      acc[dept].push(a);
-                      return acc;
-                    }, {});
-                    return (
-                      <div>
-                        <div className="admin-notice-banner">
-                          <div className="admin-notice-text">
-                            <span className="admin-notice-icon">💡</span>
-                            <span>Click <strong>Check In</strong> when patient arrives, or use <strong>📷 Scan QR</strong> above</span>
-                          </div>
-                          <span className="admin-notice-badge">
-                            {todayAppointments.length} patient{todayAppointments.length !== 1 ? 's' : ''} today
-                          </span>
+                  <div>
+                    <div className="page-view-header">
+                      <div className="pvh-left">
+                        <div className="pvh-icon-wrap arrival">
+                          <CalendarCheck size={20} color="#0d9488" />
                         </div>
-                        {Object.entries(byDept).map(([dept, patients]) => (
-                          <div key={dept} style={{ marginBottom: 20 }}>
-                            <div className="admin-dept-header">
-                              <span className="admin-dept-title">
-                                🏥 {dept}
-                              </span>
-                              <span className="admin-dept-count">
-                                {patients.length} patient{patients.length !== 1 ? 's' : ''}
-                              </span>
-                            </div>
-                            <div className="appt-list" style={{ marginBottom: 0 }}>
-                              {patients.map(a => <ApptRow key={a.id} a={a} showCheckin showCancel />)}
-                            </div>
-                          </div>
-                        ))}
+                        <div>
+                          <h2 className="pvh-title">Today's Patient Arrivals & Check-In</h2>
+                          <p className="pvh-desc">Verify patient arrival tokens and check them into active OPD queues.</p>
+                        </div>
                       </div>
-                    );
-                  })()
+                      <div className="pvh-badge">
+                        <span className="live-dot green"></span>
+                        <span>Desk Active</span>
+                      </div>
+                    </div>
+
+                    {/* Check-In Card: Compact, Clean Action Group */}
+                    <div className="checkin-box">
+                      <div className="checkin-header-row">
+                        <h3 className="checkin-title">🏥 Patient Check-In</h3>
+                      </div>
+                      <div className="checkin-action-group">
+                        <div className="checkin-input-wrapper">
+                          <Search size={15} className="checkin-input-icon" />
+                          <input
+                            placeholder="e.g. MQ-725240-4562"
+                            value={checkInId}
+                            onChange={e => setCheckInId(e.target.value.toUpperCase())}
+                            onKeyDown={e => e.key === 'Enter' && handleCheckIn()}
+                            className="checkin-input"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          className="btn btn-primary checkin-submit-btn"
+                          onClick={() => handleCheckIn()}
+                          disabled={!!checkingIn || !checkInId.trim()}
+                        >
+                          {checkingIn ? '⏳ Checking in...' : <><CheckCircle2 size={15} /> <span>Check In</span></>}
+                        </button>
+                        <span className="checkin-or-divider">OR</span>
+                        <button
+                          type="button"
+                          className="btn btn-outline checkin-scan-btn"
+                          onClick={() => setShowScanner(true)}
+                        >
+                          <Camera size={15} />
+                          <span>Scan QR Code</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {todayAppointments.length === 0 ? (
+                      <div className="empty-dash">
+                        <div className="empty-icon">✅</div>
+                        <p>No patients waiting for check-in today</p>
+                        <span>All patients are checked in or no bookings for today</span>
+                        <button className="btn btn-outline btn-sm" onClick={() => setActiveTab('upcoming')}>
+                          View Upcoming →
+                        </button>
+                      </div>
+                    ) : (() => {
+                      // Group by department so admin can clearly see which dept each patient belongs to
+                      const byDept = todayAppointments.reduce((acc, a) => {
+                        const dept = a.dept_name || 'Unknown';
+                        if (!acc[dept]) acc[dept] = [];
+                        acc[dept].push(a);
+                        return acc;
+                      }, {});
+                      return (
+                        <div>
+                          <div className="admin-notice-banner">
+                            <div className="admin-notice-text">
+                              <span className="admin-notice-icon">💡</span>
+                              <span>Click <strong>Check In</strong> when patient arrives, or use <strong>📷 Scan QR</strong> above</span>
+                            </div>
+                            <span className="admin-notice-badge">
+                              {todayAppointments.length} patient{todayAppointments.length !== 1 ? 's' : ''} today
+                            </span>
+                          </div>
+                          {Object.entries(byDept).map(([dept, patients]) => (
+                            <div key={dept} style={{ marginBottom: 20 }}>
+                              <div className="admin-dept-header">
+                                <span className="admin-dept-title">
+                                  🏥 {dept}
+                                </span>
+                                <span className="admin-dept-count">
+                                  {patients.length} patient{patients.length !== 1 ? 's' : ''}
+                                </span>
+                              </div>
+                              <div className="appt-list" style={{ marginBottom: 0 }}>
+                                {patients.map(a => <ApptRow key={a.id} a={a} showCheckin showCancel />)}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    })()}
+                  </div>
                 )}
 
                 {/* UPCOMING */}
                 {activeTab === 'upcoming' && (
-                  upcomingAppointments.length === 0 ? (
-                    <div className="empty-dash">
-                      <div className="empty-icon">📆</div>
-                      <p>No upcoming appointments</p>
+                  <div>
+                    <div className="page-view-header">
+                      <div className="pvh-left">
+                        <div className="pvh-icon-wrap upcoming">
+                          <Clock size={20} color="#d97706" />
+                        </div>
+                        <div>
+                          <h2 className="pvh-title">Upcoming Scheduled Appointments</h2>
+                          <p className="pvh-desc">Future outpatient bookings across all hospital departments.</p>
+                        </div>
+                      </div>
+                      <span className="badge badge-amber">{upcomingAppointments.length} Scheduled</span>
                     </div>
-                  ) : (
-                    <div className="appt-list">
-                      {upcomingAppointments.map(a => <ApptRow key={a.id} a={a} showCancel />)}
-                    </div>
-                  )
+
+                    {upcomingAppointments.length === 0 ? (
+                      <div className="empty-dash">
+                        <div className="empty-icon">📆</div>
+                        <p>No upcoming appointments</p>
+                      </div>
+                    ) : (
+                      <div className="appt-list">
+                        {upcomingAppointments.map(a => <ApptRow key={a.id} a={a} showCancel />)}
+                      </div>
+                    )}
+                  </div>
                 )}
 
                 {/* LIVE QUEUE */}
                 {activeTab === 'livequeue' && (
-                  allQueues.length === 0 ? (
-                    <div className="empty-dash">
-                      <div className="empty-icon">😊</div>
-                      <p>No patients in queue right now</p>
-                      <span>Check in patients from Today's Arrivals tab</span>
+                  <div>
+                    <div className="page-view-header">
+                      <div className="pvh-left">
+                        <div className="pvh-icon-wrap queue">
+                          <Users size={20} color="#2563eb" />
+                        </div>
+                        <div>
+                          <h2 className="pvh-title">Live Doctor OPD Queues</h2>
+                          <p className="pvh-desc">Real-time consultation status, current calling token, and waiting queue monitor.</p>
+                        </div>
+                      </div>
+                      <span className="badge badge-teal">
+                        <span className="live-dot green" style={{ marginRight: 6 }}></span>
+                        {allQueues.length} Waiting in Total
+                      </span>
                     </div>
-                  ) : (
+
+                    {allQueues.length === 0 ? (
+                      <div className="empty-dash">
+                        <div className="empty-icon">😊</div>
+                        <p>No patients in queue right now</p>
+                        <span>Check in patients from Today's Arrivals tab</span>
+                      </div>
+                    ) : (
                     <div>
                       {Object.entries(queueByDept).map(([deptName, patients]) => (
                         <div key={deptName} style={{ marginBottom: 24 }}>
@@ -815,12 +867,25 @@ const AdminDashboard = () => {
                         </div>
                       ))}
                     </div>
-                  )
-                )}
+                  )}
+                </div>
+              )}
 
                 {/* ALL APPOINTMENTS */}
                 {activeTab === 'allappointments' && (
                   <div>
+                    <div className="page-view-header">
+                      <div className="pvh-left">
+                        <div className="pvh-icon-wrap register">
+                          <FileText size={20} color="#6366f1" />
+                        </div>
+                        <div>
+                          <h2 className="pvh-title">Master Appointments Register</h2>
+                          <p className="pvh-desc">Search, filter, and audit all patient bookings by date, department, and status.</p>
+                        </div>
+                      </div>
+                    </div>
+
                     {/* Search bar */}
                     <div style={{ position: 'relative', marginBottom: 12 }}>
                       <span style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)' }}>🔍</span>
@@ -891,6 +956,50 @@ const AdminDashboard = () => {
                 {/* ANALYTICS */}
                 {activeTab === 'overview' && analytics && (
                   <div>
+                    <div className="page-view-header">
+                      <div className="pvh-left">
+                        <div className="pvh-icon-wrap analytics">
+                          <BarChart3 size={20} color="#0d9488" />
+                        </div>
+                        <div>
+                          <h2 className="pvh-title">Hospital Operations & Analytics</h2>
+                          <p className="pvh-desc">Executive KPI metrics, patient volume trends, and department load distribution.</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Primary 4 Stat Cards */}
+                    <div className="dash-stats" style={{ marginBottom: 22 }}>
+                      <div className="dash-stat-card">
+                        <div className="stat-icon-box blue"><span>👥</span></div>
+                        <div className="ds-content">
+                          <p className="ds-val">{analytics.total_patients}</p>
+                          <p className="ds-label">Total Patients</p>
+                        </div>
+                      </div>
+                      <div className="dash-stat-card">
+                        <div className="stat-icon-box teal"><span>🩺</span></div>
+                        <div className="ds-content">
+                          <p className="ds-val">{analytics.total_doctors}</p>
+                          <p className="ds-label">Active Doctors</p>
+                        </div>
+                      </div>
+                      <div className="dash-stat-card">
+                        <div className="stat-icon-box green"><span>📅</span></div>
+                        <div className="ds-content">
+                          <p className="ds-val">{analytics.today_appointments}</p>
+                          <p className="ds-label">Today's Bookings</p>
+                        </div>
+                      </div>
+                      <div className="dash-stat-card">
+                        <div className="stat-icon-box red"><span>🔴</span></div>
+                        <div className="ds-content">
+                          <p className="ds-val">{allQueues.length}</p>
+                          <p className="ds-label">In Queue Now</p>
+                        </div>
+                      </div>
+                    </div>
+
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 14, marginBottom: 28 }}>
                       {[
                         { label: 'Total Appointments', val: analytics.total_appointments, color: '#0d9488', bg: '#ccfbf1' },
@@ -927,61 +1036,105 @@ const AdminDashboard = () => {
 
                 {/* PENDING APPROVALS */}
                 {activeTab === 'pending' && (
-                  pending.length === 0 ? (
-                    <div className="empty-dash"><div className="empty-icon">✅</div><p>No pending doctor approvals</p></div>
-                  ) : (
+                  <div>
+                    <div className="page-view-header">
+                      <div className="pvh-left">
+                        <div className="pvh-icon-wrap approvals">
+                          <UserCheck size={20} color="#e11d48" />
+                        </div>
+                        <div>
+                          <h2 className="pvh-title">Doctor Verification & Approvals</h2>
+                          <p className="pvh-desc">Verify submitted medical licenses, qualifications, and grant clinical access.</p>
+                        </div>
+                      </div>
+                      {pending.length > 0 && (
+                        <span className="badge badge-red">{pending.length} Pending Review</span>
+                      )}
+                    </div>
+
+                    {pending.length === 0 ? (
+                      <div className="empty-dash"><div className="empty-icon">✅</div><p>No pending doctor approvals</p></div>
+                    ) : (
+                      <div className="appt-list">
+                        {pending.map(d => (
+                          <div key={d.id} className="appt-row">
+                            <div className="doctor-avatar">{d.first_name[0]}</div>
+                            <div className="appt-main">
+                              <div className="appt-top-row">
+                                <p className="appt-doc">Dr. {d.first_name} {d.last_name}</p>
+                                <span className="badge badge-amber">Pending</span>
+                              </div>
+                              <p className="appt-dept">{d.specialization} · {d.dept_name} · License: {d.medical_license_no}</p>
+                              <p className="appt-date">{d.email} · {d.phone}</p>
+                            </div>
+                            <button className="btn btn-primary btn-sm" onClick={() => handleApprove(d.id)}>✓ Approve</button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* DOCTORS */}
+                {activeTab === 'doctors' && (
+                  <div>
+                    <div className="page-view-header">
+                      <div className="pvh-left">
+                        <div className="pvh-icon-wrap doctors">
+                          <Stethoscope size={20} color="#0284c7" />
+                        </div>
+                        <div>
+                          <h2 className="pvh-title">Medical Staff & Clinical Directory</h2>
+                          <p className="pvh-desc">Registered clinical specialists, consultation charges, and credentials.</p>
+                        </div>
+                      </div>
+                      <span className="badge badge-teal">{allDoctors.length} Registered</span>
+                    </div>
+
                     <div className="appt-list">
-                      {pending.map(d => (
+                      {allDoctors.map(d => (
                         <div key={d.id} className="appt-row">
                           <div className="doctor-avatar">{d.first_name[0]}</div>
                           <div className="appt-main">
                             <div className="appt-top-row">
                               <p className="appt-doc">Dr. {d.first_name} {d.last_name}</p>
-                              <span className="badge badge-amber">Pending</span>
+                              <span className={`badge ${d.is_approved ? 'badge-teal' : 'badge-amber'}`}>
+                                {d.is_approved ? '✅ Active' : '⏳ Pending'}
+                              </span>
                             </div>
-                            <p className="appt-dept">{d.specialization} · {d.dept_name} · License: {d.medical_license_no}</p>
-                            <p className="appt-date">{d.email} · {d.phone}</p>
+                            <p className="appt-dept">{d.specialization} · {d.dept_name} · {d.years_of_experience} yrs exp</p>
+                            <p className="appt-date">{d.email} · ₹{d.consultation_fee} fee</p>
                           </div>
-                          <button className="btn btn-primary btn-sm" onClick={() => handleApprove(d.id)}>✓ Approve</button>
                         </div>
                       ))}
                     </div>
-                  )
-                )}
-
-                {/* DOCTORS */}
-                {activeTab === 'doctors' && (
-                  <div className="appt-list">
-                    {allDoctors.map(d => (
-                      <div key={d.id} className="appt-row">
-                        <div className="doctor-avatar">{d.first_name[0]}</div>
-                        <div className="appt-main">
-                          <div className="appt-top-row">
-                            <p className="appt-doc">Dr. {d.first_name} {d.last_name}</p>
-                            <span className={`badge ${d.is_approved ? 'badge-teal' : 'badge-amber'}`}>
-                              {d.is_approved ? '✅ Active' : '⏳ Pending'}
-                            </span>
-                          </div>
-                          <p className="appt-dept">{d.specialization} · {d.dept_name} · {d.years_of_experience} yrs exp</p>
-                          <p className="appt-date">{d.email} · ₹{d.consultation_fee} fee</p>
-                        </div>
-                      </div>
-                    ))}
                   </div>
                 )}
 
                 {/* ML STATS TAB */}
                 {activeTab === 'mlstats' && (
                   <div>
+                    <div className="page-view-header">
+                      <div className="pvh-left">
+                        <div className="pvh-icon-wrap ml">
+                          <Cpu size={20} color="#7c3aed" />
+                        </div>
+                        <div>
+                          <h2 className="pvh-title">AI & ML Wait Time Intelligence</h2>
+                          <p className="pvh-desc">Self-learning consultation duration models and dynamic slot capacity calculations.</p>
+                        </div>
+                      </div>
+                      <button className="btn btn-outline btn-sm" onClick={loadMlStats} disabled={mlLoading}>
+                        {mlLoading ? '⏳ Refreshing...' : '↻ Refresh Models'}
+                      </button>
+                    </div>
+
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
                       <div>
                         <p style={{ fontSize: '0.82rem', color: 'var(--color-text-secondary)', marginTop: 4 }}>
                           Slot capacity auto-updates nightly at 23:59 based on real consultation times
                         </p>
                       </div>
-                      <button className="btn btn-outline btn-sm" onClick={loadMlStats} disabled={mlLoading}>
-                        {mlLoading ? '⏳' : '↻ Refresh'}
-                      </button>
                     </div>
 
                     {mlLoading ? (
@@ -1110,6 +1263,21 @@ const AdminDashboard = () => {
                 {/* DOCTOR LEAVE MANAGEMENT */}
                 {activeTab === 'leaves' && (
                   <div>
+                    <div className="page-view-header">
+                      <div className="pvh-left">
+                        <div className="pvh-icon-wrap leaves">
+                          <CalendarX size={20} color="#ea580c" />
+                        </div>
+                        <div>
+                          <h2 className="pvh-title">Doctor Availability & Schedule Management</h2>
+                          <p className="pvh-desc">Schedule doctor leaves, automatically block appointment slots, and check availability.</p>
+                        </div>
+                      </div>
+                      {leaves.length > 0 && (
+                        <span className="badge badge-amber">{leaves.length} Scheduled Leave{leaves.length !== 1 ? 's' : ''}</span>
+                      )}
+                    </div>
+
                     {/* Add Leave Form */}
                     <div style={{ background: '#f8fafc', border: '1px solid var(--border)', borderRadius: 12, padding: 20, marginBottom: 20 }}>
                       <h4 style={{ margin: '0 0 14px', color: 'var(--navy)', fontSize: '0.95rem', fontWeight: 700 }}>

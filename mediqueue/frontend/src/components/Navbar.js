@@ -59,9 +59,13 @@ const Navbar = () => {
           </Link>
 
           <div className={`nav-links ${menuOpen ? 'open' : ''}`}>
-            <NavLink to="/" end className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'} onClick={() => setMenuOpen(false)}>Home</NavLink>
-            <NavLink to="/find-hospital" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'} onClick={() => setMenuOpen(false)}>Book Appointment</NavLink>
-            <NavLink to="/about" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'} onClick={() => setMenuOpen(false)}>About</NavLink>
+            {(!user || (user.role !== 'admin' && user.role !== 'doctor')) && (
+              <>
+                <NavLink to="/" end className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'} onClick={() => setMenuOpen(false)}>Home</NavLink>
+                <NavLink to="/find-hospital" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'} onClick={() => setMenuOpen(false)}>Book Appointment</NavLink>
+                <NavLink to="/about" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'} onClick={() => setMenuOpen(false)}>About</NavLink>
+              </>
+            )}
 
             {isLoggedIn ? (
               <>
