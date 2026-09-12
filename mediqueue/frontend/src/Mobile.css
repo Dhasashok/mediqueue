@@ -357,35 +357,47 @@
     padding: 16px 14px !important;
     border-radius: 14px !important;
   }
-  .page-view-header {
-    flex-direction: column !important;
-    align-items: flex-start !important;
+  .page-view-header,
+  .pvh-compact-header {
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
     gap: 10px !important;
     padding-bottom: 12px !important;
-    margin-bottom: 16px !important;
+    margin-bottom: 14px !important;
+    flex-wrap: wrap !important;
   }
   .pvh-left {
-    width: 100% !important;
+    flex: 1 !important;
+    min-width: 0 !important;
     display: flex !important;
-    align-items: flex-start !important;
+    align-items: center !important;
     gap: 10px !important;
   }
-  .pvh-left > div {
+  .pvh-icon-wrap {
+    flex: 0 0 38px !important;
+    width: 38px !important;
+    max-width: 38px !important;
+    min-width: 38px !important;
+    height: 38px !important;
+    border-radius: 10px !important;
+  }
+  .pvh-title-wrap {
     flex: 1 !important;
     min-width: 0 !important;
   }
   .pvh-title {
-    font-size: 1.02rem !important;
-    line-height: 1.3 !important;
+    font-size: 1.05rem !important;
+    font-weight: 700 !important;
+    line-height: 1.25 !important;
     word-break: break-word !important;
+    margin: 0 !important;
   }
   .pvh-desc {
-    font-size: 0.74rem !important;
-    line-height: 1.35 !important;
-    word-break: break-word !important;
+    display: none !important;
   }
   .pvh-badge {
-    align-self: flex-start !important;
+    flex-shrink: 0 !important;
   }
 
   .admin-notice-banner {

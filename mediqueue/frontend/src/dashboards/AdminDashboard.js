@@ -5,7 +5,8 @@ import { getPendingDoctors, approveDoctor, getAllDoctors, getAnalytics } from '.
 
 import {
   QrCode, Camera, RefreshCw, CheckCircle2, XCircle, X, ArrowRight, AlertCircle,
-  CalendarCheck, Clock, Users, FileText, BarChart3, UserCheck, Stethoscope, Cpu, CalendarX, Menu, Search, LogOut
+  CalendarCheck, Clock, Users, FileText, BarChart3, UserCheck, Stethoscope, Cpu, CalendarX, Calendar, Menu, Search, LogOut,
+  Building2
 } from 'lucide-react';
 import API from '../services/api';
 import './Dashboard.css';
@@ -350,6 +351,7 @@ const AdminDashboard = () => {
   const [leaveCheckDate, setLeaveCheckDate]     = useState('');
   const [mlStats, setMlStats] = useState([]);
   const [mlLoading, setMlLoading] = useState(false);
+  const [doctorSearch, setDoctorSearch] = useState('');
 
   const loadQueues = useCallback(() => {
     API.get('/queue/all').then(r => setAllQueues(r.data.queue || [])).catch(() => {});
@@ -509,6 +511,25 @@ const AdminDashboard = () => {
   const allDepts = [...new Set(allAppointments.map(a => a.dept_name).filter(Boolean))].sort();
   const STATUS_OPTIONS = ['Booked','Checked-In','In-Progress','Completed','Cancelled','No-Show'];
 
+  const SectionHeader = ({ icon: Icon, iconClass, title, badgeText, badgeClass }) => (
+    <div className="pvh-compact-header">
+      <div className="pvh-left">
+        <div className={`pvh-icon-wrap ${iconClass}`}>
+          <Icon size={18} />
+        </div>
+        <div className="pvh-title-wrap">
+          <h2 className="pvh-title">{title}</h2>
+        </div>
+      </div>
+      {badgeText && (
+        <div className={`pvh-badge ${badgeClass || ''}`}>
+          {badgeClass?.includes('live') && <span className="live-dot" style={{ marginRight: 6 }} />}
+          <span>{badgeText}</span>
+        </div>
+      )}
+    </div>
+  );
+
   const ApptRow = ({ a, showCheckin = false, showCancel = false }) => {
     const patientName = `${a.p_first || ''} ${a.p_last || ''}`.trim() || a.full_name || 'Patient';
     const showBookedBy = a.full_name && patientName && a.full_name.trim().toLowerCase() !== patientName.toLowerCase();
@@ -529,18 +550,18 @@ const AdminDashboard = () => {
             <span className={`badge ${statusColor[a.status] || 'badge-gray'}`}>{a.status}</span>
           </div>
           <p className="appt-dept">{a.dept_name} · Dr. {a.doc_first} {a.doc_last} · {a.time_slot}</p>
-          <p className="appt-date">🎫 {a.booking_id} · 📅 {a.appointment_date?.substring(0,10)} · Age: {a.age || 'N/A'}</p>
+          <p className="appt-date">Token: <strong style={{ color: 'var(--navy)' }}>{a.booking_id}</strong> · {a.appointment_date?.substring(0,10)} · Age: {a.age || 'N/A'}</p>
         </div>
         <div className="appt-actions-col">
           {showCheckin && (
             <button className="btn btn-primary btn-sm appt-btn-checkin" disabled={checkingIn === a.booking_id}
               onClick={() => handleCheckIn(a.booking_id)}>
-              {checkingIn === a.booking_id ? '⏳' : <><CheckCircle2 size={14} /> <span>Check In</span></>}
+              {checkingIn === a.booking_id ? 'Checking in...' : <><CheckCircle2 size={14} /> <span>Check In</span></>}
             </button>
           )}
           {showCancel && (
-            <button className="btn btn-danger btn-sm appt-btn-cancel" onClick={() => handleCancelAppointment(a.id, a.booking_id)}>
-              <XCircle size={14} /> <span>Cancel</span>
+            <button className="appt-btn-cancel" onClick={() => handleCancelAppointment(a.id, a.booking_id)}>
+              <XCircle size={13} /> <span>Cancel</span>
             </button>
           )}
         </div>
@@ -576,7 +597,9 @@ const AdminDashboard = () => {
         <aside className={`dash-portal-sidebar ${mobileMenuOpen ? 'mobile-open' : ''}`}>
           <div className="dash-portal-sidebar-header">
             <div className="dash-portal-brand">
-              <span className="dash-portal-brand-icon">🏥</span>
+              <span className="dash-portal-brand-icon">
+                <Building2 size={20} color="var(--teal)" />
+              </span>
               <div>
                 <span className="dash-portal-brand-title">MediQueue</span>
                 <span className="dash-portal-brand-sub">Reception Desk</span>
@@ -701,32 +724,29 @@ const AdminDashboard = () => {
                 {/* TODAY'S ARRIVALS */}
                 {activeTab === 'reception' && (
                   <div>
-                    <div className="page-view-header">
-                      <div className="pvh-left">
-                        <div className="pvh-icon-wrap arrival">
-                          <CalendarCheck size={20} color="#0d9488" />
-                        </div>
-                        <div>
-                          <h2 className="pvh-title">Today's Patient Arrivals & Check-In</h2>
-                          <p className="pvh-desc">Verify patient arrival tokens and check them into active OPD queues.</p>
-                        </div>
-                      </div>
-                      <div className="pvh-badge">
-                        <span className="live-dot green"></span>
-                        <span>Desk Active</span>
-                      </div>
-                    </div>
+                    <SectionHeader
+                      icon={CalendarCheck}
+                      iconClass="arrival"
+                      title="Today's Patient Arrivals"
+                      badgeText={`${todayAppointments.length} Booked Today`}
+                      badgeClass="badge-teal"
+                    />
 
                     {/* Check-In Card: Compact, Clean Action Group */}
                     <div className="checkin-box">
                       <div className="checkin-header-row">
-                        <h3 className="checkin-title">🏥 Patient Check-In</h3>
+                        <div className="checkin-title-block">
+                          <h3 className="checkin-title">
+                            <CheckCircle2 size={16} color="var(--teal)" />
+                            <span>Patient Check-In</span>
+                          </h3>
+                        </div>
                       </div>
                       <div className="checkin-action-group">
                         <div className="checkin-input-wrapper">
                           <Search size={15} className="checkin-input-icon" />
                           <input
-                            placeholder="e.g. MQ-725240-4562"
+                            placeholder="Enter Booking ID (e.g. MQ-725240-4562)"
                             value={checkInId}
                             onChange={e => setCheckInId(e.target.value.toUpperCase())}
                             onKeyDown={e => e.key === 'Enter' && handleCheckIn()}
@@ -739,15 +759,14 @@ const AdminDashboard = () => {
                           onClick={() => handleCheckIn()}
                           disabled={!!checkingIn || !checkInId.trim()}
                         >
-                          {checkingIn ? '⏳ Checking in...' : <><CheckCircle2 size={15} /> <span>Check In</span></>}
+                          {checkingIn ? 'Checking in...' : <><CheckCircle2 size={14} /> <span>Check In</span></>}
                         </button>
-                        <span className="checkin-or-divider">OR</span>
                         <button
                           type="button"
                           className="btn btn-outline checkin-scan-btn"
                           onClick={() => setShowScanner(true)}
                         >
-                          <Camera size={15} />
+                          <Camera size={14} />
                           <span>Scan QR Code</span>
                         </button>
                       </div>
@@ -755,37 +774,28 @@ const AdminDashboard = () => {
 
                     {todayAppointments.length === 0 ? (
                       <div className="empty-dash">
-                        <div className="empty-icon">✅</div>
-                        <p>No patients waiting for check-in today</p>
-                        <span>All patients are checked in or no bookings for today</span>
+                        <div className="empty-icon-wrap"><CheckCircle2 size={34} color="#0d9488" /></div>
+                        <p>No Patients Waiting for Check-In</p>
+                        <span>All patients are checked in or no more bookings scheduled for today</span>
                         <button className="btn btn-outline btn-sm" onClick={() => setActiveTab('upcoming')}>
-                          View Upcoming →
+                          View Upcoming Appointments
                         </button>
                       </div>
                     ) : (() => {
-                      // Group by department so admin can clearly see which dept each patient belongs to
                       const byDept = todayAppointments.reduce((acc, a) => {
-                        const dept = a.dept_name || 'Unknown';
+                        const dept = a.dept_name || 'General';
                         if (!acc[dept]) acc[dept] = [];
                         acc[dept].push(a);
                         return acc;
                       }, {});
                       return (
                         <div>
-                          <div className="admin-notice-banner">
-                            <div className="admin-notice-text">
-                              <span className="admin-notice-icon">💡</span>
-                              <span>Click <strong>Check In</strong> when patient arrives, or use <strong>📷 Scan QR</strong> above</span>
-                            </div>
-                            <span className="admin-notice-badge">
-                              {todayAppointments.length} patient{todayAppointments.length !== 1 ? 's' : ''} today
-                            </span>
-                          </div>
                           {Object.entries(byDept).map(([dept, patients]) => (
-                            <div key={dept} style={{ marginBottom: 20 }}>
+                            <div key={dept} style={{ marginBottom: 18 }}>
                               <div className="admin-dept-header">
                                 <span className="admin-dept-title">
-                                  🏥 {dept}
+                                  <Building2 size={15} style={{ verticalAlign: 'middle', marginRight: 6 }} />
+                                  {dept}
                                 </span>
                                 <span className="admin-dept-count">
                                   {patients.length} patient{patients.length !== 1 ? 's' : ''}
@@ -805,23 +815,19 @@ const AdminDashboard = () => {
                 {/* UPCOMING */}
                 {activeTab === 'upcoming' && (
                   <div>
-                    <div className="page-view-header">
-                      <div className="pvh-left">
-                        <div className="pvh-icon-wrap upcoming">
-                          <Clock size={20} color="#d97706" />
-                        </div>
-                        <div>
-                          <h2 className="pvh-title">Upcoming Scheduled Appointments</h2>
-                          <p className="pvh-desc">Future outpatient bookings across all hospital departments.</p>
-                        </div>
-                      </div>
-                      <span className="badge badge-amber">{upcomingAppointments.length} Scheduled</span>
-                    </div>
+                    <SectionHeader
+                      icon={Clock}
+                      iconClass="upcoming"
+                      title="Upcoming Appointments"
+                      badgeText={`${upcomingAppointments.length} Scheduled`}
+                      badgeClass="badge-amber"
+                    />
 
                     {upcomingAppointments.length === 0 ? (
                       <div className="empty-dash">
-                        <div className="empty-icon">📆</div>
-                        <p>No upcoming appointments</p>
+                        <div className="empty-icon-wrap"><Clock size={34} color="#d97706" /></div>
+                        <p>No Upcoming Appointments</p>
+                        <span>Future outpatient bookings across all hospital departments will appear here</span>
                       </div>
                     ) : (
                       <div className="appt-list">
@@ -834,40 +840,35 @@ const AdminDashboard = () => {
                 {/* LIVE QUEUE */}
                 {activeTab === 'livequeue' && (
                   <div>
-                    <div className="page-view-header">
-                      <div className="pvh-left">
-                        <div className="pvh-icon-wrap queue">
-                          <Users size={20} color="#2563eb" />
-                        </div>
-                        <div>
-                          <h2 className="pvh-title">Live Doctor OPD Queues</h2>
-                          <p className="pvh-desc">Real-time consultation status, current calling token, and waiting queue monitor.</p>
-                        </div>
-                      </div>
-                      <span className="badge badge-teal">
-                        <span className="live-dot green" style={{ marginRight: 6 }}></span>
-                        {allQueues.length} Waiting in Total
-                      </span>
-                    </div>
+                    <SectionHeader
+                      icon={Users}
+                      iconClass="queue"
+                      title="Live OPD Queues"
+                      badgeText={`${allQueues.length} in Queue`}
+                      badgeClass="badge-teal live"
+                    />
 
                     {allQueues.length === 0 ? (
                       <div className="empty-dash">
-                        <div className="empty-icon">😊</div>
-                        <p>No patients in queue right now</p>
-                        <span>Check in patients from Today's Arrivals tab</span>
+                        <div className="empty-icon-wrap"><Users size={34} color="#0d9488" /></div>
+                        <p>OPD Queue is Clear</p>
+                        <span>No patients currently waiting. Check in patients from Today's Arrivals tab.</span>
                       </div>
                     ) : (
                     <div>
                       {Object.entries(queueByDept).map(([deptName, patients]) => (
-                        <div key={deptName} style={{ marginBottom: 24 }}>
+                        <div key={deptName} style={{ marginBottom: 20 }}>
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderBottom: '2px solid var(--border)', marginBottom: 8 }}>
-                            <h4 style={{ fontSize: '0.95rem', color: 'var(--navy)' }}>🏥 {deptName}</h4>
+                            <h4 style={{ fontSize: '0.92rem', color: 'var(--navy)', margin: 0, display: 'flex', alignItems: 'center', gap: 6 }}>
+                              <Building2 size={16} />
+                              <span>{deptName}</span>
+                            </h4>
                             <span className="badge badge-teal">{patients.length} waiting</span>
                           </div>
                           <div className="appt-list">
                             {patients.map((p, idx) => (
-                              <div key={p.id} className="appt-row" style={{ background: idx === 0 ? '#f0fdf4' : 'white', borderRadius: idx === 0 ? 10 : 0, padding: idx === 0 ? '12px' : '12px 0' }}>
-                                <div style={{ width: 36, height: 36, borderRadius: '50%', background: idx === 0 ? '#0d9488' : '#e2e8f0', color: idx === 0 ? 'white' : 'var(--muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '0.9rem', flexShrink: 0 }}>
+                              <div key={p.id} className="appt-row" style={{ background: idx === 0 ? '#f0fdf4' : 'white', borderRadius: 12, padding: '12px 14px' }}>
+                                <div style={{ width: 34, height: 34, borderRadius: '50%', background: idx === 0 ? '#0d9488' : '#e2e8f0', color: idx === 0 ? 'white' : 'var(--muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '0.86rem', flexShrink: 0 }}>
                                   #{p.queue_position}
                                 </div>
                                 <div className="appt-main">
@@ -877,14 +878,14 @@ const AdminDashboard = () => {
                                   </div>
                                   <p className="appt-dept">Dr. {p.doc_first} {p.doc_last} · {p.time_slot}</p>
                                   <p className="appt-date">
-                                    🎫 {p.booking_id} ·{' '}
+                                    Token: <strong style={{ color: 'var(--navy)' }}>{p.booking_id}</strong> ·{' '}
                                     {idx === 0
-                                      ? <span style={{color:'#0d9488',fontWeight:700}}>In Progress</span>
+                                      ? <span style={{color:'#0d9488',fontWeight:700}}>In Consultation</span>
                                       : <span>~{Math.round((p.queue_position - 1) * (parseFloat(p.distributed_mins) || 20))} min wait</span>
                                     }
                                   </p>
                                 </div>
-                                <button className="btn btn-danger btn-sm" onClick={() => handleNoShow(p.appointment_id)}>No Show</button>
+                                <button className="appt-btn-cancel" onClick={() => handleNoShow(p.appointment_id)}>No Show</button>
                               </div>
                             ))}
                           </div>
@@ -898,75 +899,79 @@ const AdminDashboard = () => {
                 {/* ALL APPOINTMENTS */}
                 {activeTab === 'allappointments' && (
                   <div>
-                    <div className="page-view-header">
-                      <div className="pvh-left">
-                        <div className="pvh-icon-wrap register">
-                          <FileText size={20} color="#6366f1" />
-                        </div>
-                        <div>
-                          <h2 className="pvh-title">Master Appointments Register</h2>
-                          <p className="pvh-desc">Search, filter, and audit all patient bookings by date, department, and status.</p>
-                        </div>
-                      </div>
-                    </div>
+                    <SectionHeader
+                      icon={FileText}
+                      iconClass="register"
+                      title="Appointments Register"
+                      badgeText={`${filteredAppointments.length} Records`}
+                      badgeClass="badge-indigo"
+                    />
 
-                    {/* Search bar */}
-                    <div style={{ position: 'relative', marginBottom: 12 }}>
-                      <span style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)' }}>🔍</span>
-                      <input
-                        style={{ width: '100%', padding: '11px 14px 11px 36px', border: '2px solid var(--border)', borderRadius: 10, fontSize: '0.875rem', outline: 'none', fontFamily: 'DM Sans, sans-serif', boxSizing: 'border-box' }}
-                        placeholder="Search by name, booking ID..."
-                        value={searchFilter}
-                        onChange={e => setSearchFilter(e.target.value)}
-                        onFocus={e => e.target.style.borderColor = '#0d9488'}
-                        onBlur={e => e.target.style.borderColor = 'var(--border)'}
-                      />
-                    </div>
-
-                    {/* Filter row */}
-                    <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 14, alignItems: 'center' }}>
-                      {/* Date picker */}
-                      <div style={{ position: 'relative' }}>
-                        <input type="date" value={filterDate} onChange={e => setFilterDate(e.target.value)}
-                          style={{ padding: '8px 12px', border: '2px solid var(--border)', borderRadius: 8, fontSize: '0.82rem', outline: 'none', color: filterDate ? 'var(--navy)' : 'var(--muted)', background: filterDate ? '#f0fdf4' : '#fff', cursor: 'pointer' }}
-                          onFocus={e => e.target.style.borderColor='#0d9488'}
-                          onBlur={e => e.target.style.borderColor='var(--border)'}
+                    {/* Compact Filter Card */}
+                    <div className="reg-filters-card">
+                      <div className="reg-search-row">
+                        <div className="reg-search-box">
+                          <Search size={15} className="reg-search-icon" />
+                          <input
+                            placeholder="Search by patient name, booking ID..."
+                            value={searchFilter}
+                            onChange={e => setSearchFilter(e.target.value)}
+                            className="reg-search-input"
+                          />
+                        </div>
+                        <input
+                          type="date"
+                          value={filterDate}
+                          onChange={e => setFilterDate(e.target.value)}
+                          className="reg-date-input"
+                          title="Filter by appointment date"
                         />
+                        <select
+                          value={filterDept}
+                          onChange={e => setFilterDept(e.target.value)}
+                          className="reg-dept-select"
+                        >
+                          <option value="">All Departments</option>
+                          {allDepts.map(d => <option key={d} value={d}>{d}</option>)}
+                        </select>
                       </div>
-                      {/* Department dropdown */}
-                      <select value={filterDept} onChange={e => setFilterDept(e.target.value)}
-                        style={{ padding: '8px 12px', border: '2px solid var(--border)', borderRadius: 8, fontSize: '0.82rem', outline: 'none', background: filterDept ? '#f0fdf4' : '#fff', color: filterDept ? 'var(--navy)' : 'var(--muted)', cursor: 'pointer' }}>
-                        <option value="">All Departments</option>
-                        {allDepts.map(d => <option key={d} value={d}>{d}</option>)}
-                      </select>
-                      {/* Status chips */}
-                      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                      <div className="reg-status-pills">
                         {STATUS_OPTIONS.map(s => (
-                          <button key={s} onClick={() => setFilterStatus(filterStatus === s ? '' : s)}
-                            style={{ padding: '5px 12px', borderRadius: 20, border: `1.5px solid ${filterStatus === s ? '#0d9488' : 'var(--border)'}`, background: filterStatus === s ? '#0d9488' : '#fff', color: filterStatus === s ? '#fff' : 'var(--muted)', fontSize: '0.75rem', fontWeight: filterStatus === s ? 600 : 400, cursor: 'pointer', transition: 'all 0.15s' }}>
+                          <button
+                            key={s}
+                            type="button"
+                            className={`reg-pill ${filterStatus === s ? 'active' : ''}`}
+                            onClick={() => setFilterStatus(filterStatus === s ? '' : s)}
+                          >
                             {s}
                           </button>
                         ))}
+                        {(filterDept || filterStatus || filterDate !== todayIST || searchFilter) && (
+                          <button
+                            type="button"
+                            className="reg-reset-btn"
+                            onClick={() => { setFilterDept(''); setFilterStatus(''); setFilterDate(todayIST); setSearchFilter(''); }}
+                          >
+                            Reset Filters
+                          </button>
+                        )}
                       </div>
-                      {/* Clear all */}
-                      {(filterDept || filterStatus || filterDate !== todayIST || searchFilter) && (
-                        <button onClick={() => { setFilterDept(''); setFilterStatus(''); setFilterDate(todayIST); setSearchFilter(''); }}
-                          style={{ padding: '5px 12px', borderRadius: 20, border: '1.5px solid #e11d48', background: '#fff', color: '#e11d48', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}>
-                          ✕ Reset to today
-                        </button>
-                      )}
                     </div>
 
                     {/* Result count */}
-                    <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginBottom: 10 }}>
+                    <p style={{ fontSize: '0.76rem', color: 'var(--muted)', margin: '0 0 10px 2px' }}>
                       {filterDate === todayIST && !filterDept && !filterStatus && !searchFilter
-                        ? `Showing ${filteredAppointments.length} appointment${filteredAppointments.length !== 1 ? 's' : ''} for today · Use filters to see other dates`
+                        ? `Showing ${filteredAppointments.length} appointment${filteredAppointments.length !== 1 ? 's' : ''} for today`
                         : `Showing ${filteredAppointments.length} of ${allAppointments.length} appointments`
                       }
                     </p>
 
                     {filteredAppointments.length === 0 ? (
-                      <div className="empty-dash"><div className="empty-icon">🔍</div><p>No appointments match the filters</p></div>
+                      <div className="empty-dash">
+                        <div className="empty-icon-wrap"><Search size={34} color="#6366f1" /></div>
+                        <p>No Appointments Found</p>
+                        <span>No records match the current filter criteria</span>
+                      </div>
                     ) : (
                       <div className="appt-list">
                         {filteredAppointments.map(a => (
@@ -980,77 +985,76 @@ const AdminDashboard = () => {
                 {/* ANALYTICS */}
                 {activeTab === 'overview' && analytics && (
                   <div>
-                    <div className="page-view-header">
-                      <div className="pvh-left">
-                        <div className="pvh-icon-wrap analytics">
-                          <BarChart3 size={20} color="#0d9488" />
+                    <SectionHeader
+                      icon={BarChart3}
+                      iconClass="analytics"
+                      title="Hospital Operations & Analytics"
+                    />
+
+                    {/* Primary Unified 4 KPI Cards */}
+                    <div className="analytics-kpi-grid">
+                      <div className="kpi-card">
+                        <div className="kpi-icon-box blue"><FileText size={18} /></div>
+                        <div className="kpi-info">
+                          <span className="kpi-val">{analytics.total_appointments}</span>
+                          <span className="kpi-label">Total Bookings</span>
                         </div>
-                        <div>
-                          <h2 className="pvh-title">Hospital Operations & Analytics</h2>
-                          <p className="pvh-desc">Executive KPI metrics, patient volume trends, and department load distribution.</p>
+                      </div>
+                      <div className="kpi-card">
+                        <div className="kpi-icon-box teal"><Users size={18} /></div>
+                        <div className="kpi-info">
+                          <span className="kpi-val">{analytics.total_patients}</span>
+                          <span className="kpi-label">Total Patients</span>
+                        </div>
+                      </div>
+                      <div className="kpi-card">
+                        <div className="kpi-icon-box green"><CalendarCheck size={18} /></div>
+                        <div className="kpi-info">
+                          <span className="kpi-val">{analytics.today_appointments}</span>
+                          <span className="kpi-label">Today's Bookings</span>
+                        </div>
+                      </div>
+                      <div className="kpi-card">
+                        <div className="kpi-icon-box amber"><Clock size={18} /></div>
+                        <div className="kpi-info">
+                          <span className="kpi-val">{allQueues.length}</span>
+                          <span className="kpi-label">In Queue Now</span>
                         </div>
                       </div>
                     </div>
 
-                    {/* Primary 4 Stat Cards */}
-                    <div className="dash-stats" style={{ marginBottom: 22 }}>
-                      <div className="dash-stat-card">
-                        <div className="stat-icon-box blue"><span>👥</span></div>
-                        <div className="ds-content">
-                          <p className="ds-val">{analytics.total_patients}</p>
-                          <p className="ds-label">Total Patients</p>
-                        </div>
+                    {/* Secondary Status Breakdown Grid */}
+                    <div className="analytics-breakdown-grid">
+                      <div className="breakdown-stat-card completed">
+                        <span className="bsc-label">Completed</span>
+                        <span className="bsc-val">{analytics.completed}</span>
                       </div>
-                      <div className="dash-stat-card">
-                        <div className="stat-icon-box teal"><span>🩺</span></div>
-                        <div className="ds-content">
-                          <p className="ds-val">{analytics.total_doctors}</p>
-                          <p className="ds-label">Active Doctors</p>
-                        </div>
+                      <div className="breakdown-stat-card noshow">
+                        <span className="bsc-label">No-Shows</span>
+                        <span className="bsc-val">{analytics.no_shows}</span>
                       </div>
-                      <div className="dash-stat-card">
-                        <div className="stat-icon-box green"><span>📅</span></div>
-                        <div className="ds-content">
-                          <p className="ds-val">{analytics.today_appointments}</p>
-                          <p className="ds-label">Today's Bookings</p>
-                        </div>
+                      <div className="breakdown-stat-card cancelled">
+                        <span className="bsc-label">Cancelled</span>
+                        <span className="bsc-val">{analytics.cancelled}</span>
                       </div>
-                      <div className="dash-stat-card">
-                        <div className="stat-icon-box red"><span>🔴</span></div>
-                        <div className="ds-content">
-                          <p className="ds-val">{allQueues.length}</p>
-                          <p className="ds-label">In Queue Now</p>
-                        </div>
+                      <div className="breakdown-stat-card doctors">
+                        <span className="bsc-label">Active Doctors</span>
+                        <span className="bsc-val">{analytics.total_doctors}</span>
                       </div>
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 14, marginBottom: 28 }}>
-                      {[
-                        { label: 'Total Appointments', val: analytics.total_appointments, color: '#0d9488', bg: '#ccfbf1' },
-                        { label: 'Completed',          val: analytics.completed,          color: '#15803d', bg: '#dcfce7' },
-                        { label: 'No-Shows',           val: analytics.no_shows,           color: '#b45309', bg: '#fef3c7' },
-                        { label: 'Cancelled',          val: analytics.cancelled,          color: '#b91c1c', bg: '#fee2e2' },
-                        { label: 'Today',              val: analytics.today_appointments, color: '#1d4ed8', bg: '#dbeafe' },
-                        { label: 'Doctors',            val: analytics.total_doctors,      color: '#6d28d9', bg: '#ede9fe' },
-                      ].map((s, i) => (
-                        <div key={i} style={{ background: s.bg, borderRadius: 14, padding: '16px 18px', border: `1px solid ${s.color}20` }}>
-                          <p style={{ fontSize: '0.72rem', fontWeight: 700, color: s.color, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 4 }}>{s.label}</p>
-                          <p style={{ fontSize: '1.8rem', fontWeight: 800, color: s.color, fontFamily: 'Fraunces, serif', lineHeight: 1 }}>{s.val}</p>
-                        </div>
-                      ))}
-                    </div>
-                    <h3 style={{ marginBottom: 14, fontSize: '1rem' }}>Appointments by Department</h3>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    <h3 className="analytics-section-title">Appointments by Department</h3>
+                    <div className="dept-bars-list">
                       {(analytics.department_stats || []).map((d, i) => {
                         const max = Math.max(...analytics.department_stats.map(x => x.total), 1);
-                        const pct = Math.min(100, (d.total / max) * 100);
+                        const pct = Math.min(100, Math.round((d.total / max) * 100));
                         return (
-                          <div key={i} style={{ display: 'grid', gridTemplateColumns: '140px 1fr 60px', alignItems: 'center', gap: 12 }}>
-                            <span style={{ fontSize: '0.82rem', color: 'var(--slate)', fontWeight: 600 }}>{d.name}</span>
-                            <div style={{ height: 8, background: '#e2e8f0', borderRadius: 4, overflow: 'hidden' }}>
-                              <div style={{ height: '100%', width: `${pct}%`, background: 'linear-gradient(90deg,#0d9488,#0891b2)', borderRadius: 4, transition: 'width 0.5s' }} />
+                          <div key={i} className="dept-bar-row">
+                            <span className="dept-bar-name">{d.name}</span>
+                            <div className="dept-bar-track">
+                              <div className="dept-bar-fill" style={{ width: `${pct}%` }} />
                             </div>
-                            <span style={{ fontSize: '0.78rem', color: 'var(--muted)', textAlign: 'right' }}>{d.total} appts</span>
+                            <span className="dept-bar-count">{d.total} appts</span>
                           </div>
                         );
                       })}
@@ -1061,23 +1065,19 @@ const AdminDashboard = () => {
                 {/* PENDING APPROVALS */}
                 {activeTab === 'pending' && (
                   <div>
-                    <div className="page-view-header">
-                      <div className="pvh-left">
-                        <div className="pvh-icon-wrap approvals">
-                          <UserCheck size={20} color="#e11d48" />
-                        </div>
-                        <div>
-                          <h2 className="pvh-title">Doctor Verification & Approvals</h2>
-                          <p className="pvh-desc">Verify submitted medical licenses, qualifications, and grant clinical access.</p>
-                        </div>
-                      </div>
-                      {pending.length > 0 && (
-                        <span className="badge badge-red">{pending.length} Pending Review</span>
-                      )}
-                    </div>
+                    <SectionHeader
+                      icon={UserCheck}
+                      iconType="approvals"
+                      title="Doctor Verification & Approvals"
+                      badge={pending.length > 0 ? `${pending.length} Pending Review` : null}
+                      badgeType="red"
+                    />
 
                     {pending.length === 0 ? (
-                      <div className="empty-dash"><div className="empty-icon">✅</div><p>No pending doctor approvals</p></div>
+                      <div className="empty-dash">
+                        <div className="empty-icon"><CheckCircle2 size={36} color="var(--primary)" /></div>
+                        <p>No pending doctor approvals</p>
+                      </div>
                     ) : (
                       <div className="appt-list">
                         {pending.map(d => (
@@ -1091,7 +1091,7 @@ const AdminDashboard = () => {
                               <p className="appt-dept">{d.specialization} · {d.dept_name} · License: {d.medical_license_no}</p>
                               <p className="appt-date">{d.email} · {d.phone}</p>
                             </div>
-                            <button className="btn btn-primary btn-sm" onClick={() => handleApprove(d.id)}>✓ Approve</button>
+                            <button className="btn btn-primary btn-sm" onClick={() => handleApprove(d.id)}>Approve</button>
                           </div>
                         ))}
                       </div>
@@ -1099,90 +1099,102 @@ const AdminDashboard = () => {
                   </div>
                 )}
 
-                {/* DOCTORS */}
-                {activeTab === 'doctors' && (
-                  <div>
-                    <div className="page-view-header">
-                      <div className="pvh-left">
-                        <div className="pvh-icon-wrap doctors">
-                          <Stethoscope size={20} color="#0284c7" />
-                        </div>
-                        <div>
-                          <h2 className="pvh-title">Medical Staff & Clinical Directory</h2>
-                          <p className="pvh-desc">Registered clinical specialists, consultation charges, and credentials.</p>
+                {/* DOCTORS DIRECTORY */}
+                {activeTab === 'doctors' && (() => {
+                  const filteredDoctors = allDoctors.filter(d => {
+                    if (!doctorSearch) return true;
+                    const q = doctorSearch.toLowerCase();
+                    const name = `${d.first_name || ''} ${d.last_name || ''}`.toLowerCase();
+                    const dept = (d.dept_name || '').toLowerCase();
+                    const spec = (d.specialization || '').toLowerCase();
+                    return name.includes(q) || dept.includes(q) || spec.includes(q);
+                  });
+
+                  return (
+                    <div>
+                      <SectionHeader
+                        icon={Stethoscope}
+                        iconType="doctors"
+                        title="Medical Staff & Directory"
+                        badge={`${allDoctors.length} Registered`}
+                        badgeType="teal"
+                      />
+
+                      <div className="reg-filters-card" style={{ marginBottom: 16 }}>
+                        <div className="search-input-wrap" style={{ flex: 1 }}>
+                          <Search size={16} className="search-icon" />
+                          <input
+                            type="text"
+                            placeholder="Search doctors by name, specialization, or department..."
+                            value={doctorSearch}
+                            onChange={e => setDoctorSearch(e.target.value)}
+                          />
                         </div>
                       </div>
-                      <span className="badge badge-teal">{allDoctors.length} Registered</span>
-                    </div>
 
-                    <div className="appt-list">
-                      {allDoctors.map(d => (
-                        <div key={d.id} className="appt-row">
-                          <div className="doctor-avatar">{d.first_name[0]}</div>
-                          <div className="appt-main">
-                            <div className="appt-top-row">
-                              <p className="appt-doc">Dr. {d.first_name} {d.last_name}</p>
-                              <span className={`badge ${d.is_approved ? 'badge-teal' : 'badge-amber'}`}>
-                                {d.is_approved ? '✅ Active' : '⏳ Pending'}
-                              </span>
-                            </div>
-                            <p className="appt-dept">{d.specialization} · {d.dept_name} · {d.years_of_experience} yrs exp</p>
-                            <p className="appt-date">{d.email} · ₹{d.consultation_fee} fee</p>
-                          </div>
+                      {filteredDoctors.length === 0 ? (
+                        <div className="empty-dash">
+                          <div className="empty-icon"><Search size={36} color="var(--color-text-secondary)" /></div>
+                          <p>No doctors match your search</p>
                         </div>
-                      ))}
+                      ) : (
+                        <div className="appt-list">
+                          {filteredDoctors.map(d => (
+                            <div key={d.id} className="appt-row">
+                              <div className="doctor-avatar">{d.first_name[0]}</div>
+                              <div className="appt-main">
+                                <div className="appt-top-row">
+                                  <p className="appt-doc">Dr. {d.first_name} {d.last_name}</p>
+                                  <span className={`badge ${d.is_approved ? 'badge-teal' : 'badge-amber'}`}>
+                                    {d.is_approved ? 'Active' : 'Pending'}
+                                  </span>
+                                </div>
+                                <p className="appt-dept">{d.specialization} · {d.dept_name} · {d.years_of_experience} yrs exp</p>
+                                <p className="appt-date">{d.email} · ₹{d.consultation_fee} fee</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                  </div>
-                )}
+                  );
+                })()}
 
                 {/* ML STATS TAB */}
                 {activeTab === 'mlstats' && (
                   <div>
-                    <div className="page-view-header">
-                      <div className="pvh-left">
-                        <div className="pvh-icon-wrap ml">
-                          <Cpu size={20} color="#7c3aed" />
-                        </div>
-                        <div>
-                          <h2 className="pvh-title">AI & ML Wait Time Intelligence</h2>
-                          <p className="pvh-desc">Self-learning consultation duration models and dynamic slot capacity calculations.</p>
-                        </div>
-                      </div>
-                      <button className="btn btn-outline btn-sm" onClick={loadMlStats} disabled={mlLoading}>
-                        {mlLoading ? '⏳ Refreshing...' : '↻ Refresh Models'}
-                      </button>
-                    </div>
-
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-                      <div>
-                        <p style={{ fontSize: '0.82rem', color: 'var(--color-text-secondary)', marginTop: 4 }}>
-                          Slot capacity auto-updates nightly at 23:59 based on real consultation times
-                        </p>
-                      </div>
-                    </div>
+                    <SectionHeader
+                      icon={Cpu}
+                      iconType="ml"
+                      title="AI Wait Time Intelligence"
+                      action={
+                        <button className="btn btn-outline btn-sm" onClick={loadMlStats} disabled={mlLoading}>
+                          {mlLoading ? 'Refreshing...' : '↻ Refresh Models'}
+                        </button>
+                      }
+                    />
 
                     {mlLoading ? (
                       <div className="loading-screen"><div className="spinner"></div></div>
                     ) : mlStats.length === 0 ? (
                       <div className="empty-dash">
-                        <div className="empty-icon">🤖</div>
-                        <p>No ML stats yet</p>
+                        <div className="empty-icon"><Cpu size={36} color="#7c3aed" /></div>
+                        <p>No consultation intelligence models available yet</p>
                         <p style={{ fontSize: '0.82rem', color: 'var(--color-text-secondary)', marginTop: 8 }}>
-                          Run ml_migration.sql in MySQL Workbench, then complete some appointments.
-                          Stats update every night at 23:59.
+                          Slot capacity and consultation time models will calculate automatically as appointments are completed.
                         </p>
                       </div>
                     ) : (
                       <div>
                         {/* Legend */}
-                        <div style={{ display: 'flex', gap: 20, marginBottom: 20, flexWrap: 'wrap' }}>
+                        <div style={{ display: 'flex', gap: 20, marginBottom: 16, flexWrap: 'wrap' }}>
                           <span style={{ fontSize: '0.78rem', color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center', gap: 6 }}>
                             <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#0d9488', display: 'inline-block' }}></span>
-                            Real data (self-learned)
+                            Active consultation data
                           </span>
                           <span style={{ fontSize: '0.78rem', color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center', gap: 6 }}>
                             <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#94a3b8', display: 'inline-block' }}></span>
-                            Default (no data yet)
+                            Baseline default
                           </span>
                         </div>
 
@@ -1207,7 +1219,7 @@ const AdminDashboard = () => {
                                       {s.dept_name}
                                     </p>
                                     <p style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', margin: '2px 0 0' }}>
-                                      {isReal ? `${s.total_samples} real consultations` : 'Using dataset default'}
+                                      {isReal ? `${s.total_samples} recorded consultations` : 'Using baseline default'}
                                     </p>
                                   </div>
                                   <span style={{
@@ -1216,7 +1228,7 @@ const AdminDashboard = () => {
                                     fontSize: '0.72rem', fontWeight: 600,
                                     padding: '3px 10px', borderRadius: 20
                                   }}>
-                                    {isReal ? 'LIVE' : 'DEFAULT'}
+                                    {isReal ? 'ACTIVE' : 'BASELINE'}
                                   </span>
                                 </div>
 
@@ -1232,7 +1244,7 @@ const AdminDashboard = () => {
                                     <p style={{ fontSize: '1.4rem', fontWeight: 700, color: '#1d4ed8', margin: 0, lineHeight: 1 }}>
                                       {s.slot_capacity}
                                     </p>
-                                    <p style={{ fontSize: '0.7rem', color: 'var(--color-text-secondary)', margin: '4px 0 0' }}>patients / 2hr slot</p>
+                                    <p style={{ fontSize: '0.7rem', color: 'var(--color-text-secondary)', margin: '4px 0 0' }}>capacity / 2hr slot</p>
                                   </div>
                                 </div>
 
@@ -1259,63 +1271,37 @@ const AdminDashboard = () => {
                             );
                           })}
                         </div>
-
-                        {/* How it works box */}
-                        <div style={{ marginTop: 24, background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 10, padding: 16 }}>
-                          <p style={{ fontWeight: 600, fontSize: '0.85rem', color: '#1e40af', margin: '0 0 8px' }}>How self-learning works</p>
-                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 8 }}>
-                            {[
-                              { step: '1', text: 'Patient checks in → timer starts' },
-                              { step: '2', text: 'Doctor clicks Complete → timer stops' },
-                              { step: '3', text: 'Real mins saved to DB per dept' },
-                              { step: '4', text: 'Every 23:59 → avg recalculated' },
-                              { step: '5', text: 'Next day slot capacity auto-adjusts' },
-                            ].map(s => (
-                              <div key={s.step} style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-                                <span style={{ background: '#1d4ed8', color: '#fff', width: 20, height: 20, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', fontWeight: 700, flexShrink: 0 }}>{s.step}</span>
-                                <p style={{ fontSize: '0.78rem', color: '#1e40af', margin: 0, lineHeight: 1.4 }}>{s.text}</p>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
                       </div>
                     )}
                   </div>
                 )}
 
-
                 {/* DOCTOR LEAVE MANAGEMENT */}
                 {activeTab === 'leaves' && (
                   <div>
-                    <div className="page-view-header">
-                      <div className="pvh-left">
-                        <div className="pvh-icon-wrap leaves">
-                          <CalendarX size={20} color="#ea580c" />
-                        </div>
-                        <div>
-                          <h2 className="pvh-title">Doctor Availability & Schedule Management</h2>
-                          <p className="pvh-desc">Schedule doctor leaves, automatically block appointment slots, and check availability.</p>
-                        </div>
-                      </div>
-                      {leaves.length > 0 && (
-                        <span className="badge badge-amber">{leaves.length} Scheduled Leave{leaves.length !== 1 ? 's' : ''}</span>
-                      )}
-                    </div>
+                    <SectionHeader
+                      icon={CalendarX}
+                      iconType="leaves"
+                      title="Doctor Availability & Leaves"
+                      badge={leaves.length > 0 ? `${leaves.length} Scheduled` : null}
+                      badgeType="amber"
+                    />
 
                     {/* Add Leave Form */}
-                    <div style={{ background: '#f8fafc', border: '1px solid var(--border)', borderRadius: 12, padding: 20, marginBottom: 20 }}>
-                      <h4 style={{ margin: '0 0 14px', color: 'var(--navy)', fontSize: '0.95rem', fontWeight: 700 }}>
-                        ➕ Mark Doctor as Unavailable
+                    <div className="leave-form-card">
+                      <h4 className="leave-form-title">
+                        <CalendarX size={18} color="var(--primary)" />
+                        <span>Schedule Doctor Leave</span>
                       </h4>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 2fr auto', gap: 10, alignItems: 'end' }}>
+                      <div className="leave-form-grid">
                         {/* Doctor dropdown */}
-                        <div>
-                          <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--muted)', display: 'block', marginBottom: 5 }}>Doctor</label>
-                          <select value={leaveForm.doctor_id}
+                        <div className="form-field">
+                          <label className="form-label">Doctor</label>
+                          <select
+                            value={leaveForm.doctor_id}
                             onChange={e => setLeaveForm(p => ({ ...p, doctor_id: e.target.value }))}
-                            style={{ width: '100%', padding: '9px 12px', border: '2px solid var(--border)', borderRadius: 8, fontSize: '0.85rem', outline: 'none', background: '#fff' }}
-                            onFocus={e => e.target.style.borderColor = '#0d9488'}
-                            onBlur={e => e.target.style.borderColor = 'var(--border)'}>
+                            className="form-select"
+                          >
                             <option value="">Select Doctor</option>
                             {allDoctors.map(d => (
                               <option key={d.id} value={d.id}>Dr. {d.first_name} {d.last_name} · {d.dept_name}</option>
@@ -1323,62 +1309,65 @@ const AdminDashboard = () => {
                           </select>
                         </div>
                         {/* Date picker */}
-                        <div>
-                          <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--muted)', display: 'block', marginBottom: 5 }}>Leave Date</label>
-                          <input type="date" value={leaveForm.leave_date}
+                        <div className="form-field">
+                          <label className="form-label">Leave Date</label>
+                          <input
+                            type="date"
+                            value={leaveForm.leave_date}
                             onChange={e => setLeaveForm(p => ({ ...p, leave_date: e.target.value }))}
                             min={new Date().toISOString().split('T')[0]}
-                            style={{ width: '100%', padding: '9px 12px', border: '2px solid var(--border)', borderRadius: 8, fontSize: '0.85rem', outline: 'none', boxSizing: 'border-box' }}
-                            onFocus={e => e.target.style.borderColor = '#0d9488'}
-                            onBlur={e => e.target.style.borderColor = 'var(--border)'} />
+                            className="form-input"
+                          />
                         </div>
                         {/* Reason */}
-                        <div>
-                          <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--muted)', display: 'block', marginBottom: 5 }}>Reason (optional)</label>
-                          <input type="text" value={leaveForm.reason}
+                        <div className="form-field reason-field">
+                          <label className="form-label">Reason (optional)</label>
+                          <input
+                            type="text"
+                            value={leaveForm.reason}
                             placeholder="e.g. Medical leave, Conference..."
                             onChange={e => setLeaveForm(p => ({ ...p, reason: e.target.value }))}
-                            style={{ width: '100%', padding: '9px 12px', border: '2px solid var(--border)', borderRadius: 8, fontSize: '0.85rem', outline: 'none', boxSizing: 'border-box' }}
-                            onFocus={e => e.target.style.borderColor = '#0d9488'}
-                            onBlur={e => e.target.style.borderColor = 'var(--border)'} />
+                            className="form-input"
+                          />
                         </div>
                         {/* Submit */}
-                        <button
-                          disabled={!leaveForm.doctor_id || !leaveForm.leave_date || leaveLoading}
-                          onClick={async () => {
-                            if (!leaveForm.doctor_id || !leaveForm.leave_date) return;
-                            setLeaveLoading(true);
-                            try {
-                              await API.post('/admin/doctor-leave', leaveForm);
-                              toast.success('Leave marked successfully.');
-                              setLeaveForm({ doctor_id: '', leave_date: '', reason: '' });
-                              loadLeaves();
-                            } catch (err) {
-                              toast.error(err.response?.data?.message || 'Could not set leave.');
-                            } finally { setLeaveLoading(false); }
-                          }}
-                          style={{ padding: '9px 18px', background: !leaveForm.doctor_id || !leaveForm.leave_date ? '#94a3b8' : '#0d9488', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap', fontSize: '0.85rem' }}>
-                          {leaveLoading ? '⏳' : '✓ Set Leave'}
-                        </button>
+                        <div className="form-submit-wrap">
+                          <button
+                            className="btn btn-primary"
+                            disabled={!leaveForm.doctor_id || !leaveForm.leave_date || leaveLoading}
+                            onClick={async () => {
+                              if (!leaveForm.doctor_id || !leaveForm.leave_date) return;
+                              setLeaveLoading(true);
+                              try {
+                                await API.post('/admin/doctor-leave', leaveForm);
+                                toast.success('Leave scheduled successfully.');
+                                setLeaveForm({ doctor_id: '', leave_date: '', reason: '' });
+                                loadLeaves();
+                              } catch (err) {
+                                toast.error(err.response?.data?.message || 'Could not set leave.');
+                              } finally { setLeaveLoading(false); }
+                            }}
+                          >
+                            {leaveLoading ? 'Scheduling...' : 'Set Leave'}
+                          </button>
+                        </div>
                       </div>
                     </div>
 
-                    {/* Leave list */}
-                    {/* Quick availability check — admin/receptionist can look up any doctor+date */}
-                    <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 10,
-                      padding: '14px 16px', marginBottom: 16 }}>
-                      <p style={{ fontWeight: 700, color: '#15803d', margin: '0 0 10px',
-                        fontSize: '0.88rem' }}>
-                        🔍 Check Doctor Availability
+                    {/* Quick availability check */}
+                    <div className="leave-check-card">
+                      <p className="leave-check-title">
+                        <Search size={16} color="#15803d" />
+                        <span>Check Doctor Availability</span>
                       </p>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                      <div className="leave-check-grid">
                         <div>
-                          <label style={{ fontSize: '0.75rem', fontWeight: 600, color: '#166534',
-                            display: 'block', marginBottom: 4 }}>Doctor</label>
+                          <label className="leave-check-label">Doctor</label>
                           <select
-                            value={leaveCheckDoctor} onChange={e => setLeaveCheckDoctor(e.target.value)}
-                            style={{ width: '100%', padding: '8px 12px', border: '1.5px solid #86efac',
-                              borderRadius: 8, fontSize: '0.85rem', outline: 'none', background: '#fff' }}>
+                            value={leaveCheckDoctor}
+                            onChange={e => setLeaveCheckDoctor(e.target.value)}
+                            className="form-select"
+                          >
                             <option value="">All Doctors</option>
                             {allDoctors.map(d => (
                               <option key={d.id} value={d.id}>
@@ -1388,13 +1377,13 @@ const AdminDashboard = () => {
                           </select>
                         </div>
                         <div>
-                          <label style={{ fontSize: '0.75rem', fontWeight: 600, color: '#166534',
-                            display: 'block', marginBottom: 4 }}>Date</label>
-                          <input type="date" value={leaveCheckDate}
+                          <label className="leave-check-label">Date</label>
+                          <input
+                            type="date"
+                            value={leaveCheckDate}
                             onChange={e => setLeaveCheckDate(e.target.value)}
-                            style={{ width: '100%', padding: '8px 12px', border: '1.5px solid #86efac',
-                              borderRadius: 8, fontSize: '0.85rem', outline: 'none',
-                              boxSizing: 'border-box' }} />
+                            className="form-input"
+                          />
                         </div>
                       </div>
                       {(leaveCheckDoctor || leaveCheckDate) && (() => {
@@ -1406,25 +1395,23 @@ const AdminDashboard = () => {
                           ? allDoctors.find(d => String(d.id) === leaveCheckDoctor)
                           : null;
                         return (
-                          <div style={{ marginTop: 10, padding: '10px 14px',
-                            background: filtered.length > 0 ? '#fef3c7' : '#f0fdf4',
-                            borderRadius: 8, border: `1px solid ${filtered.length > 0 ? '#fde68a' : '#bbf7d0'}` }}>
+                          <div className={`leave-result-box ${filtered.length > 0 ? 'unavailable' : 'available'}`}>
                             {filtered.length > 0 ? (
                               <div>
-                                <p style={{ fontWeight: 700, color: '#92400e', margin: 0, fontSize: '0.88rem' }}>
-                                  ❌ Unavailable on {filtered.map(l => l.leave_date).join(', ')}
+                                <p className="leave-result-status error">
+                                  <AlertCircle size={16} /> Unavailable on {filtered.map(l => l.leave_date).join(', ')}
                                 </p>
                                 {filtered.map((l, i) => (
-                                  <p key={i} style={{ margin: '4px 0 0', fontSize: '0.8rem', color: '#b45309' }}>
+                                  <p key={i} className="leave-result-detail">
                                     Dr. {l.first_name} {l.last_name} · {l.leave_date}
                                     {l.reason && ` · ${l.reason}`}
                                   </p>
                                 ))}
                               </div>
                             ) : (
-                              <p style={{ fontWeight: 700, color: '#15803d', margin: 0, fontSize: '0.88rem' }}>
-                                ✅ {doctorName ? `Dr. ${doctorName.first_name} ${doctorName.last_name} is` : 'All doctors are'} available
-                                {leaveCheckDate ? ` on ${leaveCheckDate}` : ' (no leaves found)'}
+                              <p className="leave-result-status success">
+                                <CheckCircle2 size={16} /> {doctorName ? `Dr. ${doctorName.first_name} ${doctorName.last_name} is` : 'All doctors are'} available
+                                {leaveCheckDate ? ` on ${leaveCheckDate}` : ' (no leaves scheduled)'}
                               </p>
                             )}
                           </div>
@@ -1434,37 +1421,30 @@ const AdminDashboard = () => {
 
                     {leaves.length === 0 ? (
                       <div className="empty-dash">
-                        <div className="empty-icon">🏖️</div>
+                        <div className="empty-icon"><CalendarX size={36} color="var(--color-text-secondary)" /></div>
                         <p>No upcoming leaves scheduled</p>
-                        <span style={{ fontSize: '0.82rem', color: 'var(--muted)' }}>Mark a doctor as unavailable above — their slots will be auto-blocked on the booking page</span>
+                        <span style={{ fontSize: '0.82rem', color: 'var(--muted)' }}>Doctor schedule is fully open for appointments.</span>
                       </div>
                     ) : (
                       <div>
-                        <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginBottom: 12 }}>
-                          {leaves.length} upcoming leave{leaves.length !== 1 ? 's' : ''} · Patients cannot book these dates
-                        </p>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                        <div className="leaves-list">
                           {leaves.map((l, i) => (
-                            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 14,
-                              background: '#fff', border: '1.5px solid #fde68a',
-                              borderLeft: '4px solid #f59e0b', borderRadius: 10, padding: '12px 16px' }}>
-                              <div style={{ fontSize: 28 }}>🏖️</div>
-                              <div style={{ flex: 1 }}>
-                                <p style={{ fontWeight: 600, margin: 0, color: 'var(--navy)', fontSize: '0.9rem' }}>
+                            <div key={i} className="leave-item-card">
+                              <div className="leave-item-icon">
+                                <Calendar size={20} color="#ea580c" />
+                              </div>
+                              <div className="leave-item-info">
+                                <p className="leave-item-doc">
                                   Dr. {l.first_name} {l.last_name}
-                                  <span style={{ marginLeft: 8, fontSize: '0.75rem',
-                                    color: 'var(--muted)', fontWeight: 400 }}>{l.dept_name}</span>
+                                  <span className="leave-item-dept">{l.dept_name}</span>
                                 </p>
-                                <p style={{ margin: '3px 0 0', fontSize: '0.82rem', color: '#92400e' }}>
-                                  📅 {l.leave_date} {l.reason && `· ${l.reason}`}
+                                <p className="leave-item-date">
+                                  {l.leave_date} {l.reason && `· ${l.reason}`}
                                 </p>
                               </div>
-                              <span style={{ background: '#fef3c7', color: '#92400e',
-                                fontSize: '0.72rem', fontWeight: 600,
-                                padding: '3px 10px', borderRadius: 20 }}>
-                                Slots Blocked
-                              </span>
+                              <span className="badge badge-amber">Slots Blocked</span>
                               <button
+                                className="btn btn-outline btn-sm remove-leave-btn"
                                 onClick={async () => {
                                   try {
                                     await API.delete('/admin/doctor-leave', { data: { doctor_id: l.doctor_id, leave_date: l.leave_date } });
@@ -1472,8 +1452,8 @@ const AdminDashboard = () => {
                                     loadLeaves();
                                   } catch { toast.error('Could not remove leave.'); }
                                 }}
-                                style={{ background: 'none', border: '1.5px solid #ef4444', color: '#ef4444', borderRadius: 8, padding: '5px 12px', cursor: 'pointer', fontSize: '0.78rem', fontWeight: 600 }}>
-                                ✕ Remove
+                              >
+                                Remove
                               </button>
                             </div>
                           ))}
