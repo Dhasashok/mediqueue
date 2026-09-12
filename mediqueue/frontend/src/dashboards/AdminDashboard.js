@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { getPendingDoctors, approveDoctor, getAllDoctors, getAnalytics } from '../services/api';
-import { useAuth } from '../context/AuthContext';
-import { QrCode, Camera, RefreshCw, CheckCircle2, XCircle, X, ArrowRight, AlertCircle } from 'lucide-react';
+
+import {
+  QrCode, Camera, RefreshCw, CheckCircle2, XCircle, X, ArrowRight, AlertCircle,
+  CalendarCheck, Clock, Users, FileText, BarChart3, UserCheck, Stethoscope, Cpu, CalendarX, Menu, ChevronRight, Search
+} from 'lucide-react';
 import API from '../services/api';
 import './Dashboard.css';
 
@@ -158,7 +161,9 @@ const QRScanner = ({ onScan, onClose }) => {
       document.head.appendChild(script);
     }
 
+    document.body.style.overflow = 'hidden';
     return () => {
+      document.body.style.overflow = '';
       cancelled = true;
       stopScanner();
     };
@@ -185,12 +190,9 @@ const QRScanner = ({ onScan, onClose }) => {
         <div className="qr-scanner-header">
           <div className="qr-scanner-title-wrap">
             <div className="qr-scanner-icon-badge">
-              <QrCode size={20} color="#0d9488" />
+              <QrCode size={18} color="#0d9488" />
             </div>
-            <div>
-              <h3>Scan Patient QR Code</h3>
-              <p>Point camera at the patient's QR code from their email or dashboard</p>
-            </div>
+            <h3 className="qr-scanner-title">Scan QR Code</h3>
           </div>
           <button className="modal-close qr-close-btn" onClick={handleClose} aria-label="Close Scanner">
             <X size={18} />
@@ -218,7 +220,6 @@ const QRScanner = ({ onScan, onClose }) => {
             {started && (
               <div className="qr-active-pill">
                 <span className="live-dot green"></span>
-                <span>Camera active — align QR code in the box</span>
               </div>
             )}
           </div>
@@ -226,7 +227,7 @@ const QRScanner = ({ onScan, onClose }) => {
 
         <div className="qr-manual-box">
           <div className="qr-divider-line">
-            <span>OR ENTER BOOKING ID MANUALLY</span>
+            <span>OR ENTER BOOKING ID</span>
           </div>
           <ManualEntry onScan={id => { stopScanner(); onScanRef.current(id); }} onClose={handleClose} />
         </div>
@@ -251,7 +252,6 @@ const ManualEntry = ({ onScan, onClose }) => {
         value={val}
         onChange={e => setVal(e.target.value.toUpperCase())}
         placeholder="e.g. MQ-725240-4562"
-        autoFocus
         onKeyDown={e => e.key === 'Enter' && handleSubmit()}
         className="qr-manual-input"
       />
@@ -270,7 +270,6 @@ const ManualEntry = ({ onScan, onClose }) => {
 
 // ── Main AdminDashboard ────────────────────────────────────────────────────────
 const AdminDashboard = () => {
-  const { user } = useAuth();
 
   // Toast state
   const [toasts, setToasts] = useState([]);
@@ -310,6 +309,7 @@ const AdminDashboard = () => {
     return `${ist.getUTCFullYear()}-${String(ist.getUTCMonth()+1).padStart(2,'0')}-${String(ist.getUTCDate()).padStart(2,'0')}`;
   });
   const [showScanner, setShowScanner] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [leaves, setLeaves]           = useState([]);
   const [leaveForm, setLeaveForm]     = useState({ doctor_id: '', leave_date: '', reason: '' });
   const [leaveLoading, setLeaveLoading] = useState(false);
@@ -515,6 +515,18 @@ const AdminDashboard = () => {
     );
   };
 
+  const NAV_ITEMS = [
+    { key: 'reception',       label: "Today's Arrivals",   icon: CalendarCheck, count: todayAppointments.length },
+    { key: 'livequeue',       label: 'Live Queue',        icon: Users,         count: allQueues.length, badgeType: 'live' },
+    { key: 'upcoming',        label: 'Upcoming',          icon: Clock,         count: upcomingAppointments.length },
+    { key: 'allappointments', label: 'All Appointments',  icon: FileText },
+    { key: 'overview',        label: 'Analytics',         icon: BarChart3 },
+    { key: 'pending',         label: 'Doctor Approvals',  icon: UserCheck,     count: pending.length, badgeType: 'warning' },
+    { key: 'doctors',         label: 'Doctors Directory', icon: Stethoscope },
+    { key: 'mlstats',         label: 'ML Wait Times',     icon: Cpu },
+    { key: 'leaves',          label: 'Doctor Leaves',     icon: CalendarX,     count: leaves.length },
+  ];
+
   return (
     <ToastContext.Provider value={addToast}>
       {/* Toast Container */}
@@ -527,15 +539,10 @@ const AdminDashboard = () => {
           <div className="container">
             <div className="dash-header-row">
               <div className="dash-title-block">
-                <h1>Admin / Receptionist Panel</h1>
-                <p>Welcome, <strong>{user?.name}</strong> · Manage check-ins, queues & appointments</p>
+                <h1>Reception & Queue Desk</h1>
               </div>
               <div className="dash-header-actions">
-                <span className="dash-live-badge">
-                  <span className="live-dot green"></span>
-                  <span>Live Sync: 15s</span>
-                </span>
-                <button className="btn-refresh" onClick={loadAll} title="Reload live data">
+                <button type="button" className="btn-refresh" onClick={loadAll} title="Reload live data">
                   <RefreshCw size={13} className={loading ? "spin-slow" : ""} />
                   <span>Refresh</span>
                 </button>
@@ -551,85 +558,156 @@ const AdminDashboard = () => {
             <div className="dash-stats">
               <div className="dash-stat-card">
                 <div className="stat-icon-box blue"><span>👥</span></div>
-                <div><p className="ds-val">{analytics.total_patients}</p><p className="ds-label">Total Patients</p></div>
+                <div className="ds-content">
+                  <p className="ds-val">{analytics.total_patients}</p>
+                  <p className="ds-label">Total Patients</p>
+                </div>
               </div>
               <div className="dash-stat-card">
                 <div className="stat-icon-box teal"><span>🩺</span></div>
-                <div><p className="ds-val">{analytics.total_doctors}</p><p className="ds-label">Active Doctors</p></div>
+                <div className="ds-content">
+                  <p className="ds-val">{analytics.total_doctors}</p>
+                  <p className="ds-label">Active Doctors</p>
+                </div>
               </div>
               <div className="dash-stat-card">
                 <div className="stat-icon-box green"><span>📅</span></div>
-                <div><p className="ds-val">{analytics.today_appointments}</p><p className="ds-label">Today's Bookings</p></div>
+                <div className="ds-content">
+                  <p className="ds-val">{analytics.today_appointments}</p>
+                  <p className="ds-label">Today's Bookings</p>
+                </div>
               </div>
               <div className="dash-stat-card">
                 <div className="stat-icon-box red"><span>🔴</span></div>
-                <div><p className="ds-val">{allQueues.length}</p><p className="ds-label">In Queue Now</p></div>
+                <div className="ds-content">
+                  <p className="ds-val">{allQueues.length}</p>
+                  <p className="ds-label">In Queue Now</p>
+                </div>
               </div>
             </div>
           )}
 
           {/* Pending alert */}
           {pending.length > 0 && (
-            <div style={{ background: '#fffbeb', border: '1px solid #fde047', borderLeft: '4px solid #f59e0b', borderRadius: 12, padding: '12px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-              <span style={{ fontSize: '0.875rem', color: '#a16207', fontWeight: 600 }}>
-                🔔 {pending.length} doctor{pending.length > 1 ? 's' : ''} waiting for approval
-              </span>
+            <div className="pending-doctor-banner">
+              <div className="pdb-text">
+                <span>🔔</span>
+                <strong>{pending.length} doctor{pending.length > 1 ? 's' : ''} awaiting approval</strong>
+              </div>
               <button className="btn btn-primary btn-sm" onClick={() => setActiveTab('pending')}>Review Now</button>
             </div>
           )}
 
-          {/* Check-In Box */}
+          {/* Check-In Card: Compact, Perfectly Aligned */}
           <div className="checkin-box">
             <div className="checkin-header-row">
-              <div className="checkin-title-block">
-                <h3 className="checkin-title">🏥 Patient Check-In</h3>
-                <p className="checkin-sub">
-                  Enter Booking ID manually or scan the patient's digital QR code pass
-                </p>
+              <h3 className="checkin-title">🏥 Patient Check-In</h3>
+            </div>
+            <div className="checkin-action-group">
+              <div className="checkin-input-wrapper">
+                <Search size={15} className="checkin-input-icon" />
+                <input
+                  placeholder="e.g. MQ-725240-4562"
+                  value={checkInId}
+                  onChange={e => setCheckInId(e.target.value.toUpperCase())}
+                  onKeyDown={e => e.key === 'Enter' && handleCheckIn()}
+                  className="checkin-input"
+                />
               </div>
-              <button className="btn btn-outline btn-sm checkin-scan-btn" onClick={() => setShowScanner(true)}>
+              <button
+                type="button"
+                className="btn btn-primary checkin-submit-btn"
+                onClick={() => handleCheckIn()}
+                disabled={!!checkingIn || !checkInId.trim()}
+              >
+                {checkingIn ? '⏳ Checking in...' : <><CheckCircle2 size={15} /> <span>Check In</span></>}
+              </button>
+              <span className="checkin-or-divider">OR</span>
+              <button
+                type="button"
+                className="btn btn-outline checkin-scan-btn"
+                onClick={() => setShowScanner(true)}
+              >
                 <Camera size={15} />
                 <span>Scan QR Code</span>
               </button>
             </div>
-            <div className="checkin-input-row">
-              <input
-                placeholder="Enter Booking ID — e.g. MQ-725240-4562"
-                value={checkInId}
-                onChange={e => setCheckInId(e.target.value.toUpperCase())}
-                onKeyDown={e => e.key === 'Enter' && handleCheckIn()}
-                className="checkin-input"
-              />
-              <button className="btn btn-primary checkin-submit-btn" onClick={() => handleCheckIn()} disabled={!!checkingIn || !checkInId.trim()}>
-                {checkingIn ? '⏳ Checking in...' : <><CheckCircle2 size={16} /> <span>Check In Patient</span></>}
-              </button>
-            </div>
           </div>
 
-          {/* Main Tabs Card */}
-          <div className="card">
-            <div className="dash-tabs">
-              {[
-                { key: 'reception',       label: `🏥 Today's Arrivals`, count: todayAppointments.length },
-                { key: 'upcoming',        label: '📆 Upcoming',          count: upcomingAppointments.length },
-                { key: 'livequeue',       label: '🔴 Live Queue',        count: allQueues.length },
-                { key: 'allappointments', label: '📋 All Appointments',  count: null },
-                { key: 'overview',        label: '📊 Analytics',         count: null },
-                { key: 'pending',         label: '⏳ Approvals',         count: pending.length },
-                { key: 'doctors',         label: '🩺 Doctors',           count: null },
-                { key: 'mlstats',         label: '🤖 ML Stats',          count: null },
-                { key: 'leaves',          label: '🏖️ Doctor Leaves',     count: leaves.length },
-              ].map(t => (
-                <button key={t.key}
-                  className={`dash-tab ${activeTab === t.key ? 'active' : ''}`}
-                  onClick={() => setActiveTab(t.key)}>
-                  {t.label}{t.count !== null ? ` (${t.count})` : ''}
-                </button>
-              ))}
+          {/* Main 2-Column Dashboard Shell with Left Sidebar */}
+          <div className="dash-shell">
+            {/* Mobile Section Switcher Bar */}
+            <div className="dash-mobile-nav-bar">
+              <button
+                type="button"
+                className="dash-mobile-nav-toggle"
+                onClick={() => setMobileMenuOpen(prev => !prev)}
+              >
+                <div className="dash-mobile-nav-current">
+                  <Menu size={16} />
+                  <span>{NAV_ITEMS.find(n => n.key === activeTab)?.label}</span>
+                </div>
+                <div className="dash-mobile-nav-switch-hint">
+                  <span>Switch</span>
+                  <ChevronRight size={14} style={{ transform: mobileMenuOpen ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }} />
+                </div>
+              </button>
             </div>
 
-            {loading ? <div className="loading-screen"><div className="spinner"></div></div> : (
-              <>
+            {/* Backdrop for mobile drawer */}
+            {mobileMenuOpen && (
+              <div className="dash-sidebar-backdrop" onClick={() => setMobileMenuOpen(false)} />
+            )}
+
+            {/* Left Sidebar */}
+            <aside className={`dash-sidebar ${mobileMenuOpen ? 'mobile-open' : ''}`}>
+              <div className="dash-sidebar-header">
+                <span className="dash-sidebar-title">NAVIGATION</span>
+                {mobileMenuOpen && (
+                  <button type="button" className="dash-sidebar-close-btn" onClick={() => setMobileMenuOpen(false)}>
+                    <X size={16} />
+                  </button>
+                )}
+              </div>
+              <nav className="dash-sidebar-nav">
+                {NAV_ITEMS.map(t => {
+                  const Icon = t.icon;
+                  const isActive = activeTab === t.key;
+                  return (
+                    <button
+                      key={t.key}
+                      type="button"
+                      className={`dash-sidebar-item ${isActive ? 'active' : ''}`}
+                      onClick={() => {
+                        setActiveTab(t.key);
+                        setMobileMenuOpen(false);
+                      }}
+                    >
+                      <div className="dash-sidebar-item-left">
+                        <Icon size={16} className="dash-sidebar-icon" />
+                        <span className="dash-sidebar-label">{t.label}</span>
+                      </div>
+                      {typeof t.count === 'number' && t.count > 0 && (
+                        <span className={`dash-sidebar-badge ${t.badgeType || ''}`}>
+                          {t.count}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </nav>
+            </aside>
+
+            {/* Main Content Area */}
+            <div className="dash-content-area">
+              <div className="dash-section-header">
+                <h2 className="dash-section-title">
+                  {NAV_ITEMS.find(n => n.key === activeTab)?.label}
+                </h2>
+              </div>
+
+              {loading ? <div className="loading-screen"><div className="spinner"></div></div> : (
+                <>
                 {/* TODAY'S ARRIVALS */}
                 {activeTab === 'reception' && (
                   todayAppointments.length === 0 ? (
@@ -1217,6 +1295,7 @@ const AdminDashboard = () => {
             )}
           </div>
         </div>
+      </div>
 
         {/* QR Scanner Modal — only mount when showScanner is true */}
         {showScanner && (
