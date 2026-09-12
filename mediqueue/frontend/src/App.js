@@ -31,7 +31,7 @@ const ProtectedRoute = ({ children, roles }) => {
 const AppContent = () => {
   const { user } = useAuth();
   const location = useLocation();
-  const isStaffPortal = location.pathname.startsWith('/admin');
+  const isStaffPortal = location.pathname.startsWith('/admin') || location.pathname.startsWith('/doctor');
 
   return (
     <>

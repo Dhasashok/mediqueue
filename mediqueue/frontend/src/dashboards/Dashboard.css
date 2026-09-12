@@ -272,7 +272,7 @@
 .dq-reason { font-size: 0.78rem; color: var(--slate); margin-top: 4px; }
 .dq-wait { text-align: center; }
 .wait-box { display: flex; flex-direction: column; align-items: center; gap: 2px; }
-.wait-val { font-size: 1.1rem; font-weight: 800; font-family: 'Fraunces', serif; color: var(--teal); }
+.wait-val { font-size: 1.1rem; font-weight: 800; font-family: inherit; font-variant-numeric: tabular-nums; color: var(--teal); }
 .wait-now .wait-val { color: #15803d; }
 .wait-label { font-size: 0.68rem; color: var(--muted); font-weight: 600; text-transform: uppercase; }
 .dq-actions { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
@@ -285,7 +285,7 @@
 }
 .qs-item { flex: 1; text-align: center; }
 .qs-label { display: block; font-size: 0.72rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 4px; }
-.qs-val { font-size: 1.1rem; font-weight: 800; color: var(--navy); font-family: 'Fraunces', serif; }
+.qs-val { font-size: 1.1rem; font-weight: 800; color: var(--navy); font-family: inherit; font-variant-numeric: tabular-nums; }
 .qs-divider { width: 1px; height: 40px; background: var(--border); flex-shrink: 0; }
 
 /* ── Admin Check-In ───────────────────────────────────── */
@@ -1231,7 +1231,8 @@
 
 .dash-portal-layout {
   display: flex;
-  width: 100vw;
+  width: 100%;
+  max-width: 100%;
   height: 100vh;
   overflow: hidden;
   background: #f8fafc;
@@ -2219,3 +2220,731 @@
     font-size: 0.75rem !important;
   }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   DOCTOR PORTAL LAYOUT & COMPONENT REFINEMENTS
+   ══════════════════════════════════════════════════════════════ */
+
+/* Portal Sidebar & Nav Aliases/Complements */
+.dash-portal-nav-group-label {
+  display: block;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  padding: 4px 8px 8px;
+}
+
+.dash-portal-item-icon {
+  flex-shrink: 0;
+  color: #64748b;
+  transition: color 0.16s ease;
+}
+
+.dash-portal-item.active .dash-portal-item-icon {
+  color: #0d9488;
+}
+
+.dash-portal-item-label {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: left;
+}
+
+.dash-portal-badge.teal {
+  background: rgba(13, 148, 136, 0.12);
+  color: #0d9488;
+}
+
+.dash-portal-badge.amber {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.dash-portal-badge.red {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.dash-portal-badge.green {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.dash-portal-item.active .dash-portal-badge {
+  background: #0d9488;
+  color: #ffffff;
+}
+
+.dash-portal-footer {
+  padding: 12px;
+  border-top: 1px solid #f1f5f9;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-shrink: 0;
+  background: #fafbfc;
+}
+
+.dash-portal-user-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+}
+
+.dash-portal-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, #0d9488, #0891b2);
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 0.90rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.dash-portal-user-meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.dash-portal-user-name {
+  font-size: 0.80rem;
+  font-weight: 700;
+  color: var(--navy);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+.dash-portal-user-role {
+  font-size: 0.66rem;
+  font-weight: 600;
+  color: #0d9488;
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dash-portal-logout-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: 10px;
+  border: 1px solid #fecdd3;
+  background: #fff1f2;
+  color: #e11d48;
+  font-size: 0.80rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.dash-portal-logout-btn:hover {
+  background: #ffe4e6;
+  border-color: #fda4af;
+  color: #be123c;
+}
+
+/* Breadcrumb aliases */
+.dpt-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.90rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dpt-bc-root {
+  color: #64748b;
+  font-weight: 600;
+}
+
+.dpt-bc-sep {
+  color: #cbd5e1;
+}
+
+.dpt-bc-curr {
+  color: #0f172a;
+  font-weight: 800;
+}
+
+/* Live green dot */
+.live-dot.green {
+  background: #22c55e;
+  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2);
+}
+
+/* ── Doctor Queue Velocity Summary ─────────────────────────── */
+.doctor-qs-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 14px 18px;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.03);
+}
+
+.doctor-qs-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 4px 8px;
+}
+
+.doctor-qs-item:not(:last-child) {
+  border-right: 1px solid #f1f5f9;
+}
+
+.doctor-qs-label {
+  font-size: 0.70rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-bottom: 4px;
+}
+
+.doctor-qs-val {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #0f172a;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+/* ── Active Patient Consultation Hero Card ─────────────────── */
+.doctor-queue-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.doctor-active-hero-card {
+  background: linear-gradient(145deg, #ffffff 0%, #f0fdf4 100%);
+  border: 1.5px solid #86efac;
+  border-radius: 16px;
+  padding: 20px 22px;
+  box-shadow: 0 4px 20px rgba(34, 197, 94, 0.08);
+  position: relative;
+  overflow: hidden;
+}
+
+.dah-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  gap: 12px;
+}
+
+.dah-pos-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 12px;
+  background: #dcfce7;
+  color: #15803d;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+}
+
+.dah-pos-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.25);
+  animation: pulseDot 1.8s infinite;
+}
+
+@keyframes pulseDot {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
+  70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+}
+
+.dah-meta-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dah-token {
+  font-size: 0.80rem;
+  font-weight: 700;
+  color: #475569;
+  font-variant-numeric: tabular-nums;
+  background: #ffffff;
+  padding: 4px 10px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.dah-body {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.dah-patient-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.dah-patient-name {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 8px 0;
+  letter-spacing: -0.3px;
+}
+
+.dah-tags {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.dah-tag {
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: #475569;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  padding: 3px 9px;
+  border-radius: 6px;
+}
+
+.dah-reason {
+  margin: 6px 0 0 0;
+  font-size: 0.84rem;
+  color: #334155;
+  line-height: 1.4;
+  background: rgba(255, 255, 255, 0.7);
+  padding: 6px 12px;
+  border-radius: 8px;
+  border-left: 3px solid #0d9488;
+}
+
+.dah-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.btn-dah-start {
+  border-color: #0284c7 !important;
+  color: #0284c7 !important;
+  background: #f0f9ff !important;
+  font-weight: 700 !important;
+}
+.btn-dah-start:hover {
+  background: #e0f2fe !important;
+  color: #0369a1 !important;
+}
+
+.btn-dah-rx {
+  border-color: #0d9488 !important;
+  color: #0d9488 !important;
+  background: #ffffff !important;
+  font-weight: 700 !important;
+}
+.btn-dah-rx:hover {
+  background: #f0fdfa !important;
+  color: #0f766e !important;
+}
+
+.btn-dah-complete {
+  background: #16a34a !important;
+  border-color: #16a34a !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  box-shadow: 0 2px 8px rgba(22, 163, 74, 0.25);
+}
+.btn-dah-complete:hover {
+  background: #15803d !important;
+  border-color: #15803d !important;
+}
+
+/* ── Doctor Waiting Queue Rows ─────────────────────────────── */
+.doctor-waiting-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.doctor-subheading {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 10px 0 2px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.doctor-waiting-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 14px 18px;
+  transition: all 0.16s ease;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.02);
+}
+
+.doctor-waiting-row:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+}
+
+.dwr-pos {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #64748b;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.dwr-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.dwr-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.dwr-name {
+  font-size: 0.96rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.dwr-slot {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #0d9488;
+  background: #f0fdfa;
+  padding: 2px 8px;
+  border-radius: 6px;
+  border: 1px solid #ccfbf1;
+}
+
+.dwr-meta {
+  font-size: 0.78rem;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.dwr-wait {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  border-left: 1px solid #f1f5f9;
+  flex-shrink: 0;
+}
+
+.dwr-wait-num {
+  font-size: 0.96rem;
+  font-weight: 800;
+  color: #0d9488;
+  font-variant-numeric: tabular-nums;
+}
+
+.dwr-wait-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+}
+
+.dwr-action {
+  flex-shrink: 0;
+}
+
+/* ── Doctor Profile Card ───────────────────────────────────── */
+.doctor-profile-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
+}
+
+.dpc-top {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #f1f5f9;
+  margin-bottom: 20px;
+}
+
+.dpc-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #0d9488, #0284c7);
+  color: #ffffff;
+  font-size: 1.8rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(13, 148, 136, 0.25);
+  flex-shrink: 0;
+}
+
+.dpc-meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.dpc-name {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 4px 0;
+}
+
+.dpc-spec {
+  font-size: 0.88rem;
+  color: #64748b;
+  margin: 0 0 8px 0;
+}
+
+.dpc-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+
+.dpc-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.dpc-icon {
+  color: #0d9488;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.dpc-label {
+  display: block;
+  font-size: 0.70rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-bottom: 2px;
+}
+
+.dpc-val {
+  display: block;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+/* ── Doctor Portal In-Page Toast System ─────────────────────── */
+.doctor-toast-container {
+  position: fixed;
+  top: 20px;
+  right: 24px;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 380px;
+  width: calc(100vw - 48px);
+  pointer-events: none;
+}
+
+.doctor-toast {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+  border: 1px solid #e2e8f0;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: #0f172a;
+  animation: toastSlideIn 0.22s ease-out;
+  pointer-events: auto;
+}
+
+@keyframes toastSlideIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.doctor-toast.success {
+  border-left: 4px solid #16a34a;
+  color: #14532d;
+  background: #f0fdf4;
+}
+
+.doctor-toast.error {
+  border-left: 4px solid #dc2626;
+  color: #7f1d1d;
+  background: #fef2f2;
+}
+
+.doctor-toast.warning {
+  border-left: 4px solid #d97706;
+  color: #78350f;
+  background: #fffbeb;
+}
+
+.doctor-toast.info {
+  border-left: 4px solid #0284c7;
+  color: #0c4a6e;
+  background: #f0f9ff;
+}
+
+.doctor-toast span {
+  flex: 1;
+}
+
+.doctor-toast-close {
+  background: none;
+  border: none;
+  color: inherit;
+  opacity: 0.6;
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  border-radius: 4px;
+}
+.doctor-toast-close:hover {
+  opacity: 1;
+}
+
+/* ── Doctor Portal Mobile Responsive Overrides ─────────────── */
+@media (max-width: 768px) {
+  .doctor-qs-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+    padding: 10px 8px !important;
+  }
+  .doctor-qs-item {
+    border-right: none !important;
+    padding: 6px 4px !important;
+  }
+  .doctor-qs-label {
+    font-size: 0.65rem !important;
+    white-space: normal !important;
+    line-height: 1.2 !important;
+  }
+  .doctor-qs-val {
+    font-size: 1.05rem !important;
+  }
+  .dah-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+  }
+  .dah-meta-right {
+    width: 100% !important;
+    justify-content: space-between !important;
+  }
+  .dah-body {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+  }
+  .dah-actions {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+  .dah-actions button {
+    width: 100%;
+    justify-content: center;
+  }
+  .dpc-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .doctor-waiting-row {
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 12px;
+  }
+  .dwr-wait {
+    border-left: none;
+    padding: 0;
+    align-items: flex-start;
+  }
+  .dwr-action {
+    width: 100%;
+  }
+  .dwr-action button {
+    width: 100%;
+    justify-content: center;
+  }
+}
