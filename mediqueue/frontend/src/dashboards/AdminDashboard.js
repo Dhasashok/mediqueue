@@ -5,7 +5,7 @@ import { getPendingDoctors, approveDoctor, getAllDoctors, getAnalytics } from '.
 
 import {
   QrCode, Camera, RefreshCw, CheckCircle2, XCircle, X, ArrowRight, AlertCircle,
-  CalendarCheck, Clock, Users, FileText, BarChart3, UserCheck, Stethoscope, Cpu, CalendarX, Menu, ChevronRight, Search, LogOut
+  CalendarCheck, Clock, Users, FileText, BarChart3, UserCheck, Stethoscope, Cpu, CalendarX, Menu, Search, LogOut
 } from 'lucide-react';
 import API from '../services/api';
 import './Dashboard.css';
@@ -323,6 +323,26 @@ const AdminDashboard = () => {
   });
   const [showScanner, setShowScanner] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [currentTime, setCurrentTime] = useState(() => {
+    return new Date().toLocaleTimeString('en-IN', {
+      timeZone: 'Asia/Kolkata',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    });
+  });
+
+  useEffect(() => {
+    const clockTimer = setInterval(() => {
+      setCurrentTime(new Date().toLocaleTimeString('en-IN', {
+        timeZone: 'Asia/Kolkata',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      }));
+    }, 1000);
+    return () => clearInterval(clockTimer);
+  }, []);
   const [leaves, setLeaves]           = useState([]);
   const [leaveForm, setLeaveForm]     = useState({ doctor_id: '', leave_date: '', reason: '' });
   const [leaveLoading, setLeaveLoading] = useState(false);
@@ -545,134 +565,138 @@ const AdminDashboard = () => {
       {/* Toast Container */}
       <ToastContainer toasts={toasts} remove={removeToast} />
 
-      <div className="dashboard-page">
+      <div className="dash-portal-layout">
 
-        {/* Header */}
-        <div className="dashboard-header admin-header">
-          <div className="container">
-            <div className="dash-header-row">
-              <div className="dash-title-block">
-                <h1>Reception & Queue Desk</h1>
-              </div>
-              <div className="dash-header-actions">
-                <button
-                  type="button"
-                  className="btn-dash-menu-toggle"
-                  onClick={() => setMobileMenuOpen(prev => !prev)}
-                  title="Toggle Navigation Menu"
-                >
-                  <Menu size={15} />
-                  <span>Menu</span>
-                </button>
-                <button type="button" className="btn-refresh" onClick={loadAll} title="Reload live data">
-                  <RefreshCw size={13} className={loading ? "spin-slow" : ""} />
-                  <span>Refresh</span>
-                </button>
+        {/* Mobile backdrop */}
+        {mobileMenuOpen && (
+          <div className="dash-portal-backdrop" onClick={() => setMobileMenuOpen(false)} />
+        )}
+
+        {/* Unified Left Navigation Drawer */}
+        <aside className={`dash-portal-sidebar ${mobileMenuOpen ? 'mobile-open' : ''}`}>
+          <div className="dash-portal-sidebar-header">
+            <div className="dash-portal-brand">
+              <span className="dash-portal-brand-icon">🏥</span>
+              <div>
+                <span className="dash-portal-brand-title">MediQueue</span>
+                <span className="dash-portal-brand-sub">Reception Desk</span>
               </div>
             </div>
-          </div>
-        </div>
-
-        <div className="container dashboard-body">
-          {/* Main 2-Column Dashboard Shell with Left Sidebar */}
-          <div className="dash-shell">
-            {/* Mobile Section Switcher Bar */}
-            <div className="dash-mobile-nav-bar">
+            {mobileMenuOpen && (
               <button
                 type="button"
-                className="dash-mobile-nav-toggle"
-                onClick={() => setMobileMenuOpen(prev => !prev)}
+                className="dash-portal-close-btn"
+                onClick={() => setMobileMenuOpen(false)}
+                aria-label="Close menu"
               >
-                <div className="dash-mobile-nav-current">
-                  <Menu size={16} />
-                  <span>{NAV_ITEMS.find(n => n.key === activeTab)?.label}</span>
-                </div>
-                <div className="dash-mobile-nav-switch-hint">
-                  <span>Switch</span>
-                  <ChevronRight size={14} style={{ transform: mobileMenuOpen ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }} />
-                </div>
+                <X size={18} />
               </button>
+            )}
+          </div>
+
+          <div className="dash-portal-nav-wrap">
+            <span className="dash-portal-section-label">MAIN NAVIGATION</span>
+            <nav className="dash-portal-nav">
+              {NAV_ITEMS.map(t => {
+                const Icon = t.icon;
+                const isActive = activeTab === t.key;
+                return (
+                  <button
+                    key={t.key}
+                    type="button"
+                    className={`dash-portal-item ${isActive ? 'active' : ''}`}
+                    onClick={() => {
+                      setActiveTab(t.key);
+                      setMobileMenuOpen(false);
+                    }}
+                  >
+                    <div className="dash-portal-item-left">
+                      <Icon size={16} className="dash-portal-icon" />
+                      <span className="dash-portal-label">{t.label}</span>
+                    </div>
+                    {typeof t.count === 'number' && t.count > 0 && (
+                      <span className={`dash-portal-badge ${t.badgeType || ''}`}>
+                        {t.count}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </nav>
+          </div>
+
+          {/* Drawer Footer with Single Logout Option */}
+          <div className="dash-portal-sidebar-footer">
+            <div className="portal-user-card">
+              <div className="portal-user-avatar">
+                {(user?.name || user?.first_name || 'R')[0].toUpperCase()}
+              </div>
+              <div className="portal-user-info">
+                <p className="portal-user-name">{user?.name || user?.first_name || 'Reception Staff'}</p>
+                <span className="portal-user-role">Hospital Admin</span>
+              </div>
+            </div>
+            <button
+              type="button"
+              className="portal-logout-btn"
+              onClick={handleLogout}
+              title="Log out of reception portal"
+            >
+              <LogOut size={15} />
+              <span>Logout</span>
+            </button>
+          </div>
+        </aside>
+
+        {/* Right Main Portal Area */}
+        <div className="dash-portal-main">
+          {/* Top Application Bar */}
+          <header className="dash-portal-topbar">
+            <div className="dpt-left">
+              <button
+                type="button"
+                className="dpt-hamburger"
+                onClick={() => setMobileMenuOpen(prev => !prev)}
+                aria-label="Toggle navigation drawer"
+              >
+                <Menu size={20} />
+              </button>
+              <div className="dpt-breadcrumbs">
+                <span className="dpt-crumb-brand">MediQueue</span>
+                <span className="dpt-crumb-sep">/</span>
+                <span className="dpt-crumb-current">
+                  {NAV_ITEMS.find(n => n.key === activeTab)?.label || 'Reception'}
+                </span>
+              </div>
             </div>
 
-            {/* Backdrop for mobile drawer */}
-            {mobileMenuOpen && (
-              <div className="dash-sidebar-backdrop" onClick={() => setMobileMenuOpen(false)} />
-            )}
-
-            {/* Left Sidebar / Drawer */}
-            <aside className={`dash-sidebar ${mobileMenuOpen ? 'mobile-open' : ''}`}>
-              <div className="dash-sidebar-header">
-                <div className="dash-sidebar-brand">
-                  <span className="dash-sidebar-brand-icon">🏥</span>
-                  <div>
-                    <span className="dash-sidebar-brand-title">MediQueue</span>
-                    <span className="dash-sidebar-brand-sub">Staff Desk</span>
-                  </div>
-                </div>
-                {mobileMenuOpen && (
-                  <button type="button" className="dash-sidebar-close-btn" onClick={() => setMobileMenuOpen(false)} aria-label="Close menu">
-                    <X size={18} />
-                  </button>
-                )}
+            <div className="dpt-right">
+              <div className="dpt-clock" title="Indian Standard Time (Live)">
+                <Clock size={13} />
+                <span>{currentTime}</span>
               </div>
-
-              <div className="dash-sidebar-nav-wrap">
-                <span className="dash-sidebar-section-label">NAVIGATION</span>
-                <nav className="dash-sidebar-nav">
-                  {NAV_ITEMS.map(t => {
-                    const Icon = t.icon;
-                    const isActive = activeTab === t.key;
-                    return (
-                      <button
-                        key={t.key}
-                        type="button"
-                        className={`dash-sidebar-item ${isActive ? 'active' : ''}`}
-                        onClick={() => {
-                          setActiveTab(t.key);
-                          setMobileMenuOpen(false);
-                        }}
-                      >
-                        <div className="dash-sidebar-item-left">
-                          <Icon size={16} className="dash-sidebar-icon" />
-                          <span className="dash-sidebar-label">{t.label}</span>
-                        </div>
-                        {typeof t.count === 'number' && t.count > 0 && (
-                          <span className={`dash-sidebar-badge ${t.badgeType || ''}`}>
-                            {t.count}
-                          </span>
-                        )}
-                      </button>
-                    );
-                  })}
-                </nav>
+              <div className="dpt-status-chip">
+                <span className="live-dot"></span>
+                <span className="dpt-status-text">OPD Online</span>
               </div>
+              <button
+                type="button"
+                className="dpt-refresh-btn"
+                onClick={loadAll}
+                title="Refresh live portal data"
+              >
+                <RefreshCw size={13} className={loading ? "spin-slow" : ""} />
+                <span>Sync</span>
+              </button>
+            </div>
+          </header>
 
-              {/* Drawer Footer with User Info & Logout Button */}
-              <div className="dash-sidebar-footer">
-                <div className="drawer-user-card">
-                  <div className="drawer-user-avatar">
-                    {(user?.name || user?.first_name || 'A')[0].toUpperCase()}
-                  </div>
-                  <div className="drawer-user-info">
-                    <p className="drawer-user-name">{user?.name || user?.first_name || 'Desk Staff'}</p>
-                    <span className="drawer-user-role">Hospital Admin</span>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  className="drawer-logout-btn"
-                  onClick={handleLogout}
-                  title="Log out of staff portal"
-                >
-                  <LogOut size={16} />
-                  <span>Logout</span>
-                </button>
-              </div>
-            </aside>
-
-            {/* Main Content Area */}
-            <div className="dash-content-area">
-              {loading ? <div className="loading-screen"><div className="spinner"></div></div> : (
+          {/* Scrollable View Body */}
+          <main className="dash-portal-body">
+            {loading ? (
+              <div className="loading-screen"><div className="spinner"></div></div>
+            ) : (
+              <div className="dash-portal-card-body">
                 <>
                 {/* TODAY'S ARRIVALS */}
                 {activeTab === 'reception' && (
@@ -1460,19 +1484,19 @@ const AdminDashboard = () => {
                 )}
 
               </>
-            )}
-          </div>
-        </div>
+            </div>
+          )}
+        </main>
       </div>
 
-        {/* QR Scanner Modal — only mount when showScanner is true */}
-        {showScanner && (
-          <QRScanner
-            onScan={handleQRScan}
-            onClose={() => setShowScanner(false)}
-          />
-        )}
-      </div>
+      {/* QR Scanner Modal — only mount when showScanner is true */}
+      {showScanner && (
+        <QRScanner
+          onScan={handleQRScan}
+          onClose={() => setShowScanner(false)}
+        />
+      )}
+    </div>
     </ToastContext.Provider>
   );
 };
