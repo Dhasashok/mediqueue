@@ -8,8 +8,15 @@ const BottomNav = () => {
   const { user, isLoggedIn } = useAuth();
   const location = useLocation();
 
-  // Hide bottom nav inside booking page on mobile if sticky action bar takes priority,
-  // but keep it on primary pages
+  // Hide bottom nav on staff dashboards (admin / doctor / receptionist)
+  // Staff dashboards have their own header actions and full-screen workflow
+  if (isLoggedIn && (user?.role === 'admin' || user?.role === 'doctor' || user?.role === 'receptionist')) {
+    return null;
+  }
+  if (location.pathname.startsWith('/admin') || location.pathname.startsWith('/doctor')) {
+    return null;
+  }
+
   const queuePath = isLoggedIn
     ? user.role === 'patient'
       ? '/patient/dashboard'

@@ -122,15 +122,56 @@
   .contact-grid-new { grid-template-columns: 1fr !important; gap: 12px !important; }
 
   /* ── DASHBOARDS ─────────────────────────────────────── */
-  .dashboard-header { padding: 14px 0 16px !important; }
-  .dashboard-header h1 { font-size: 1.18rem !important; }
-  .dash-header-row { flex-direction: row !important; align-items: center !important; justify-content: space-between !important; gap: 8px !important; }
-  .dash-stats { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; gap: 6px !important; margin-bottom: 0 !important; }
-  .dash-stat-card { padding: 8px 4px !important; gap: 4px !important; border-radius: 12px !important; flex-direction: column !important; align-items: center !important; text-align: center !important; min-width: 0 !important; }
-  .stat-icon-box { width: 28px !important; height: 28px !important; border-radius: 8px !important; margin-bottom: 2px !important; }
-  .stat-icon-box svg { width: 14px !important; height: 14px !important; }
-  .ds-val { font-size: 1.05rem !important; line-height: 1 !important; margin: 0 !important; }
-  .ds-label { font-size: 0.64rem !important; margin-top: 1px !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
+  .dashboard-header { padding: 16px 0 18px !important; }
+  .dashboard-header h1 { font-size: 1.25rem !important; line-height: 1.2 !important; }
+  .dash-header-row {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+  .dash-title-block { width: 100% !important; }
+  .dash-header-actions {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+    gap: 8px !important;
+  }
+  .dash-live-badge { font-size: 0.72rem !important; padding: 5px 11px !important; }
+  .btn-refresh { padding: 6px 13px !important; font-size: 0.78rem !important; }
+
+  /* 2x2 Balanced Stats Grid on Mobile */
+  .dash-stats {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+    margin-bottom: 0 !important;
+  }
+  .dash-stat-card {
+    padding: 14px 12px !important;
+    gap: 12px !important;
+    border-radius: 14px !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    text-align: left !important;
+    min-width: 0 !important;
+  }
+  .stat-icon-box {
+    width: 38px !important;
+    height: 38px !important;
+    border-radius: 10px !important;
+    margin-bottom: 0 !important;
+    font-size: 1.15rem !important;
+  }
+  .stat-icon-box svg { width: 18px !important; height: 18px !important; }
+  .ds-val { font-size: 1.35rem !important; line-height: 1.1 !important; margin: 0 !important; }
+  .ds-label {
+    font-size: 0.72rem !important;
+    margin-top: 2px !important;
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    color: var(--muted) !important;
+  }
   .dashboard-body { padding: 12px 16px 80px !important; gap: 14px !important; }
 
   /* Patient appointments card on mobile - no enclosing outer border box */
@@ -138,10 +179,47 @@
   .card-header-row { flex-direction: column !important; align-items: flex-start !important; justify-content: flex-start !important; gap: 12px !important; border-bottom: none !important; padding-bottom: 4px !important; margin-bottom: 12px !important; }
   .card-header-row h3 { font-size: 1.08rem !important; margin: 0 !important; font-weight: 800 !important; }
 
-  /* Segmented pill tabs on mobile - completely removes any lines around history button */
-  .dash-tabs { display: inline-flex !important; background: #f1f5f9 !important; padding: 3px !important; border-radius: 999px !important; border: none !important; border-bottom: none !important; margin-bottom: 0 !important; gap: 2px !important; overflow: visible !important; }
-  .dash-tab { padding: 6px 14px !important; border-radius: 999px !important; border: none !important; border-bottom: none !important; margin-bottom: 0 !important; font-size: 0.78rem !important; font-weight: 600 !important; color: #64748b !important; background: transparent !important; white-space: nowrap !important; outline: none !important; box-shadow: none !important; }
-  .dash-tab.active { background: #ffffff !important; color: #0d9488 !important; font-weight: 700 !important; border: none !important; border-bottom: none !important; box-shadow: 0 1px 4px rgba(0,0,0,0.08) !important; }
+  /* Segmented swipeable pill tabs on mobile */
+  .dash-tabs {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    background: #f1f5f9 !important;
+    padding: 4px !important;
+    border-radius: 12px !important;
+    border: none !important;
+    border-bottom: none !important;
+    margin-bottom: 0 !important;
+    gap: 4px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  .dash-tabs::-webkit-scrollbar { display: none !important; }
+  .dash-tab {
+    flex-shrink: 0 !important;
+    padding: 7px 14px !important;
+    border-radius: 9px !important;
+    border: none !important;
+    border-bottom: none !important;
+    margin-bottom: 0 !important;
+    font-size: 0.78rem !important;
+    font-weight: 600 !important;
+    color: #64748b !important;
+    background: transparent !important;
+    white-space: nowrap !important;
+    outline: none !important;
+    box-shadow: none !important;
+  }
+  .dash-tab.active {
+    background: #ffffff !important;
+    color: #0d9488 !important;
+    font-weight: 700 !important;
+    border: none !important;
+    border-bottom: none !important;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08) !important;
+  }
 
   /* Doctor queue */
   .doctor-queue-row { grid-template-columns: 1fr !important; gap: 10px !important; padding: 14px !important; }
@@ -150,9 +228,63 @@
   .qs-item { min-width: 45%; padding: 10px; }
   .qs-divider { display: none; }
 
-  /* Admin */
-  .checkin-input-row { flex-direction: column !important; }
+  /* Admin Check-in & Notice on Mobile */
+  .checkin-box { padding: 18px 16px !important; border-radius: 16px !important; }
+  .checkin-header-row {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+  }
+  .checkin-title-block { width: 100% !important; }
+  .checkin-title { font-size: 1.05rem !important; white-space: normal !important; }
+  .checkin-scan-btn {
+    width: 100% !important;
+    justify-content: center !important;
+    padding: 9px 14px !important;
+  }
+  .checkin-input-row {
+    flex-direction: column !important;
+    gap: 10px !important;
+    align-items: stretch !important;
+  }
+  .checkin-input {
+    width: 100% !important;
+    font-size: 0.88rem !important;
+  }
+  .checkin-submit-btn {
+    width: 100% !important;
+    justify-content: center !important;
+    padding: 11px 16px !important;
+  }
+  .admin-notice-banner {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+    padding: 12px 14px !important;
+  }
+  .admin-notice-badge { align-self: flex-start !important; }
+  .admin-dept-header { padding: 8px 12px !important; }
   .analytics-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
+
+  /* QR Scanner Modal on Mobile */
+  .qr-scanner-overlay { padding: 12px !important; }
+  .qr-scanner-modal {
+    padding: 18px 16px !important;
+    border-radius: 18px !important;
+    width: 100% !important;
+    max-height: 92vh !important;
+  }
+  .qr-reader-container { min-height: 200px !important; }
+  .qr-manual-form {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+  }
+  .qr-manual-btn {
+    width: 100% !important;
+    justify-content: center !important;
+    padding: 10px 14px !important;
+  }
 
   /* ── FOOTER ─────────────────────────────────────────── */
   .footer-wave svg { height: 20px; }

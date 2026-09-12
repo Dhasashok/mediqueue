@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { getPendingDoctors, approveDoctor, getAllDoctors, getAnalytics } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { QrCode, Camera, RefreshCw, CheckCircle2, XCircle, X, ArrowRight, AlertCircle } from 'lucide-react';
 import API from '../services/api';
 import './Dashboard.css';
 
@@ -180,41 +181,53 @@ const QRScanner = ({ onScan, onClose }) => {
   return (
     <div className="qr-scanner-overlay" onClick={handleClose}>
       <div className="qr-scanner-modal" onClick={e => e.stopPropagation()}>
+        {/* Header */}
         <div className="qr-scanner-header">
-          <h3>📷 Scan Patient QR Code</h3>
-          <button className="modal-close" onClick={handleClose}>✕</button>
+          <div className="qr-scanner-title-wrap">
+            <div className="qr-scanner-icon-badge">
+              <QrCode size={20} color="#0d9488" />
+            </div>
+            <div>
+              <h3>Scan Patient QR Code</h3>
+              <p>Point camera at the patient's QR code from their email or dashboard</p>
+            </div>
+          </div>
+          <button className="modal-close qr-close-btn" onClick={handleClose} aria-label="Close Scanner">
+            <X size={18} />
+          </button>
         </div>
-        <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 16 }}>
-          Point camera at the patient's QR code from their email or dashboard
-        </p>
 
         {error ? (
-          <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 12, padding: 14, marginBottom: 12, color: '#b91c1c', fontSize: '0.85rem' }}>
-            ⚠️ {error}
+          <div className="qr-error-box">
+            <AlertCircle size={18} color="#dc2626" style={{ flexShrink: 0 }} />
+            <span>{error}</span>
           </div>
         ) : (
-          <div style={{ position: 'relative' }}>
+          <div className="qr-camera-wrap">
             {/* Single video container — html5-qrcode renders exactly once here */}
             <div
               id="qr-reader"
-              style={{ width: '100%', borderRadius: 12, overflow: 'hidden', minHeight: 100 }}
+              className="qr-reader-container"
             />
             {!started && (
-              <div style={{ textAlign: 'center', padding: '20px 0', color: 'var(--muted)', fontSize: '0.85rem' }}>
+              <div className="qr-loading-box">
                 <div className="spinner" style={{ margin: '0 auto 10px' }} />
-                Starting camera...
+                <span>Starting camera...</span>
               </div>
             )}
             {started && (
-              <p style={{ textAlign: 'center', color: '#15803d', fontSize: '0.78rem', marginTop: 8, fontWeight: 600 }}>
-                🟢 Camera active — align QR code in the box
-              </p>
+              <div className="qr-active-pill">
+                <span className="live-dot green"></span>
+                <span>Camera active — align QR code in the box</span>
+              </div>
             )}
           </div>
         )}
 
-        <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid var(--border)' }}>
-          <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginBottom: 8 }}>Or enter Booking ID manually:</p>
+        <div className="qr-manual-box">
+          <div className="qr-divider-line">
+            <span>OR ENTER BOOKING ID MANUALLY</span>
+          </div>
           <ManualEntry onScan={id => { stopScanner(); onScanRef.current(id); }} onClose={handleClose} />
         </div>
       </div>
@@ -225,20 +238,31 @@ const QRScanner = ({ onScan, onClose }) => {
 // ── Manual Booking ID entry ────────────────────────────────────────────────────
 const ManualEntry = ({ onScan, onClose }) => {
   const [val, setVal] = useState('');
+  const handleSubmit = () => {
+    if (val.trim()) {
+      onScan(val.trim());
+      onClose();
+    }
+  };
+
   return (
-    <div style={{ display: 'flex', gap: 8 }}>
+    <div className="qr-manual-form">
       <input
         value={val}
         onChange={e => setVal(e.target.value.toUpperCase())}
-        placeholder="MQ-XXXXXX-XXXX"
+        placeholder="e.g. MQ-725240-4562"
         autoFocus
-        onKeyDown={e => e.key === 'Enter' && val && (onScan(val), onClose())}
-        style={{ flex: 1, padding: '10px 14px', border: '2px solid var(--border)', borderRadius: 10, fontSize: '0.9rem', fontFamily: 'monospace', outline: 'none' }}
-        onFocus={e => e.target.style.borderColor = '#0d9488'}
-        onBlur={e => e.target.style.borderColor = 'var(--border)'}
+        onKeyDown={e => e.key === 'Enter' && handleSubmit()}
+        className="qr-manual-input"
       />
-      <button className="btn btn-primary btn-sm" onClick={() => { if (val) { onScan(val); onClose(); } }}>
-        Check In
+      <button 
+        type="button"
+        className="btn btn-primary qr-manual-btn" 
+        onClick={handleSubmit}
+        disabled={!val.trim()}
+      >
+        <span>Check In</span>
+        <ArrowRight size={14} />
       </button>
     </div>
   );
@@ -452,37 +476,44 @@ const AdminDashboard = () => {
   const allDepts = [...new Set(allAppointments.map(a => a.dept_name).filter(Boolean))].sort();
   const STATUS_OPTIONS = ['Booked','Checked-In','In-Progress','Completed','Cancelled','No-Show'];
 
-  const ApptRow = ({ a, showCheckin = false, showCancel = false }) => (
-    <div className="appt-row">
-      <div className="appt-dept-icon">{(a.dept_name || 'A')[0]}</div>
-      <div className="appt-main">
-        <div className="appt-top-row">
-          <p className="appt-doc">
-            {a.full_name}
-            <span style={{ marginLeft: 8, fontSize: '0.72rem', color: 'var(--muted)', fontWeight: 400 }}>
-              ({a.p_first} {a.p_last})
-            </span>
-          </p>
-          <span className={`badge ${statusColor[a.status] || 'badge-gray'}`}>{a.status}</span>
+  const ApptRow = ({ a, showCheckin = false, showCancel = false }) => {
+    const patientName = `${a.p_first || ''} ${a.p_last || ''}`.trim() || a.full_name || 'Patient';
+    const showBookedBy = a.full_name && patientName && a.full_name.trim().toLowerCase() !== patientName.toLowerCase();
+
+    return (
+      <div className="appt-row">
+        <div className="appt-dept-icon">{(a.dept_name || 'A')[0]}</div>
+        <div className="appt-main">
+          <div className="appt-top-row">
+            <p className="appt-doc">
+              {patientName}
+              {showBookedBy && (
+                <span className="appt-booked-by">
+                  (Booked by: {a.full_name})
+                </span>
+              )}
+            </p>
+            <span className={`badge ${statusColor[a.status] || 'badge-gray'}`}>{a.status}</span>
+          </div>
+          <p className="appt-dept">{a.dept_name} · Dr. {a.doc_first} {a.doc_last} · {a.time_slot}</p>
+          <p className="appt-date">🎫 {a.booking_id} · 📅 {a.appointment_date?.substring(0,10)} · Age: {a.age || 'N/A'}</p>
         </div>
-        <p className="appt-dept">{a.dept_name} · Dr. {a.doc_first} {a.doc_last} · {a.time_slot}</p>
-        <p className="appt-date">🎫 {a.booking_id} · 📅 {a.appointment_date?.substring(0,10)} · Age: {a.age}</p>
+        <div className="appt-actions-col">
+          {showCheckin && (
+            <button className="btn btn-primary btn-sm appt-btn-checkin" disabled={checkingIn === a.booking_id}
+              onClick={() => handleCheckIn(a.booking_id)}>
+              {checkingIn === a.booking_id ? '⏳' : <><CheckCircle2 size={14} /> <span>Check In</span></>}
+            </button>
+          )}
+          {showCancel && (
+            <button className="btn btn-danger btn-sm appt-btn-cancel" onClick={() => handleCancelAppointment(a.id, a.booking_id)}>
+              <XCircle size={14} /> <span>Cancel</span>
+            </button>
+          )}
+        </div>
       </div>
-      <div className="appt-actions-col">
-        {showCheckin && (
-          <button className="btn btn-primary btn-sm" disabled={checkingIn === a.booking_id}
-            onClick={() => handleCheckIn(a.booking_id)}>
-            {checkingIn === a.booking_id ? '⏳' : '✅ Check In'}
-          </button>
-        )}
-        {showCancel && (
-          <button className="btn btn-danger btn-sm" onClick={() => handleCancelAppointment(a.id, a.booking_id)}>
-            Cancel
-          </button>
-        )}
-      </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <ToastContext.Provider value={addToast}>
@@ -495,13 +526,19 @@ const AdminDashboard = () => {
         <div className="dashboard-header admin-header">
           <div className="container">
             <div className="dash-header-row">
-              <div>
+              <div className="dash-title-block">
                 <h1>Admin / Receptionist Panel</h1>
                 <p>Welcome, <strong>{user?.name}</strong> · Manage check-ins, queues & appointments</p>
               </div>
-              <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Auto-refresh every 15s</span>
-                <button className="btn-refresh" onClick={loadAll}>↻ Refresh</button>
+              <div className="dash-header-actions">
+                <span className="dash-live-badge">
+                  <span className="live-dot green"></span>
+                  <span>Live Sync: 15s</span>
+                </span>
+                <button className="btn-refresh" onClick={loadAll} title="Reload live data">
+                  <RefreshCw size={13} className={loading ? "spin-slow" : ""} />
+                  <span>Refresh</span>
+                </button>
               </div>
             </div>
           </div>
@@ -543,25 +580,28 @@ const AdminDashboard = () => {
 
           {/* Check-In Box */}
           <div className="checkin-box">
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-              <h3 style={{ fontSize: '1rem', color: 'var(--navy)' }}>🏥 Patient Check-In</h3>
-              <button className="btn btn-outline btn-sm" onClick={() => setShowScanner(true)} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                📷 Scan QR Code
+            <div className="checkin-header-row">
+              <div className="checkin-title-block">
+                <h3 className="checkin-title">🏥 Patient Check-In</h3>
+                <p className="checkin-sub">
+                  Enter Booking ID manually or scan the patient's digital QR code pass
+                </p>
+              </div>
+              <button className="btn btn-outline btn-sm checkin-scan-btn" onClick={() => setShowScanner(true)}>
+                <Camera size={15} />
+                <span>Scan QR Code</span>
               </button>
             </div>
-            <p style={{ color: 'var(--muted)', fontSize: '0.82rem', marginBottom: 14 }}>
-              Enter Booking ID manually or scan the patient's QR code
-            </p>
             <div className="checkin-input-row">
               <input
                 placeholder="Enter Booking ID — e.g. MQ-725240-4562"
                 value={checkInId}
                 onChange={e => setCheckInId(e.target.value.toUpperCase())}
                 onKeyDown={e => e.key === 'Enter' && handleCheckIn()}
-                style={{ fontFamily: 'monospace' }}
+                className="checkin-input"
               />
-              <button className="btn btn-primary" onClick={() => handleCheckIn()} disabled={!!checkingIn}>
-                {checkingIn ? '⏳ Checking in...' : '✅ Check In Patient'}
+              <button className="btn btn-primary checkin-submit-btn" onClick={() => handleCheckIn()} disabled={!!checkingIn || !checkInId.trim()}>
+                {checkingIn ? '⏳ Checking in...' : <><CheckCircle2 size={16} /> <span>Check In Patient</span></>}
               </button>
             </div>
           </div>
@@ -611,24 +651,22 @@ const AdminDashboard = () => {
                     }, {});
                     return (
                       <div>
-                        <div style={{ background: '#fefce8', border: '1px solid #fde047', borderRadius: 10,
-                          padding: '10px 14px', marginBottom: 16, fontSize: '0.82rem', color: '#a16207',
-                          display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                          <span>💡 Click <strong>Check In</strong> when patient arrives, or use <strong>📷 Scan QR</strong> above</span>
-                          <span style={{ background: '#fde047', borderRadius: 20, padding: '2px 10px', fontWeight: 700 }}>
+                        <div className="admin-notice-banner">
+                          <div className="admin-notice-text">
+                            <span className="admin-notice-icon">💡</span>
+                            <span>Click <strong>Check In</strong> when patient arrives, or use <strong>📷 Scan QR</strong> above</span>
+                          </div>
+                          <span className="admin-notice-badge">
                             {todayAppointments.length} patient{todayAppointments.length !== 1 ? 's' : ''} today
                           </span>
                         </div>
                         {Object.entries(byDept).map(([dept, patients]) => (
                           <div key={dept} style={{ marginBottom: 20 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 10,
-                              padding: '8px 14px', background: 'var(--color-background-secondary)',
-                              borderRadius: 8, marginBottom: 8, borderLeft: '4px solid #0d9488' }}>
-                              <span style={{ fontWeight: 700, color: 'var(--navy)', fontSize: '0.9rem' }}>
+                            <div className="admin-dept-header">
+                              <span className="admin-dept-title">
                                 🏥 {dept}
                               </span>
-                              <span style={{ background: '#0d9488', color: '#fff', borderRadius: 20,
-                                padding: '2px 10px', fontSize: '0.75rem', fontWeight: 600 }}>
+                              <span className="admin-dept-count">
                                 {patients.length} patient{patients.length !== 1 ? 's' : ''}
                               </span>
                             </div>
@@ -903,8 +941,8 @@ const AdminDashboard = () => {
                               : 'Never';
                             return (
                               <div key={s.department_id} style={{
-                                background: 'var(--color-background-secondary)',
-                                border: `1.5px solid ${isReal ? '#0d9488' : 'var(--color-border-tertiary)'}`,
+                                background: '#f8fafc',
+                                border: `1.5px solid ${isReal ? '#0d9488' : '#e2e8f0'}`,
                                 borderRadius: 12, padding: 16,
                               }}>
                                 {/* Header */}
