@@ -1120,22 +1120,53 @@ const AdminDashboard = () => {
                         badgeType="teal"
                       />
 
-                      <div className="reg-filters-card" style={{ marginBottom: 16 }}>
-                        <div className="search-input-wrap" style={{ flex: 1 }}>
-                          <Search size={16} className="search-icon" />
+                      {/* Modern Clean Search Bar */}
+                      <div className="dash-search-container">
+                        <div className="dash-search-field">
+                          <Search size={16} className="dash-search-icon" />
                           <input
                             type="text"
+                            className="dash-search-input"
                             placeholder="Search doctors by name, specialization, or department..."
                             value={doctorSearch}
                             onChange={e => setDoctorSearch(e.target.value)}
                           />
+                          {doctorSearch && (
+                            <button
+                              type="button"
+                              className="dash-search-clear"
+                              onClick={() => setDoctorSearch('')}
+                              aria-label="Clear search"
+                            >
+                              <X size={14} />
+                            </button>
+                          )}
                         </div>
+                        {doctorSearch && (
+                          <span className="dash-search-result-count">
+                            {filteredDoctors.length} {filteredDoctors.length === 1 ? 'match' : 'matches'}
+                          </span>
+                        )}
                       </div>
 
                       {filteredDoctors.length === 0 ? (
                         <div className="empty-dash">
-                          <div className="empty-icon"><Search size={36} color="var(--color-text-secondary)" /></div>
-                          <p>No doctors match your search</p>
+                          <div className="empty-icon-circle">
+                            <Search size={28} color="#0d9488" />
+                          </div>
+                          <p className="empty-dash-title">
+                            {doctorSearch ? 'No doctors match your search' : 'No doctors registered'}
+                          </p>
+                          {doctorSearch && (
+                            <button
+                              type="button"
+                              className="btn btn-outline btn-sm"
+                              style={{ marginTop: 12, borderColor: '#cbd5e1', color: '#64748b' }}
+                              onClick={() => setDoctorSearch('')}
+                            >
+                              Clear Search
+                            </button>
+                          )}
                         </div>
                       ) : (
                         <div className="appt-list">
@@ -1421,9 +1452,11 @@ const AdminDashboard = () => {
 
                     {leaves.length === 0 ? (
                       <div className="empty-dash">
-                        <div className="empty-icon"><CalendarX size={36} color="var(--color-text-secondary)" /></div>
-                        <p>No upcoming leaves scheduled</p>
-                        <span style={{ fontSize: '0.82rem', color: 'var(--muted)' }}>Doctor schedule is fully open for appointments.</span>
+                        <div className="empty-icon-circle">
+                          <CalendarX size={28} color="#0d9488" />
+                        </div>
+                        <p className="empty-dash-title">No upcoming leaves scheduled</p>
+                        <span className="empty-dash-sub">Doctor schedule is fully open for appointments.</span>
                       </div>
                     ) : (
                       <div>

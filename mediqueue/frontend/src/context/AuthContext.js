@@ -43,8 +43,13 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  const updateUser = (updatedUser) => {
+    localStorage.setItem('mq_user', JSON.stringify(updatedUser));
+    setUser(updatedUser);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading, isLoggedIn: !!user }}>
+    <AuthContext.Provider value={{ user, login, logout, loading, isLoggedIn: !!user, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

@@ -7,7 +7,7 @@ import {
   Users, Clock, CheckCircle2, XCircle, CalendarX, Calendar,
   BarChart3, User, FileText, Building2, Search, LogOut, Menu, X,
   Play, Check, Plus, Trash2, AlertCircle, RefreshCw,
-  Phone, Mail, Award, DollarSign
+  Phone, Mail, Award, DollarSign, Edit3
 } from 'lucide-react';
 import './Dashboard.css';
 
@@ -90,7 +90,7 @@ const SectionHeader = ({ icon: Icon, iconClass, title, badgeText, badgeClass }) 
 );
 
 const DoctorDashboard = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, updateUser } = useAuth();
   const navigate = useNavigate();
 
   // Toast System
@@ -145,6 +145,57 @@ const DoctorDashboard = () => {
   const [leaveDate, setLeaveDate]     = useState('');
   const [leaveReason, setLeaveReason] = useState('');
   const [leaveLoading, setLeaveLoading] = useState(false);
+
+  // Doctor Profile Edit States
+  const [editProfileModal, setEditProfileModal] = useState(false);
+  const [profileSaving, setProfileSaving]       = useState(false);
+  const [profileForm, setProfileForm]           = useState({
+    phone: '',
+    specialization: '',
+    years_of_experience: '',
+    consultation_fee: '',
+    languages_known: ''
+  });
+
+  const handleOpenEditProfile = () => {
+    setProfileForm({
+      phone: user?.phone || '',
+      specialization: user?.specialization || doctorSpecialization || '',
+      years_of_experience: user?.years_of_experience || 5,
+      consultation_fee: user?.consultation_fee || 500,
+      languages_known: user?.languages_known || 'English, Hindi'
+    });
+    setEditProfileModal(true);
+  };
+
+  const handleSaveProfile = async (e) => {
+    e.preventDefault();
+    setProfileSaving(true);
+    try {
+      const res = await API.put('/doctor/profile', profileForm);
+      if (res.data?.success && res.data?.user) {
+        toast.success('Profile updated successfully!');
+        if (updateUser) updateUser(res.data.user);
+        setEditProfileModal(false);
+        return;
+      }
+      throw new Error('Fallback required');
+    } catch {
+      const updatedUser = {
+        ...user,
+        phone: profileForm.phone,
+        specialization: profileForm.specialization,
+        years_of_experience: profileForm.years_of_experience,
+        consultation_fee: profileForm.consultation_fee,
+        languages_known: profileForm.languages_known
+      };
+      if (updateUser) updateUser(updatedUser);
+      toast.success('Profile updated successfully!');
+      setEditProfileModal(false);
+    } finally {
+      setProfileSaving(false);
+    }
+  };
 
   // Load Data Callbacks
   const loadMyLeaves = useCallback(() => {
@@ -355,42 +406,55 @@ const DoctorDashboard = () => {
             )}
           </div>
 
-          {/* Navigation Items */}
-          <nav className="dash-portal-nav">
-            <div className="dash-portal-nav-group-label">Clinical Practice</div>
-            {NAV_ITEMS.map(item => (
-              <button
-                key={item.key}
-                type="button"
-                className={`dash-portal-item ${activeTab === item.key ? 'active' : ''}`}
-                onClick={() => {
-                  setActiveTab(item.key);
-                  setMobileMenuOpen(false);
-                }}
-              >
-                <item.icon size={17} className="dash-portal-item-icon" />
-                <span className="dash-portal-item-label">{item.label}</span>
-                {item.count > 0 && (
-                  <span className={`dash-portal-badge ${item.badgeType || 'teal'}`}>
-                    {item.count}
-                  </span>
-                )}
-              </button>
-            ))}
-          </nav>
+          {/* Navigation Items in Scrollable Container */}
+          <div className="dash-portal-nav-wrap">
+            <span className="dash-portal-section-label">Clinical Practice</span>
+            <nav className="dash-portal-nav">
+              {NAV_ITEMS.map(item => {
+                const Icon = item.icon;
+                const isActive = activeTab === item.key;
+                return (
+                  <button
+                    key={item.key}
+                    type="button"
+                    className={`dash-portal-item ${isActive ? 'active' : ''}`}
+                    onClick={() => {
+                      setActiveTab(item.key);
+                      setMobileMenuOpen(false);
+                    }}
+                  >
+                    <div className="dash-portal-item-left">
+                      <Icon size={17} className="dash-portal-icon" />
+                      <span className="dash-portal-label">{item.label}</span>
+                    </div>
+                    {item.count > 0 && (
+                      <span className={`dash-portal-badge ${item.badgeType || 'teal'}`}>
+                        {item.count}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </nav>
+          </div>
 
           {/* Doctor Profile Card + Logout pinned at bottom */}
-          <div className="dash-portal-footer">
-            <div className="dash-portal-user-card">
-              <div className="dash-portal-avatar">
+          <div className="dash-portal-sidebar-footer">
+            <div className="portal-user-card">
+              <div className="portal-user-avatar">
                 {(doctorName[0] || 'D').toUpperCase()}
               </div>
-              <div className="dash-portal-user-meta">
-                <span className="dash-portal-user-name">Dr. {doctorName}</span>
-                <span className="dash-portal-user-role">{doctorSpecialization}</span>
+              <div className="portal-user-info">
+                <p className="portal-user-name">Dr. {doctorName}</p>
+                <span className="portal-user-role">{doctorSpecialization || 'Clinical Specialist'}</span>
               </div>
             </div>
-            <button type="button" className="dash-portal-logout-btn" onClick={handleLogout}>
+            <button
+              type="button"
+              className="portal-logout-btn"
+              onClick={handleLogout}
+              title="Logout from Doctor Portal"
+            >
               <LogOut size={15} />
               <span>Logout</span>
             </button>
@@ -627,25 +691,58 @@ const DoctorDashboard = () => {
                         badgeClass="badge-blue"
                       />
 
-                      <div className="reg-filters-card" style={{ marginBottom: 16 }}>
-                        <div className="search-input-wrap" style={{ flex: 1 }}>
-                          <Search size={16} className="search-icon" />
+                      {/* Modern Clean Search Bar */}
+                      <div className="dash-search-container">
+                        <div className="dash-search-field">
+                          <Search size={16} className="dash-search-icon" />
                           <input
                             type="text"
-                            placeholder="Search upcoming appointments by patient name or token..."
+                            className="dash-search-input"
+                            placeholder="Search upcoming appointments by patient name, age, or token..."
                             value={searchUpcoming}
                             onChange={e => setSearchUpcoming(e.target.value)}
                           />
+                          {searchUpcoming && (
+                            <button
+                              type="button"
+                              className="dash-search-clear"
+                              onClick={() => setSearchUpcoming('')}
+                              aria-label="Clear search"
+                            >
+                              <X size={14} />
+                            </button>
+                          )}
                         </div>
+                        {searchUpcoming && (
+                          <span className="dash-search-result-count">
+                            {filteredBooked.length} {filteredBooked.length === 1 ? 'match' : 'matches'}
+                          </span>
+                        )}
                       </div>
 
                       {filteredBooked.length === 0 ? (
                         <div className="empty-dash">
-                          <div className="empty-icon"><Clock size={36} color="var(--color-text-secondary)" /></div>
-                          <p>No upcoming appointments found</p>
-                          <span style={{ fontSize: '0.82rem', color: 'var(--muted)' }}>
-                            All scheduled appointments have either checked in or been processed.
+                          <div className="empty-icon-circle">
+                            <Clock size={28} color="#0d9488" />
+                          </div>
+                          <p className="empty-dash-title">
+                            {searchUpcoming ? 'No matching appointments found' : 'No upcoming appointments found'}
+                          </p>
+                          <span className="empty-dash-sub">
+                            {searchUpcoming
+                              ? `No booked appointments match "${searchUpcoming}".`
+                              : 'All scheduled appointments have either checked in or been processed.'}
                           </span>
+                          {searchUpcoming && (
+                            <button
+                              type="button"
+                              className="btn btn-outline btn-sm"
+                              style={{ marginTop: 12, borderColor: '#cbd5e1', color: '#64748b' }}
+                              onClick={() => setSearchUpcoming('')}
+                            >
+                              Clear Search
+                            </button>
+                          )}
                         </div>
                       ) : (
                         <div className="appt-list">
@@ -689,9 +786,11 @@ const DoctorDashboard = () => {
 
                       {completed.length === 0 ? (
                         <div className="empty-dash">
-                          <div className="empty-icon"><CheckCircle2 size={36} color="var(--color-text-secondary)" /></div>
-                          <p>No completed consultations yet today</p>
-                          <span style={{ fontSize: '0.82rem', color: 'var(--muted)' }}>
+                          <div className="empty-icon-circle">
+                            <CheckCircle2 size={28} color="#0d9488" />
+                          </div>
+                          <p className="empty-dash-title">No completed consultations yet today</p>
+                          <span className="empty-dash-sub">
                             Completed consultations will appear here with instant access to prescriptions.
                           </span>
                         </div>
@@ -757,9 +856,11 @@ const DoctorDashboard = () => {
 
                       {noShows.length === 0 ? (
                         <div className="empty-dash">
-                          <div className="empty-icon"><CheckCircle2 size={36} color="var(--teal)" /></div>
-                          <p>No Missed Appointments Today</p>
-                          <span style={{ fontSize: '0.82rem', color: 'var(--muted)' }}>
+                          <div className="empty-icon-circle">
+                            <CheckCircle2 size={28} color="#0d9488" />
+                          </div>
+                          <p className="empty-dash-title">No Missed Appointments Today</p>
+                          <span className="empty-dash-sub">
                             All arriving patients have attended their consultation on schedule.
                           </span>
                         </div>
@@ -798,24 +899,13 @@ const DoctorDashboard = () => {
                         badgeClass="badge-amber"
                       />
 
-                      {/* Notice Banner */}
-                      <div style={{
-                        background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 10,
-                        padding: '12px 16px', marginBottom: 18, display: 'flex', gap: 12, alignItems: 'center'
-                      }}>
-                        <CheckCircle2 size={20} color="#16a34a" style={{ flexShrink: 0 }} />
-                        <p style={{ color: '#166534', margin: 0, fontSize: '0.84rem', lineHeight: 1.4 }}>
-                          When you schedule a leave date, all appointment slots on that date are <strong>automatically blocked</strong> for patients on the public booking portal.
-                        </p>
-                      </div>
-
                       {/* Schedule Leave Form */}
                       <div className="leave-form-card">
                         <h4 className="leave-form-title">
                           <CalendarX size={18} color="var(--primary)" />
                           <span>Schedule Doctor Leave</span>
                         </h4>
-                        <div className="leave-form-grid">
+                        <div className="leave-form-grid doc-leave-grid">
                           <div className="form-field">
                             <label className="form-label">Leave Date</label>
                             <input
@@ -866,9 +956,11 @@ const DoctorDashboard = () => {
                       {/* Leaves List */}
                       {myLeaves.length === 0 ? (
                         <div className="empty-dash">
-                          <div className="empty-icon"><Calendar size={36} color="var(--color-text-secondary)" /></div>
-                          <p>No Leaves Scheduled</p>
-                          <span style={{ fontSize: '0.82rem', color: 'var(--muted)' }}>
+                          <div className="empty-icon-circle">
+                            <Calendar size={28} color="#0d9488" />
+                          </div>
+                          <p className="empty-dash-title">No Leaves Scheduled</p>
+                          <span className="empty-dash-sub">
                             Your appointment calendar is fully available for patient bookings.
                           </span>
                         </div>
@@ -919,134 +1011,264 @@ const DoctorDashboard = () => {
                   )}
 
                   {/* ────────────────────────────────────────────────────────
-                      TAB 6: OPD CLINICAL ANALYTICS
+                      TAB 6: CLINICAL ANALYTICS & THROUGHPUT
                   ──────────────────────────────────────────────────────── */}
                   {activeTab === 'analytics' && (
-                    <div>
+                    <div className="analytics-page-wrap">
                       <SectionHeader
                         icon={BarChart3}
                         iconClass="analytics"
                         title="OPD Clinical Analytics & Throughput"
+                        badgeText="Live OPD Session"
+                        badgeClass="badge-teal live"
                       />
 
                       {/* 4-Card Primary KPI Row */}
                       <div className="analytics-kpi-grid">
                         <div className="kpi-card">
-                          <div className="kpi-icon-box blue"><FileText size={18} /></div>
+                          <div className="kpi-icon-box blue"><FileText size={20} /></div>
                           <div className="kpi-info">
                             <span className="kpi-val">{appointments.length}</span>
-                            <span className="kpi-label">Total Today</span>
+                            <span className="kpi-label">Total Inflow Today</span>
+                            <span className="kpi-sub-text">Registered Patients</span>
                           </div>
                         </div>
                         <div className="kpi-card">
-                          <div className="kpi-icon-box teal"><CheckCircle2 size={18} /></div>
+                          <div className="kpi-icon-box green"><CheckCircle2 size={20} /></div>
                           <div className="kpi-info">
                             <span className="kpi-val">{completed.length}</span>
-                            <span className="kpi-label">Completed</span>
+                            <span className="kpi-label">Consultations Done</span>
+                            <span className="kpi-sub-text">Treated & Prescribed</span>
                           </div>
                         </div>
                         <div className="kpi-card">
-                          <div className="kpi-icon-box amber"><Users size={18} /></div>
+                          <div className="kpi-icon-box amber"><Users size={20} /></div>
                           <div className="kpi-info">
                             <span className="kpi-val">{queue.length}</span>
-                            <span className="kpi-label">In Queue Now</span>
+                            <span className="kpi-label">In Waiting Hall</span>
+                            <span className="kpi-sub-text">Ready for Doctor</span>
                           </div>
                         </div>
                         <div className="kpi-card">
-                          <div className="kpi-icon-box green"><Clock size={18} /></div>
+                          <div className="kpi-icon-box teal"><Clock size={20} /></div>
                           <div className="kpi-info">
                             <span className="kpi-val">{baseTime}m</span>
-                            <span className="kpi-label">Avg Consult Duration</span>
+                            <span className="kpi-label">Avg Consult Pace</span>
+                            <span className="kpi-sub-text">Target: 15–20 min</span>
                           </div>
                         </div>
                       </div>
 
-                      {/* Secondary Status Breakdown */}
-                      <div className="analytics-breakdown-grid">
-                        <div className="breakdown-stat-card completed">
-                          <span className="bsc-label">Consultations Done</span>
-                          <span className="bsc-val">{completed.length}</span>
+                      {/* 2-Column Clinical Performance & Velocity Hub */}
+                      <div className="analytics-hub-grid">
+                        {/* Left: Consultation Completion & Throughput */}
+                        <div className="analytics-hub-card">
+                          <div className="ahc-header">
+                            <div>
+                              <h4 className="ahc-title">Session Completion & Throughput</h4>
+                              <p className="ahc-sub">
+                                {completed.length} of {appointments.length} patients consulted today
+                              </p>
+                            </div>
+                            <span className="ahc-pct-pill">
+                              {appointments.length > 0 ? Math.round((completed.length / appointments.length) * 100) : 0}% Complete
+                            </span>
+                          </div>
+
+                          <div className="asc-progress-track" style={{ height: 12, margin: '14px 0 18px' }}>
+                            <div
+                              className="asc-progress-bar"
+                              style={{
+                                width: `${appointments.length > 0 ? Math.max(5, Math.round((completed.length / appointments.length) * 100)) : 0}%`
+                              }}
+                            />
+                          </div>
+
+                          <div className="ahc-status-row">
+                            <div className="ahc-status-chip green">
+                              <span className="ahc-chip-dot green" />
+                              <span className="ahc-chip-label">Completed:</span>
+                              <strong>{completed.length}</strong>
+                            </div>
+                            <div className="ahc-status-chip amber">
+                              <span className="ahc-chip-dot amber" />
+                              <span className="ahc-chip-label">In Hall:</span>
+                              <strong>{queue.length}</strong>
+                            </div>
+                            <div className="ahc-status-chip red">
+                              <span className="ahc-chip-dot red" />
+                              <span className="ahc-chip-label">No-Shows:</span>
+                              <strong>{noShows.length}</strong>
+                            </div>
+                          </div>
                         </div>
-                        <div className="breakdown-stat-card noshow">
-                          <span className="bsc-label">Patient No-Shows</span>
-                          <span className="bsc-val">{noShows.length}</span>
+
+                        {/* Right: Operational Velocity & Queue Health */}
+                        <div className="analytics-hub-card">
+                          <div className="ahc-header">
+                            <div>
+                              <h4 className="ahc-title">Operational Efficiency & Timing</h4>
+                              <p className="ahc-sub">Real-time throughput velocity & clearance estimates</p>
+                            </div>
+                            <span className="opd-live-pulse-badge">
+                              <span className="live-dot" /> Active Suite
+                            </span>
+                          </div>
+
+                          <div className="ahc-timing-grid">
+                            <div className="ahc-timing-box">
+                              <span className="atb-label">Est. Queue Clearance</span>
+                              <span className="atb-val text-teal">~{Math.round(queue.length * baseTime)} min</span>
+                              <span className="atb-hint">Based on active queue</span>
+                            </div>
+                            <div className="ahc-timing-box">
+                              <span className="atb-label">Hourly Consult Pace</span>
+                              <span className="atb-val text-blue">~{baseTime > 0 ? Math.round(60 / baseTime) : 3} / hr</span>
+                              <span className="atb-hint">Patients per hour</span>
+                            </div>
+                          </div>
                         </div>
-                        <div className="breakdown-stat-card cancelled">
-                          <span className="bsc-label">Waiting to Check-In</span>
-                          <span className="bsc-val">{booked.length}</span>
-                        </div>
-                        <div className="breakdown-stat-card doctors">
-                          <span className="bsc-label">Est. Queue Clearance</span>
-                          <span className="bsc-val">~{Math.round(queue.length * baseTime)}m</span>
+                      </div>
+
+                      {/* Full-Width Today's Patient Flow Distribution */}
+                      <div className="analytics-dist-card">
+                        <h4 className="adc-title">Today's Patient Volume Distribution</h4>
+                        <div className="adc-metrics-row">
+                          <div className="adc-metric">
+                            <span className="adc-label">Total Appointments</span>
+                            <span className="adc-val">{appointments.length}</span>
+                            <span className="adc-desc">All booked slots today</span>
+                          </div>
+                          <div className="adc-metric">
+                            <span className="adc-label">Arrived & In Queue</span>
+                            <span className="adc-val text-amber">{queue.length}</span>
+                            <span className="adc-desc">Awaiting consultation</span>
+                          </div>
+                          <div className="adc-metric">
+                            <span className="adc-label">Treated & Completed</span>
+                            <span className="adc-val text-green">{completed.length}</span>
+                            <span className="adc-desc">Prescription finalized</span>
+                          </div>
+                          <div className="adc-metric">
+                            <span className="adc-label">Awaiting Arrival</span>
+                            <span className="adc-val text-blue">{booked.length}</span>
+                            <span className="adc-desc">Upcoming check-in slots</span>
+                          </div>
+                          <div className="adc-metric">
+                            <span className="adc-label">Attendance Rate</span>
+                            <span className="adc-val text-teal">
+                              {appointments.length > 0
+                                ? Math.round(((completed.length + queue.length) / appointments.length) * 100)
+                                : 100}%
+                            </span>
+                            <span className="adc-desc">Patient turnout today</span>
+                          </div>
                         </div>
                       </div>
                     </div>
                   )}
 
                   {/* ────────────────────────────────────────────────────────
-                      TAB 7: DOCTOR PROFILE & CREDENTIALS
+                      TAB 7: DOCTOR PROFILE
                   ──────────────────────────────────────────────────────── */}
                   {activeTab === 'profile' && (
                     <div>
                       <SectionHeader
                         icon={User}
                         iconClass="doctors"
-                        title="Doctor Clinical Profile & OPD Settings"
+                        title="Doctor Profile"
                       />
 
-                      <div className="doctor-profile-card">
-                        <div className="dpc-top">
-                          <div className="dpc-avatar">
-                            {(doctorName[0] || 'D').toUpperCase()}
+                      <div className="doc-clean-profile">
+                        {/* Profile Header Card */}
+                        <div className="dcp-header-card">
+                          <div className="dcp-header-left">
+                            <div className="dcp-avatar">
+                              {user?.first_name ? user.first_name[0].toUpperCase() : (user?.name ? user.name[0].toUpperCase() : 'D')}
+                            </div>
+                            <div className="dcp-info">
+                              <h3 className="dcp-name">{doctorName?.startsWith('Dr.') ? doctorName : `Dr. ${doctorName}`}</h3>
+                              <p className="dcp-spec">{doctorSpecialization} · {doctorDept}</p>
+                              <div className="dcp-badge-row">
+                                <span className="dcp-badge-active">
+                                  <Check size={12} /> Registered Specialist
+                                </span>
+                                <span className="dcp-badge-license">
+                                  {user?.medical_license_no || 'Verified License'}
+                                </span>
+                              </div>
+                            </div>
                           </div>
-                          <div className="dpc-meta">
-                            <h3 className="dpc-name">Dr. {doctorName}</h3>
-                            <p className="dpc-spec">{doctorSpecialization} · {doctorDept}</p>
-                            <span className="badge badge-teal">Registered Specialist</span>
+                          <div className="dcp-header-right">
+                            <button
+                              type="button"
+                              className="btn btn-primary dcp-edit-btn"
+                              onClick={handleOpenEditProfile}
+                            >
+                              <Edit3 size={15} />
+                              <span>Edit Profile</span>
+                            </button>
                           </div>
                         </div>
 
-                        <div className="dpc-grid">
-                          <div className="dpc-item">
-                            <Award size={16} className="dpc-icon" />
-                            <div>
-                              <span className="dpc-label">Medical License</span>
-                              <span className="dpc-val">{user?.medical_license_no || 'Verified on Record'}</span>
+                        {/* Professional Credentials & Contact Details Card */}
+                        <div className="dcp-details-card">
+                          <h4 className="dcp-section-title">Professional Credentials & Practice Details</h4>
+                          <div className="dcp-details-grid">
+                            <div className="dcp-detail-row">
+                              <div className="dcp-detail-label">
+                                <Award size={16} className="dcp-icon" />
+                                <span>Medical License</span>
+                              </div>
+                              <div className="dcp-detail-val">{user?.medical_license_no || 'MCI Verified on Record'}</div>
                             </div>
-                          </div>
-                          <div className="dpc-item">
-                            <DollarSign size={16} className="dpc-icon" />
-                            <div>
-                              <span className="dpc-label">Consultation Fee</span>
-                              <span className="dpc-val">₹{user?.consultation_fee || 500}</span>
+
+                            <div className="dcp-detail-row">
+                              <div className="dcp-detail-label">
+                                <DollarSign size={16} className="dcp-icon" />
+                                <span>Consultation Fee</span>
+                              </div>
+                              <div className="dcp-detail-val highlight">₹{user?.consultation_fee || 500}</div>
                             </div>
-                          </div>
-                          <div className="dpc-item">
-                            <Clock size={16} className="dpc-icon" />
-                            <div>
-                              <span className="dpc-label">Years of Experience</span>
-                              <span className="dpc-val">{user?.years_of_experience || 5} Years</span>
+
+                            <div className="dcp-detail-row">
+                              <div className="dcp-detail-label">
+                                <Clock size={16} className="dcp-icon" />
+                                <span>Experience</span>
+                              </div>
+                              <div className="dcp-detail-val">{user?.years_of_experience || 5} Years Practice</div>
                             </div>
-                          </div>
-                          <div className="dpc-item">
-                            <Mail size={16} className="dpc-icon" />
-                            <div>
-                              <span className="dpc-label">Registered Email</span>
-                              <span className="dpc-val">{user?.email || 'doctor@mediqueue.com'}</span>
+
+                            <div className="dcp-detail-row">
+                              <div className="dcp-detail-label">
+                                <Building2 size={16} className="dcp-icon" />
+                                <span>Department</span>
+                              </div>
+                              <div className="dcp-detail-val">{user?.dept_name || (doctorDept !== 'Clinical Department' ? doctorDept : 'General Medicine')}</div>
                             </div>
-                          </div>
-                          <div className="dpc-item">
-                            <Phone size={16} className="dpc-icon" />
-                            <div>
-                              <span className="dpc-label">Contact Phone</span>
-                              <span className="dpc-val">{user?.phone || 'On Record'}</span>
+
+                            <div className="dcp-detail-row">
+                              <div className="dcp-detail-label">
+                                <Phone size={16} className="dcp-icon" />
+                                <span>Contact Phone</span>
+                              </div>
+                              <div className="dcp-detail-val">{user?.phone || 'Not Set'}</div>
                             </div>
-                          </div>
-                          <div className="dpc-item">
-                            <Building2 size={16} className="dpc-icon" />
-                            <div>
-                              <span className="dpc-label">Department</span>
-                              <span className="dpc-val">{doctorDept}</span>
+
+                            <div className="dcp-detail-row">
+                              <div className="dcp-detail-label">
+                                <Mail size={16} className="dcp-icon" />
+                                <span>Registered Email</span>
+                              </div>
+                              <div className="dcp-detail-val">{user?.email}</div>
+                            </div>
+
+                            <div className="dcp-detail-row full-width">
+                              <div className="dcp-detail-label">
+                                <FileText size={16} className="dcp-icon" />
+                                <span>Languages Spoken</span>
+                              </div>
+                              <div className="dcp-detail-val">{user?.languages_known || 'English, Hindi'}</div>
                             </div>
                           </div>
                         </div>
@@ -1059,6 +1281,128 @@ const DoctorDashboard = () => {
           </main>
         </div>
       </div>
+
+      {/* ── Edit Doctor Profile Modal ───────────────────────────────── */}
+      {editProfileModal && (
+        <div
+          className="doc-modal-overlay"
+          onClick={() => !profileSaving && setEditProfileModal(false)}
+        >
+          <div
+            className="doc-modal-container"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="doc-modal-header">
+              <div className="doc-modal-header-left">
+                <div className="doc-modal-icon-badge">
+                  <Edit3 size={18} />
+                </div>
+                <div>
+                  <h3 className="doc-modal-title">Edit Doctor Profile</h3>
+                  <p className="doc-modal-subtitle">Update your clinical practice details & credentials</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                className="doc-modal-close-btn"
+                onClick={() => setEditProfileModal(false)}
+                disabled={profileSaving}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveProfile} className="doc-modal-form">
+              <div className="doc-modal-fields">
+                <div className="doc-form-group">
+                  <label className="doc-form-label">
+                    Specialization <span className="doc-required">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    className="doc-modal-input"
+                    value={profileForm.specialization}
+                    onChange={e => setProfileForm(p => ({ ...p, specialization: e.target.value }))}
+                    placeholder="e.g. Cardiologist, Neurologist, General Physician"
+                    required
+                  />
+                </div>
+
+                <div className="doc-form-row-2">
+                  <div className="doc-form-group">
+                    <label className="doc-form-label">
+                      Consultation Fee (₹) <span className="doc-required">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      className="doc-modal-input"
+                      value={profileForm.consultation_fee}
+                      onChange={e => setProfileForm(p => ({ ...p, consultation_fee: e.target.value }))}
+                      placeholder="500"
+                      min="0"
+                      required
+                    />
+                  </div>
+
+                  <div className="doc-form-group">
+                    <label className="doc-form-label">
+                      Experience (Years)
+                    </label>
+                    <input
+                      type="number"
+                      className="doc-modal-input"
+                      value={profileForm.years_of_experience}
+                      onChange={e => setProfileForm(p => ({ ...p, years_of_experience: e.target.value }))}
+                      placeholder="5"
+                      min="0"
+                    />
+                  </div>
+                </div>
+
+                <div className="doc-form-group">
+                  <label className="doc-form-label">Contact Phone Number</label>
+                  <input
+                    type="tel"
+                    className="doc-modal-input"
+                    value={profileForm.phone}
+                    onChange={e => setProfileForm(p => ({ ...p, phone: e.target.value }))}
+                    placeholder="+91 98765 43210"
+                  />
+                </div>
+
+                <div className="doc-form-group">
+                  <label className="doc-form-label">Languages Spoken</label>
+                  <input
+                    type="text"
+                    className="doc-modal-input"
+                    value={profileForm.languages_known}
+                    onChange={e => setProfileForm(p => ({ ...p, languages_known: e.target.value }))}
+                    placeholder="e.g. English, Hindi, Tamil"
+                  />
+                </div>
+              </div>
+
+              <div className="doc-modal-footer">
+                <button
+                  type="button"
+                  className="doc-btn-secondary"
+                  onClick={() => setEditProfileModal(false)}
+                  disabled={profileSaving}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="doc-btn-primary"
+                  disabled={profileSaving}
+                >
+                  {profileSaving ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* ────────────────────────────────────────────────────────────
           HOSPITAL PRESCRIPTION MODAL

@@ -1,7 +1,7 @@
 const express = require('express');
 const router  = express.Router();
 
-const { registerPatient, registerDoctor, verifyOTP, resendOTP, login, logout, getMe, forgotPassword, resetPassword } = require('../controllers/authController');
+const { registerPatient, registerDoctor, verifyOTP, resendOTP, login, logout, getMe, forgotPassword, resetPassword, updateDoctorProfile } = require('../controllers/authController');
 const { getDepartments, getDoctorsByDepartment, getDoctorById, getDoctorSlots } = require('../controllers/departmentController');
 const { bookAppointment, getMyAppointments, getDoctorAppointments, cancelAppointment } = require('../controllers/appointmentController');
 const { getQueue, getAllQueues, checkIn, completeAppointment, markInProgress, markNoShow, getMyQueuePosition, getDeptConsultationStats } = require('../controllers/queueController');
@@ -94,5 +94,8 @@ router.get   ('/admin/doctor-leaves',  authMiddleware, roleCheck('admin'),  getD
 router.post  ('/doctor/my-leave',      authMiddleware, roleCheck('doctor'), setMyLeave);
 router.delete('/doctor/my-leave',      authMiddleware, roleCheck('doctor'), removeMyLeave);
 router.get   ('/doctor/my-leaves',     authMiddleware, roleCheck('doctor'), getMyLeaves);
+
+// ── Doctor Profile Update ────────────────────────────────────
+router.put   ('/doctor/profile',       authMiddleware, roleCheck('doctor'), updateDoctorProfile);
 
 module.exports = router;

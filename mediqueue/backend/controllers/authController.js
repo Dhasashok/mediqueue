@@ -1,7 +1,7 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const db = require('../models/db');
-const { sendOTPEmail } = require('../utils/emailService');
+const { sendOTPEmail, sendPasswordResetOTPEmail } = require('../utils/emailService');
 
 const generateToken = (payload) =>
   jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN || '7d' });
@@ -52,10 +52,12 @@ const registerPatient = async (req, res) => {
       console.error('Email send error:', emailErr.message);
     });
 
+    const isLocalOrUnset = !process.env.EMAIL_USER || !process.env.EMAIL_PASS || process.env.NODE_ENV !== 'production';
     res.status(201).json({
       success: true,
       message: 'OTP sent to your email. Please verify to activate your account.',
-      email
+      email,
+      fallback_otp: isLocalOrUnset ? otp : undefined
     });
   } catch (err) {
     console.error(err);
@@ -131,7 +133,12 @@ const resendOTP = async (req, res) => {
       console.error('Resend OTP email error:', emailErr.message);
     });
 
-    res.json({ success: true, message: 'New OTP sent to your email.' });
+    const isLocalOrUnset = !process.env.EMAIL_USER || !process.env.EMAIL_PASS || process.env.NODE_ENV !== 'production';
+    res.json({
+      success: true,
+      message: 'New OTP sent to your email.',
+      fallback_otp: isLocalOrUnset ? otp : undefined
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: 'Error sending OTP.' });
@@ -282,12 +289,18 @@ const forgotPassword = async (req, res) => {
     );
 
     console.log(`\n==================================================\n🔑 [OTP ForgotPassword] For ${email}: ${otp}\n==================================================\n`);
-
-    // Reuse existing OTP email function (non-blocking)
-    sendOTPEmail(email, user.first_name, otp).catch(emailErr => {
+ 
+    // Dedicated password reset OTP email (non-blocking)
+    sendPasswordResetOTPEmail(email, user.first_name, otp).catch(emailErr => {
       console.error('Forgot password OTP email error:', emailErr.message);
     });
-    res.json({ success: true, message: 'OTP sent to your email. Valid for 10 minutes.' });
+
+    const isLocalOrUnset = !process.env.EMAIL_USER || !process.env.EMAIL_PASS || process.env.NODE_ENV !== 'production';
+    res.json({
+      success: true,
+      message: 'OTP sent to your email. Valid for 10 minutes.',
+      fallback_otp: isLocalOrUnset ? otp : undefined
+    });
   } catch (err) {
     console.error('forgotPassword error:', err);
     res.status(500).json({ success: false, message: 'Server error.' });
@@ -334,4 +347,45 @@ const resetPassword = async (req, res) => {
   }
 };
 
-module.exports = { registerPatient, registerDoctor, verifyOTP, resendOTP, login, logout, getMe, forgotPassword, resetPassword };
+// ── Update Doctor Profile ────────────────────────────────────
+const updateDoctorProfile = async (req, res) => {
+  try {
+    const { id } = req.user;
+    const { phone, specialization, years_of_experience, consultation_fee, languages_known } = req.body;
+
+    await db.query(
+      `UPDATE doctors 
+       SET phone = COALESCE(?, phone),
+           specialization = COALESCE(?, specialization),
+           years_of_experience = COALESCE(?, years_of_experience),
+           consultation_fee = COALESCE(?, consultation_fee),
+           languages_known = COALESCE(?, languages_known)
+       WHERE id = ?`,
+      [
+        phone !== undefined ? phone : null,
+        specialization !== undefined ? specialization : null,
+        years_of_experience !== undefined ? years_of_experience : null,
+        consultation_fee !== undefined ? consultation_fee : null,
+        languages_known !== undefined ? languages_known : null,
+        id
+      ]
+    );
+
+    const [rows] = await db.query(
+      `SELECT d.*, dep.name as dept_name 
+       FROM doctors d 
+       LEFT JOIN departments dep ON d.department_id = dep.id 
+       WHERE d.id = ?`,
+      [id]
+    );
+
+    if (rows.length === 0) return res.status(404).json({ success: false, message: 'Doctor not found.' });
+    const { password_hash, otp, otp_expiry, ...updatedUser } = rows[0];
+    res.json({ success: true, message: 'Profile updated successfully!', user: { ...updatedUser, role: 'doctor' } });
+  } catch (err) {
+    console.error('updateDoctorProfile error:', err);
+    res.status(500).json({ success: false, message: 'Server error updating profile.' });
+  }
+};
+
+module.exports = { registerPatient, registerDoctor, verifyOTP, resendOTP, login, logout, getMe, forgotPassword, resetPassword, updateDoctorProfile };

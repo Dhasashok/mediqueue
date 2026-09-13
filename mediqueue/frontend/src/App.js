@@ -32,6 +32,7 @@ const AppContent = () => {
   const { user } = useAuth();
   const location = useLocation();
   const isStaffPortal = location.pathname.startsWith('/admin') || location.pathname.startsWith('/doctor');
+  const isAuthPage = ['/login', '/register', '/forgot-password'].includes(location.pathname);
 
   return (
     <>
@@ -52,8 +53,8 @@ const AppContent = () => {
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </main>
-      {!isStaffPortal && <Footer />}
-      {!isStaffPortal && <BottomNav />}
+      {!isStaffPortal && !isAuthPage && <Footer />}
+      {!isStaffPortal && !isAuthPage && <BottomNav />}
       <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} />
     </>
   );

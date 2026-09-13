@@ -3,20 +3,15 @@ const nodemailer = require('nodemailer');
 const emailUser = (process.env.EMAIL_USER || '').trim();
 const emailPass = (process.env.EMAIL_PASS || '').replace(/\s+/g, '');
 
-// Create transporter with pooled connections and faster TLS handshake
+// Create transporter optimized for cloud hosting (Render/Vercel)
 const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 465,
-  secure: true,
-  pool: true,
-  maxConnections: 5,
-  maxMessages: 100,
-  connectionTimeout: 10000,
-  greetingTimeout: 5000,
-  socketTimeout: 15000,
+  service: 'gmail',
   auth: {
     user: emailUser,
     pass: emailPass
+  },
+  tls: {
+    rejectUnauthorized: false
   }
 });
 
@@ -124,6 +119,29 @@ const sendOTPEmail = async (email, name, otp) => {
     from: `"MediQueue Hospital" <${HOSPITAL_EMAIL}>`,
     to: email,
     subject: 'Verify Your MediQueue Account — OTP Inside',
+    html: baseTemplate(content)
+  });
+};
+
+// 1b. Send Password Reset OTP Email
+const sendPasswordResetOTPEmail = async (email, name, otp) => {
+  const content = `
+    <div class="title">Password Reset Verification</div>
+    <div class="subtitle">A request was received to reset the password for your MediQueue account.</div>
+    <p style="font-size:14px;color:#475569;">Hi <strong>${name || 'User'}</strong>,</p>
+    <p style="font-size:14px;color:#475569;margin-bottom:20px;">Use the 6-digit verification code below to set a new password:</p>
+    <div class="otp-box" style="background:#f0fdfa;border-color:#0d9488;">
+      <div class="otp-code" style="color:#0d9488;">${otp}</div>
+      <div class="otp-label">⏰ Valid for 10 minutes only</div>
+    </div>
+    <p style="font-size:13px;color:#ef4444;text-align:center;font-weight:600;">Do not share this OTP with anyone. Hospital staff will never ask for it.</p>
+    <div class="divider"></div>
+    <p style="font-size:13px;color:#64748b;">If you did not request this password reset, please ignore this email or secure your account.</p>
+  `;
+  await safeSendMail({
+    from: `"MediQueue Hospital" <${HOSPITAL_EMAIL}>`,
+    to: email,
+    subject: `MediQueue Password Reset Code: ${otp}`,
     html: baseTemplate(content)
   });
 };
@@ -332,6 +350,7 @@ const sendCancellationEmail = async (email, name, appointment) => {
 
 module.exports = {
   sendOTPEmail,
+  sendPasswordResetOTPEmail,
   sendAppointmentConfirmation,
   sendCheckInEmail,
   sendCompletionEmail,

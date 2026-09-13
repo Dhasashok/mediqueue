@@ -59,4 +59,7 @@ export const getAnalytics = () => API.get('/admin/analytics');
 export const markInProgress = (appointmentId) =>
   API.put(`/queue/${appointmentId}/start`);
 
+export const updateDoctorProfile = (data) =>
+  API.put('/doctor/profile', data);
+
 export default API;

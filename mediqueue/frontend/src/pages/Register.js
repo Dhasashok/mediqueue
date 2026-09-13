@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { User, Stethoscope, Eye, EyeOff, ShieldCheck, Check, Lock } from 'lucide-react';
+import { User, Stethoscope, Eye, EyeOff, ShieldCheck, Check, Lock, Mail } from 'lucide-react';
 import { registerPatient, registerDoctor, getDepartments } from '../services/api';
 import API from '../services/api';
 import './Auth.css';
@@ -92,8 +92,11 @@ const OTPScreen = ({ email, onSuccess }) => {
   const handleResend = async () => {
     setResending(true);
     try {
-      await API.post('/auth/resend-otp', { email });
+      const res = await API.post('/auth/resend-otp', { email });
       toast.success('New OTP sent!');
+      if (res.data?.fallback_otp) {
+        toast.info(`[Demo Mode] OTP: ${res.data.fallback_otp}`, { autoClose: 15000 });
+      }
       setTimer(60); setOtp(['','','','','','']);
       inputs.current[0]?.focus();
     } catch { toast.error('Error sending OTP.'); }
@@ -103,7 +106,9 @@ const OTPScreen = ({ email, onSuccess }) => {
   return (
     <div className="otp-page">
       <div className="otp-card">
-        <div className="otp-icon-circle">📧</div>
+        <div className="otp-icon-circle">
+          <Mail size={24} color="#0d9488" />
+        </div>
         <h2>Verify Your Email</h2>
         <p className="otp-subtitle">We sent a 6-digit OTP to</p>
         <p className="otp-email-label">{email}</p>
@@ -209,7 +214,10 @@ const Register = () => {
         if (role === 'patient') {
           setRegisteredEmail(form.email);
           setShowOTP(true);
-          toast.info('📧 OTP sent to your email!');
+          toast.info('OTP sent to your email!');
+          if (res.data?.fallback_otp) {
+            toast.info(`[Demo Mode] OTP: ${res.data.fallback_otp}`, { autoClose: 15000 });
+          }
         } else {
           toast.success(res.data.message);
           setTimeout(() => navigate('/login'), 1500);
@@ -280,8 +288,8 @@ const Register = () => {
             <Field name="email" label="Email Address" type="email" placeholder="rahul@example.com" required
               value={form.email} onChange={handleChange} error={errors.email} />
             {role === 'patient' && (
-              <p style={{ fontSize: '0.78rem', color: '#0d9488', marginTop: -10, marginBottom: 14, display:'flex', gap:5, alignItems:'center' }}>
-                📧 An OTP will be sent to this email for verification
+              <p style={{ fontSize: '0.8rem', color: '#0d9488', marginTop: -8, marginBottom: 14, display:'flex', gap:6, alignItems:'center' }}>
+                <Mail size={14} /> An OTP will be sent to this email for verification
               </p>
             )}
 
