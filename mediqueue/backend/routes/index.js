@@ -98,4 +98,23 @@ router.get   ('/doctor/my-leaves',     authMiddleware, roleCheck('doctor'), getM
 // ── Doctor Profile Update ────────────────────────────────────
 router.put   ('/doctor/profile',       authMiddleware, roleCheck('doctor'), updateDoctorProfile);
 
+// ── Email Diagnostics Endpoint ───────────────────────────────
+router.get('/test-email', async (req, res) => {
+  const to = req.query.to || process.env.EMAIL_USER;
+  try {
+    const { sendOTPEmail } = require('../utils/emailService');
+    const result = await sendOTPEmail(to, 'Test User', '123456');
+    res.json({
+      result,
+      recipient: to,
+      fromEmail: process.env.EMAIL_USER,
+      passConfigured: !!process.env.EMAIL_PASS,
+      passLength: (process.env.EMAIL_PASS || '').replace(/\s+/g, '').length,
+      env: process.env.NODE_ENV
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message, code: err.code });
+  }
+});
+
 module.exports = router;

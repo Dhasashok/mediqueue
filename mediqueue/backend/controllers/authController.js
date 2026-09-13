@@ -47,17 +47,22 @@ const registerPatient = async (req, res) => {
 
     console.log(`\n==================================================\n🔑 [OTP] Generated for ${email} (${first_name}): ${otp}\n==================================================\n`);
 
-    // Send OTP email (non-blocking so user transitions immediately)
-    sendOTPEmail(email, first_name, otp).catch(emailErr => {
+    // Send OTP email
+    let mailSent = true;
+    try {
+      const mailRes = await sendOTPEmail(email, first_name, otp);
+      if (mailRes && mailRes.success === false) mailSent = false;
+    } catch (emailErr) {
       console.error('Email send error:', emailErr.message);
-    });
+      mailSent = false;
+    }
 
     const isLocalOrUnset = !process.env.EMAIL_USER || !process.env.EMAIL_PASS || process.env.NODE_ENV !== 'production';
     res.status(201).json({
       success: true,
-      message: 'OTP sent to your email. Please verify to activate your account.',
+      message: mailSent ? 'OTP sent to your email. Please verify to activate your account.' : 'Account created. Email delivery pending.',
       email,
-      fallback_otp: isLocalOrUnset ? otp : undefined
+      fallback_otp: (!mailSent || isLocalOrUnset) ? otp : undefined
     });
   } catch (err) {
     console.error(err);
@@ -290,16 +295,21 @@ const forgotPassword = async (req, res) => {
 
     console.log(`\n==================================================\n🔑 [OTP ForgotPassword] For ${email}: ${otp}\n==================================================\n`);
  
-    // Dedicated password reset OTP email (non-blocking)
-    sendPasswordResetOTPEmail(email, user.first_name, otp).catch(emailErr => {
+    // Dedicated password reset OTP email
+    let mailSent = true;
+    try {
+      const mailRes = await sendPasswordResetOTPEmail(email, user.first_name, otp);
+      if (mailRes && mailRes.success === false) mailSent = false;
+    } catch (emailErr) {
       console.error('Forgot password OTP email error:', emailErr.message);
-    });
+      mailSent = false;
+    }
 
     const isLocalOrUnset = !process.env.EMAIL_USER || !process.env.EMAIL_PASS || process.env.NODE_ENV !== 'production';
     res.json({
       success: true,
-      message: 'OTP sent to your email. Valid for 10 minutes.',
-      fallback_otp: isLocalOrUnset ? otp : undefined
+      message: mailSent ? 'OTP sent to your email. Valid for 10 minutes.' : 'Password reset initiated. Email delivery pending.',
+      fallback_otp: (!mailSent || isLocalOrUnset) ? otp : undefined
     });
   } catch (err) {
     console.error('forgotPassword error:', err);

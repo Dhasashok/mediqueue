@@ -30,15 +30,15 @@ if (emailUser && emailPass) {
 const safeSendMail = async (mailOptions) => {
   if (!emailUser || !emailPass) {
     console.warn(`⚠️ [EmailService] EMAIL_USER or EMAIL_PASS not configured. Email to "${mailOptions.to}" skipped.`);
-    return false;
+    return { success: false, error: 'EMAIL_USER or EMAIL_PASS not configured on server.' };
   }
   try {
     const info = await transporter.sendMail(mailOptions);
     console.log(`✅ [EmailService] Email sent to ${mailOptions.to} (Message ID: ${info.messageId})`);
-    return true;
+    return { success: true, messageId: info.messageId };
   } catch (err) {
     console.error(`❌ [EmailService] Failed to send email to ${mailOptions.to}:`, err.message);
-    return false;
+    return { success: false, error: err.message, code: err.code };
   }
 };
 
@@ -115,7 +115,7 @@ const sendOTPEmail = async (email, name, otp) => {
     <div class="divider"></div>
     <p style="font-size:13px;color:#64748b;">If you did not create an account, please ignore this email.</p>
   `;
-  await safeSendMail({
+  return await safeSendMail({
     from: `"MediQueue Hospital" <${HOSPITAL_EMAIL}>`,
     to: email,
     subject: 'Verify Your MediQueue Account — OTP Inside',
@@ -138,7 +138,7 @@ const sendPasswordResetOTPEmail = async (email, name, otp) => {
     <div class="divider"></div>
     <p style="font-size:13px;color:#64748b;">If you did not request this password reset, please ignore this email or secure your account.</p>
   `;
-  await safeSendMail({
+  return await safeSendMail({
     from: `"MediQueue Hospital" <${HOSPITAL_EMAIL}>`,
     to: email,
     subject: `MediQueue Password Reset Code: ${otp}`,

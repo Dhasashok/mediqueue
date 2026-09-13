@@ -4,15 +4,18 @@
 require('dotenv').config();
 const nodemailer = require('nodemailer');
 
+const emailUser = (process.env.EMAIL_USER || '').trim();
+const emailPass = (process.env.EMAIL_PASS || '').replace(/\s+/g, '');
+
 console.log('📧 Testing email configuration...');
-console.log('EMAIL_USER:', process.env.EMAIL_USER);
-console.log('EMAIL_PASS:', process.env.EMAIL_PASS ? '✅ Set (' + process.env.EMAIL_PASS.length + ' chars)' : '❌ NOT SET');
+console.log('EMAIL_USER:', emailUser);
+console.log('EMAIL_PASS:', emailPass ? '✅ Set (' + emailPass.length + ' chars without spaces)' : '❌ NOT SET');
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
+    user: emailUser,
+    pass: emailPass
   }
 });
 
