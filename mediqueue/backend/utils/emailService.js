@@ -77,17 +77,24 @@ const safeSendMail = async (mailOptions) => {
   // 2. If BREVO_API_KEY is configured (HTTPS port 443)
   if (process.env.BREVO_API_KEY) {
     try {
-      const res = await axios.post('https://api.brevo.com/v3/smtp/email', {
+      const payload = {
         sender: { name: 'MediQueue Hospital', email: emailUser || 'noreply@mediqueue.com' },
         to: [{ email: mailOptions.to }],
         subject: mailOptions.subject,
         htmlContent: mailOptions.html
-      }, {
+      };
+      if (mailOptions.attachments && mailOptions.attachments.length > 0) {
+        payload.attachment = mailOptions.attachments.map(att => ({
+          name: att.filename || 'qrcode.png',
+          content: Buffer.isBuffer(att.content) ? att.content.toString('base64') : (att.content || '')
+        }));
+      }
+      const res = await axios.post('https://api.brevo.com/v3/smtp/email', payload, {
         headers: {
           'api-key': process.env.BREVO_API_KEY,
           'Content-Type': 'application/json'
         },
-        timeout: 6000
+        timeout: 8000
       });
       console.log(`✅ [EmailService:Brevo] Email sent to ${mailOptions.to} (ID: ${res.data?.messageId})`);
       return { success: true, messageId: res.data?.messageId };
@@ -290,59 +297,36 @@ const sendPasswordResetOTPEmail = async (email, name, otp) => {
   });
 };
 
-// 2. Send Appointment Confirmation Email (with QR)
+// 2. Send Appointment Confirmation Email (with QR & Department Arrival Window)
 const sendAppointmentConfirmation = async (email, name, appointment) => {
-
-  // Use pre-generated QR from DB, or generate fresh one as fallback
   const QRCode = require('qrcode');
-  // Generate QR as Buffer for CID attachment (works in all email clients)
-  // data: URI images are blocked by Gmail/Outlook — CID is the correct approach
   let qrBuffer = null;
   try {
-    let qrBase64 = appointment.qr_code_data;
-    if (qrBase64) {
-      // Strip the data:image/png;base64, prefix to get raw base64
-      const b64 = qrBase64.replace(/^data:image\/png;base64,/, '');
-      qrBuffer = Buffer.from(b64, 'base64');
-    } else {
-      // Generate fresh QR if not in DB
-      const qrData = JSON.stringify({
-        booking_id: appointment.booking_id,
-        patient_id: appointment.patient_id,
-        doctor_id:  appointment.doctor_id,
-        department_id: appointment.department_id,
-        date: String(appointment.appointment_date).split('T')[0],
-        slot: appointment.time_slot,
-        ts: Date.now()
-      });
-      qrBuffer = await QRCode.toBuffer(qrData, {
-        errorCorrectionLevel: 'H',
-        width: 220,
-        margin: 2,
-        color: { dark: '#0f172a', light: '#ffffff' }
-      });
-    }
+    const qrPayload = appointment.booking_id;
+    qrBuffer = await QRCode.toBuffer(qrPayload, {
+      errorCorrectionLevel: 'H',
+      width: 220,
+      margin: 2,
+      color: { dark: '#0f172a', light: '#ffffff' }
+    });
   } catch(e) {
     console.error('QR generation error:', e.message);
   }
-  // ── Arrival Window (pre-computed string) ────────────────────
+
+  // ── Arrival Window Calculation (Department-Specific) ───────────
   let arrivalBlock = '';
   try {
-    const distMins   = appointment.distributed_mins
+    const distMins = appointment.distributed_mins
       ? parseFloat(appointment.distributed_mins)
       : appointment.slot_capacity
         ? Math.round((120 / appointment.slot_capacity) * 100) / 100
         : 20.0;
-    const patBefore  = appointment.patients_before != null ? appointment.patients_before : 0;
-    const slotStartH = appointment.time_slot ? parseInt(appointment.time_slot.split(':')[0], 10) : 10;
+    const patBefore = appointment.patients_before != null ? parseInt(appointment.patients_before, 10) : 0;
+    const slotStartH = appointment.time_slot ? parseInt(appointment.time_slot.split(':')[0], 10) : 8;
     const slotStartM = (appointment.time_slot && appointment.time_slot.split(':')[1]) ? parseInt(appointment.time_slot.split(':')[1], 10) : 0;
     const slotStart  = slotStartH * 60 + slotStartM;
-    const turnTime   = slotStart + patBefore * distMins;
-
-    // Staggered arrival window: arrive 30 mins (or treatment duration) before turn starts
-    const buffer     = Math.max(15, Math.min(30, distMins));
-    const arriveFrom = Math.max(0, turnTime - buffer);
-    const arriveBy   = turnTime;
+    const turnStart  = slotStart + patBefore * distMins;
+    const turnEnd    = turnStart + distMins;
 
     const fmt = (m) => {
       const total = Math.round(m);
@@ -351,144 +335,261 @@ const sendAppointmentConfirmation = async (email, name, appointment) => {
       const hh  = h === 0 ? 12 : h > 12 ? h - 12 : h;
       return hh + ':' + String(mn).padStart(2, '0') + ' ' + suf;
     };
-    arrivalBlock =
-      '<div style="background:#f0fdf4;border:1.5px solid #0d9488;border-radius:10px;' +
-      'padding:16px;margin:16px 0;text-align:center;">' +
-        '<p style="font-weight:bold;color:#0d9488;margin:0 0 12px;font-size:14px;">' +
-          '&#127973; Suggested Arrival Time</p>' +
-        '<table width="100%" cellpadding="0" cellspacing="0" border="0"><tr>' +
-          '<td width="50%" style="text-align:center;padding:8px;">' +
-            '<p style="margin:0;font-size:11px;color:#64748b;text-transform:uppercase;">Arrive From</p>' +
-            '<p style="margin:4px 0 0;font-size:22px;font-weight:bold;color:#0f172a;">' +
-              fmt(arriveFrom) + '</p>' +
-          '</td>' +
-          '<td width="50%" style="text-align:center;padding:8px;">' +
-            '<p style="margin:0;font-size:11px;color:#64748b;text-transform:uppercase;">Arrive By</p>' +
-            '<p style="margin:4px 0 0;font-size:22px;font-weight:bold;color:#0f172a;">' +
-              fmt(arriveBy) + '</p>' +
-          '</td>' +
-        '</tr></table>' +
-        '<p style="margin:10px 0 0;font-size:12px;color:#475569;">' +
-          'Patient <strong>#' + (patBefore + 1) + '</strong> &middot; ' +
-          'Your turn: <strong>' + fmt(turnTime) + '</strong>' +
-        '</p>' +
-      '</div>';
+
+    const arriveFromStr = fmt(turnStart);
+    const arriveToStr   = fmt(turnEnd);
+    const positionNum   = patBefore + 1;
+
+    arrivalBlock = `
+      <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f0fdf4; border: 1.5px solid #86efac; border-radius: 12px; margin-bottom: 24px; text-align: center;">
+        <tr>
+          <td style="padding: 20px 16px;">
+            <div style="font-size: 12px; font-weight: 700; color: #15803d; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;">🏥 Personalized Arrival Window</div>
+            <table border="0" cellpadding="0" cellspacing="0" width="100%">
+              <tr>
+                <td width="45%" style="text-align: center;">
+                  <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">Arrive From</div>
+                  <div style="font-size: 24px; font-weight: 800; color: #0f172a; margin-top: 4px;">${arriveFromStr}</div>
+                </td>
+                <td width="10%" style="text-align: center; font-size: 20px; color: #94a3b8; font-weight: 300;">&rarr;</td>
+                <td width="45%" style="text-align: center;">
+                  <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">Arrive By</div>
+                  <div style="font-size: 24px; font-weight: 800; color: #0f172a; margin-top: 4px;">${arriveToStr}</div>
+                </td>
+              </tr>
+            </table>
+            <div style="margin-top: 14px; font-size: 12.5px; color: #334155;">
+              Queue Position: <strong style="color: #0d9488;">#${positionNum}</strong> &bull; Estimated consultation: <strong>${arriveFromStr} &ndash; ${arriveToStr}</strong>
+            </div>
+          </td>
+        </tr>
+      </table>
+    `;
   } catch(e) {
     console.warn('Arrival calc error:', e.message);
     arrivalBlock = '';
   }
 
+  // Reliable HTTPS QR Code generation ensuring 100% rendering in Gmail / Outlook
+  const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&format=png&data=${encodeURIComponent(appointment.booking_id)}`;
+
   const content = `
-    <div class="title">✅ Appointment Confirmed!</div>
-    <div class="subtitle">Your appointment has been successfully booked.</div>
-    <p style="font-size:14px;color:#475569;">Hi <strong>${name}</strong>, your appointment details are below:</p>
-    <div class="info-box">
-      <div class="info-row"><span class="info-label">Booking ID</span><span class="info-value">${appointment.booking_id}</span></div>
-      <div class="info-row"><span class="info-label">Doctor</span><span class="info-value">Dr. ${appointment.first_name} ${appointment.last_name}</span></div>
-      <div class="info-row"><span class="info-label">Department</span><span class="info-value">${appointment.dept_name}</span></div>
-      <div class="info-row"><span class="info-label">Date</span><span class="info-value">${appointment.appointment_date}</span></div>
-      <div class="info-row"><span class="info-label">Time Slot</span><span class="info-value">${appointment.time_slot}</span></div>
-    </div>
-    <div class="green-box">
-      <p style="font-weight:bold;color:#15803d;margin:0 0 8px;">📲 Your QR Entry Pass</p>
-      <p style="font-size:13px;color:#166534;margin:0 0 12px;">Show this QR code at the reception desk when you arrive.</p>
-      <img src="cid:qrcode" width="200" height="200" style="border-radius:12px;border:2px solid #bbf7d0;display:block;margin:8px auto;" alt="QR Code" />
-      <p style="font-size:12px;color:#64748b;margin:10px 0 0;text-align:center;">Booking ID: <strong style="color:#0f172a;letter-spacing:1px;">${appointment.booking_id}</strong></p>
-    </div>
+    <h1 style="margin: 0 0 8px 0; font-size: 22px; font-weight: 800; color: #0f172a; letter-spacing: -0.4px; line-height: 1.3;">
+      Appointment Confirmed!
+    </h1>
+    <p style="margin: 0 0 24px 0; font-size: 14px; color: #64748b; line-height: 1.5;">
+      Your hospital OPD consultation slot has been reserved successfully.
+    </p>
+
+    <p style="margin: 0 0 16px 0; font-size: 14px; color: #334155; line-height: 1.6;">
+      Hello <strong>${name || 'Patient'}</strong>, here are your booking details:
+    </p>
+
+    <!-- Appointment Details Table -->
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 24px;">
+      <tr>
+        <td style="padding: 12px 18px; border-bottom: 1px solid #e2e8f0; font-size: 13px; color: #64748b; width: 40%;">Booking ID</td>
+        <td style="padding: 12px 18px; border-bottom: 1px solid #e2e8f0; font-size: 14px; font-weight: 700; color: #0f172a; font-family: monospace;">${appointment.booking_id}</td>
+      </tr>
+      <tr>
+        <td style="padding: 12px 18px; border-bottom: 1px solid #e2e8f0; font-size: 13px; color: #64748b;">Doctor</td>
+        <td style="padding: 12px 18px; border-bottom: 1px solid #e2e8f0; font-size: 14px; font-weight: 700; color: #0f172a;">Dr. ${appointment.first_name} ${appointment.last_name}</td>
+      </tr>
+      <tr>
+        <td style="padding: 12px 18px; border-bottom: 1px solid #e2e8f0; font-size: 13px; color: #64748b;">Department</td>
+        <td style="padding: 12px 18px; border-bottom: 1px solid #e2e8f0; font-size: 14px; font-weight: 700; color: #0d9488;">${appointment.dept_name}</td>
+      </tr>
+      <tr>
+        <td style="padding: 12px 18px; border-bottom: 1px solid #e2e8f0; font-size: 13px; color: #64748b;">Date</td>
+        <td style="padding: 12px 18px; border-bottom: 1px solid #e2e8f0; font-size: 14px; font-weight: 600; color: #0f172a;">${appointment.appointment_date}</td>
+      </tr>
+      <tr>
+        <td style="padding: 12px 18px; font-size: 13px; color: #64748b;">Time Slot Window</td>
+        <td style="padding: 12px 18px; font-size: 14px; font-weight: 700; color: #0f172a;">${appointment.time_slot}</td>
+      </tr>
+    </table>
+
+    <!-- Digital QR Pass Block -->
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f0fdfa; border: 1.5px solid #99f6e4; border-radius: 12px; margin-bottom: 24px; text-align: center;">
+      <tr>
+        <td style="padding: 24px 16px;">
+          <div style="font-size: 12px; font-weight: 700; color: #0f766e; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">📲 Digital Entry Pass</div>
+          <p style="margin: 0 0 16px 0; font-size: 13px; color: #115e59;">Show this QR code at hospital reception or OPD kiosk to check in</p>
+          <img src="${qrImageUrl}" width="200" height="200" style="display: block; margin: 0 auto; border-radius: 12px; border: 3px solid #ffffff; box-shadow: 0 4px 12px rgba(13, 148, 136, 0.15);" alt="QR Pass: ${appointment.booking_id}" />
+          <p style="margin: 14px 0 0 0; font-size: 12px; color: #64748b;">Booking ID: <strong style="color: #0f172a; font-family: monospace; letter-spacing: 0.5px;">${appointment.booking_id}</strong></p>
+        </td>
+      </tr>
+    </table>
+
+    <!-- Department Arrival Window Block -->
     ${arrivalBlock}
-    <div class="info-box" style="background:#fef9c3;border-color:#fde047;">
-      <p style="font-size:13px;color:#a16207;margin:0;">⚠️ <strong>Important:</strong> Please arrive on time. Your QR code is your entry pass — show it at reception.</p>
+
+    <!-- Important Notice -->
+    <div style="background-color: #fffbeb; border-left: 4px solid #f59e0b; border-radius: 6px; padding: 12px 16px; margin: 20px 0 0 0;">
+      <p style="margin: 0; font-size: 12.5px; color: #92400e; line-height: 1.5; font-weight: 500;">
+        ⚠️ <strong>Important:</strong> Please arrive during your designated arrival window. Present the QR entry pass at reception for instant check-in.
+      </p>
     </div>
   `;
+
   const mailOptions = {
     from: `"MediQueue Hospital" <${HOSPITAL_EMAIL}>`,
     to: email,
     subject: `Appointment Confirmed — ${appointment.booking_id}`,
-    html: baseTemplate(content),
+    html: baseTemplate(content, email),
   };
-  // Attach QR as inline CID image — visible in Gmail, Outlook, all clients
+
   if (qrBuffer) {
     mailOptions.attachments = [{
-      filename: 'qrcode.png',
+      filename: `qrcode-${appointment.booking_id}.png`,
       content: qrBuffer,
-      cid: 'qrcode',          // matches src="cid:qrcode" in the template
+      cid: 'qrcode',
       contentType: 'image/png'
     }];
   }
+
   await safeSendMail(mailOptions);
 };
 
 // 3. Send Check-In Email (Queue Position)
 const sendCheckInEmail = async (email, name, data) => {
   const content = `
-    <div class="title">🔴 You're in the Queue!</div>
-    <div class="subtitle">You have been successfully checked in at ${HOSPITAL}.</div>
-    <p style="font-size:14px;color:#475569;">Hi <strong>${name}</strong>, the receptionist has added you to the queue.</p>
-    <div class="info-box">
-      <div class="info-row"><span class="info-label">Department</span><span class="info-value">${data.dept_name}</span></div>
-      <div class="info-row"><span class="info-label">Doctor</span><span class="info-value">Dr. ${data.doc_first} ${data.doc_last}</span></div>
-      <div class="info-row"><span class="info-label">Queue Position</span><span class="info-value">#${data.position}</span></div>
-      <div class="info-row"><span class="info-label">Patients Ahead</span><span class="info-value">${data.position - 1}</span></div>
-      <div class="info-row"><span class="info-label">Booking ID</span><span class="info-value">${data.booking_id}</span></div>
-    </div>
-    <div class="green-box">
-      <p style="color:#15803d;font-weight:bold;margin:0;">📍 Please stay near the ${data.dept_name} department</p>
+    <h1 style="margin: 0 0 8px 0; font-size: 22px; font-weight: 800; color: #0f172a; letter-spacing: -0.4px; line-height: 1.3;">
+      You're in the Live Queue!
+    </h1>
+    <p style="margin: 0 0 24px 0; font-size: 14px; color: #64748b; line-height: 1.5;">
+      You have been successfully checked in at ${HOSPITAL}.
+    </p>
+
+    <p style="margin: 0 0 16px 0; font-size: 14px; color: #334155; line-height: 1.6;">
+      Hello <strong>${name || 'Patient'}</strong>, your current queue position details:
+    </p>
+
+    <!-- Queue Status Table -->
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 24px;">
+      <tr>
+        <td style="padding: 12px 18px; border-bottom: 1px solid #e2e8f0; font-size: 13px; color: #64748b; width: 40%;">Queue Position</td>
+        <td style="padding: 12px 18px; border-bottom: 1px solid #e2e8f0; font-size: 18px; font-weight: 800; color: #0d9488;">#${data.position}</td>
+      </tr>
+      <tr>
+        <td style="padding: 12px 18px; border-bottom: 1px solid #e2e8f0; font-size: 13px; color: #64748b;">Patients Ahead</td>
+        <td style="padding: 12px 18px; border-bottom: 1px solid #e2e8f0; font-size: 14px; font-weight: 700; color: #0f172a;">${data.position - 1}</td>
+      </tr>
+      <tr>
+        <td style="padding: 12px 18px; border-bottom: 1px solid #e2e8f0; font-size: 13px; color: #64748b;">Department</td>
+        <td style="padding: 12px 18px; border-bottom: 1px solid #e2e8f0; font-size: 14px; font-weight: 700; color: #0f172a;">${data.dept_name}</td>
+      </tr>
+      <tr>
+        <td style="padding: 12px 18px; border-bottom: 1px solid #e2e8f0; font-size: 13px; color: #64748b;">Doctor</td>
+        <td style="padding: 12px 18px; border-bottom: 1px solid #e2e8f0; font-size: 14px; font-weight: 700; color: #0f172a;">Dr. ${data.doc_first} ${data.doc_last}</td>
+      </tr>
+      <tr>
+        <td style="padding: 12px 18px; font-size: 13px; color: #64748b;">Booking ID</td>
+        <td style="padding: 12px 18px; font-size: 14px; font-weight: 700; color: #0f172a; font-family: monospace;">${data.booking_id}</td>
+      </tr>
+    </table>
+
+    <div style="background-color: #f0fdf4; border: 1.5px solid #86efac; border-radius: 10px; padding: 14px 18px; text-align: center; margin-bottom: 20px;">
+      <p style="color: #15803d; font-size: 13.5px; font-weight: 700; margin: 0;">📍 Please stay near the ${data.dept_name} consultation area. You will be alerted when it is your turn.</p>
     </div>
   `;
   await safeSendMail({
     from: `"MediQueue Hospital" <${HOSPITAL_EMAIL}>`,
     to: email,
     subject: `You are #${data.position} in Queue — ${data.dept_name}`,
-    html: baseTemplate(content)
+    html: baseTemplate(content, email)
   });
 };
 
 // 4. Send Consultation Complete Email
 const sendCompletionEmail = async (email, name, data) => {
   const content = `
-    <div class="title">✅ Consultation Complete</div>
-    <div class="subtitle">Your consultation has been successfully completed.</div>
-    <p style="font-size:14px;color:#475569;">Hi <strong>${name}</strong>, your consultation is complete.</p>
-    <div class="info-box">
-      <div class="info-row"><span class="info-label">Doctor</span><span class="info-value">Dr. ${data.doc_first} ${data.doc_last}</span></div>
-      <div class="info-row"><span class="info-label">Department</span><span class="info-value">${data.dept_name}</span></div>
-      <div class="info-row"><span class="info-label">Date</span><span class="info-value">${data.appointment_date}</span></div>
-      <div class="info-row"><span class="info-label">Booking ID</span><span class="info-value">${data.booking_id}</span></div>
-    </div>
-    <div class="green-box">
-      <p style="color:#15803d;font-weight:bold;margin:0 0 6px;">Thank you for visiting ${HOSPITAL}!</p>
-      <p style="color:#166534;font-size:13px;margin:0;">We hope you feel better soon. Please visit again if needed.</p>
+    <h1 style="margin: 0 0 8px 0; font-size: 22px; font-weight: 800; color: #0f172a; letter-spacing: -0.4px; line-height: 1.3;">
+      Consultation Complete
+    </h1>
+    <p style="margin: 0 0 24px 0; font-size: 14px; color: #64748b; line-height: 1.5;">
+      Your consultation has been successfully completed at ${HOSPITAL}.
+    </p>
+
+    <p style="margin: 0 0 16px 0; font-size: 14px; color: #334155; line-height: 1.6;">
+      Hello <strong>${name || 'Patient'}</strong>, here is a summary of your completed visit:
+    </p>
+
+    <!-- Consultation Summary Table -->
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 24px;">
+      <tr>
+        <td style="padding: 12px 18px; border-bottom: 1px solid #e2e8f0; font-size: 13px; color: #64748b; width: 40%;">Doctor</td>
+        <td style="padding: 12px 18px; border-bottom: 1px solid #e2e8f0; font-size: 14px; font-weight: 700; color: #0f172a;">Dr. ${data.doc_first} ${data.doc_last}</td>
+      </tr>
+      <tr>
+        <td style="padding: 12px 18px; border-bottom: 1px solid #e2e8f0; font-size: 13px; color: #64748b;">Department</td>
+        <td style="padding: 12px 18px; border-bottom: 1px solid #e2e8f0; font-size: 14px; font-weight: 700; color: #0f172a;">${data.dept_name}</td>
+      </tr>
+      <tr>
+        <td style="padding: 12px 18px; border-bottom: 1px solid #e2e8f0; font-size: 13px; color: #64748b;">Date</td>
+        <td style="padding: 12px 18px; border-bottom: 1px solid #e2e8f0; font-size: 14px; font-weight: 600; color: #0f172a;">${data.appointment_date}</td>
+      </tr>
+      <tr>
+        <td style="padding: 12px 18px; font-size: 13px; color: #64748b;">Booking ID</td>
+        <td style="padding: 12px 18px; font-size: 14px; font-weight: 700; color: #0f172a; font-family: monospace;">${data.booking_id}</td>
+      </tr>
+    </table>
+
+    <div style="background-color: #f0fdfa; border: 1.5px solid #99f6e4; border-radius: 10px; padding: 16px; text-align: center;">
+      <p style="color: #0f766e; font-size: 14px; font-weight: 700; margin: 0 0 4px 0;">Thank you for visiting City General Hospital!</p>
+      <p style="color: #115e59; font-size: 13px; margin: 0;">Your prescription and medical records are accessible anytime in your MediQueue patient portal.</p>
     </div>
   `;
   await safeSendMail({
     from: `"MediQueue Hospital" <${HOSPITAL_EMAIL}>`,
     to: email,
     subject: `Consultation Complete — ${HOSPITAL}`,
-    html: baseTemplate(content)
+    html: baseTemplate(content, email)
   });
 };
 
 // 5. Send Cancellation Email
 const sendCancellationEmail = async (email, name, appointment) => {
   const content = `
-    <div class="title">❌ Appointment Cancelled</div>
-    <div class="subtitle">Your appointment has been cancelled.</div>
-    <p style="font-size:14px;color:#475569;">Hi <strong>${name}</strong>, your appointment has been cancelled.</p>
-    <div class="info-box">
-      <div class="info-row"><span class="info-label">Booking ID</span><span class="info-value">${appointment.booking_id}</span></div>
-      <div class="info-row"><span class="info-label">Doctor</span><span class="info-value">Dr. ${appointment.first_name} ${appointment.last_name}</span></div>
-      <div class="info-row"><span class="info-label">Department</span><span class="info-value">${appointment.dept_name}</span></div>
-      <div class="info-row"><span class="info-label">Date</span><span class="info-value">${appointment.appointment_date}</span></div>
-    </div>
-    <div class="red-box">
-      <p style="color:#b91c1c;font-size:13px;margin:0;">You can book a new appointment anytime at <strong>MediQueue</strong>.</p>
+    <h1 style="margin: 0 0 8px 0; font-size: 22px; font-weight: 800; color: #991b1b; letter-spacing: -0.4px; line-height: 1.3;">
+      Appointment Cancelled
+    </h1>
+    <p style="margin: 0 0 24px 0; font-size: 14px; color: #64748b; line-height: 1.5;">
+      Your appointment reservation has been cancelled.
+    </p>
+
+    <p style="margin: 0 0 16px 0; font-size: 14px; color: #334155; line-height: 1.6;">
+      Hello <strong>${name || 'Patient'}</strong>, your cancelled appointment details:
+    </p>
+
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 24px;">
+      <tr>
+        <td style="padding: 12px 18px; border-bottom: 1px solid #e2e8f0; font-size: 13px; color: #64748b; width: 40%;">Booking ID</td>
+        <td style="padding: 12px 18px; border-bottom: 1px solid #e2e8f0; font-size: 14px; font-weight: 700; color: #0f172a; font-family: monospace;">${appointment.booking_id}</td>
+      </tr>
+      <tr>
+        <td style="padding: 12px 18px; border-bottom: 1px solid #e2e8f0; font-size: 13px; color: #64748b;">Doctor</td>
+        <td style="padding: 12px 18px; border-bottom: 1px solid #e2e8f0; font-size: 14px; font-weight: 700; color: #0f172a;">Dr. ${appointment.first_name} ${appointment.last_name}</td>
+      </tr>
+      <tr>
+        <td style="padding: 12px 18px; border-bottom: 1px solid #e2e8f0; font-size: 13px; color: #64748b;">Department</td>
+        <td style="padding: 12px 18px; border-bottom: 1px solid #e2e8f0; font-size: 14px; font-weight: 700; color: #0f172a;">${appointment.dept_name}</td>
+      </tr>
+      <tr>
+        <td style="padding: 12px 18px; font-size: 13px; color: #64748b;">Date</td>
+        <td style="padding: 12px 18px; font-size: 14px; font-weight: 600; color: #0f172a;">${appointment.appointment_date}</td>
+      </tr>
+    </table>
+
+    <div style="background-color: #fef2f2; border: 1.5px solid #fecaca; border-radius: 10px; padding: 14px 18px; text-align: center;">
+      <p style="color: #b91c1c; font-size: 13px; margin: 0;">You can reschedule or book a new appointment anytime through the MediQueue Patient Portal.</p>
     </div>
   `;
   await safeSendMail({
     from: `"MediQueue Hospital" <${HOSPITAL_EMAIL}>`,
     to: email,
     subject: `Appointment Cancelled — ${appointment.booking_id}`,
-    html: baseTemplate(content)
+    html: baseTemplate(content, email)
   });
 };
 

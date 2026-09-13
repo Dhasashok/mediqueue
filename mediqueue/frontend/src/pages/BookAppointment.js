@@ -27,21 +27,18 @@ const formatLocalDate = (d) => {
   return `${year}-${month}-${day}`;
 };
 
-// Arrival window calculation
+// Arrival window calculation (Department-specific)
 const calcArrivalWindow = (timeSlot, patientsBefore, distributedMins) => {
   if (!timeSlot) return null;
-  const dist = (distributedMins && distributedMins > 0) ? distributedMins : 20;
+  const dist = (distributedMins && distributedMins > 0) ? parseFloat(distributedMins) : 20;
 
   const slotStartH  = parseInt(timeSlot.split(':')[0], 10);
   const slotStartM  = parseInt(timeSlot.split(':')[1], 10) || 0;
   const slotStart   = slotStartH * 60 + slotStartM;
 
-  const position = (patientsBefore != null ? patientsBefore : 0) + 1;
+  const position = (patientsBefore != null ? parseInt(patientsBefore, 10) : 0) + 1;
   const turnStart = slotStart + (position - 1) * dist;
-
-  const buffer = Math.max(15, Math.min(30, dist));
-  const arriveFrom = Math.max(0, turnStart - buffer);
-  const arriveBy   = turnStart;
+  const turnEnd   = turnStart + dist;
 
   const fmt = (mins) => {
     const total = Math.round(mins);
@@ -53,9 +50,11 @@ const calcArrivalWindow = (timeSlot, patientsBefore, distributedMins) => {
   };
 
   return {
-    turnTime:   fmt(turnStart),
-    arriveFrom: fmt(arriveFrom),
-    arriveBy:   fmt(arriveBy),
+    turnTime:   `${fmt(turnStart)} – ${fmt(turnEnd)}`,
+    turnStart:  fmt(turnStart),
+    turnEnd:    fmt(turnEnd),
+    arriveFrom: fmt(turnStart),
+    arriveBy:   fmt(turnEnd),
     position:   position,
   };
 };
@@ -204,8 +203,16 @@ const BookAppointment = () => {
 
   // Success screen — Premium Horizontal Digital Boarding Pass
   if (successData) {
+    const patientsBefore = successData.patients_before != null
+      ? successData.patients_before
+      : (successData.queue_position ? successData.queue_position - 1 : 0);
+
+    const distMins = successData.distributed_mins
+      ? parseFloat(successData.distributed_mins)
+      : (successData.consultation_avg ? parseFloat(successData.consultation_avg) : 20);
+
     const arrival = successData.time_slot
-      ? calcArrivalWindow(successData.time_slot, successData.queue_position || 1, successData.consultation_mins || 15)
+      ? calcArrivalWindow(successData.time_slot, patientsBefore, distMins)
       : null;
 
     return (
@@ -292,7 +299,7 @@ const BookAppointment = () => {
                     </div>
                   </div>
                   <p className="st-arrival-note">
-                    Queue Position: <strong>#{arrival.position}</strong> · Estimated consultation start: <strong>{arrival.turnTime}</strong>
+                    Queue Position: <strong>#{arrival.position}</strong> · Estimated consultation: <strong>{arrival.turnTime}</strong>
                   </p>
                 </div>
               )}
