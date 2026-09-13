@@ -115,103 +115,178 @@ const safeSendMail = async (mailOptions) => {
 const HOSPITAL = 'City General Hospital, Pune';
 const HOSPITAL_EMAIL = emailUser;
 
-// Base HTML template
-const baseTemplate = (content) => `
-<!DOCTYPE html>
-<html>
+// Base HTML template — Standard Enterprise Healthcare Email Layout
+const baseTemplate = (content, recipientEmail = '') => `
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body { margin:0; padding:0; background:#f1f5f9; font-family: Arial, sans-serif; }
-    .wrapper { max-width:600px; margin:0 auto; padding:24px 16px; }
-    .card { background:white; border-radius:16px; overflow:hidden; box-shadow:0 4px 12px rgba(0,0,0,0.08); }
-    .header { background:linear-gradient(135deg,#0f172a,#0d9488); padding:32px 32px 24px; text-align:center; }
-    .header-logo { font-size:28px; font-weight:bold; color:white; margin-bottom:4px; }
-    .header-sub { color:#5eead4; font-size:14px; }
-    .body { padding:32px; }
-    .title { font-size:22px; font-weight:bold; color:#0f172a; margin-bottom:8px; }
-    .subtitle { font-size:14px; color:#64748b; margin-bottom:24px; }
-    .info-box { background:#f8fafc; border-radius:10px; padding:20px; margin:20px 0; border:1px solid #e2e8f0; }
-    .info-row { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #e2e8f0; font-size:14px; }
-    .info-row:last-child { border-bottom:none; }
-    .info-label { color:#64748b; }
-    .info-value { color:#0f172a; font-weight:600; }
-    .otp-box { text-align:center; background:#f0fdf4; border:2px dashed #0d9488; border-radius:12px; padding:24px; margin:24px 0; }
-    .otp-code { font-size:42px; font-weight:bold; color:#0d9488; letter-spacing:8px; }
-    .otp-label { font-size:13px; color:#64748b; margin-top:8px; }
-    .btn { display:inline-block; background:#0d9488; color:white; padding:12px 28px; border-radius:8px; text-decoration:none; font-weight:bold; font-size:14px; margin:16px 0; }
-    .badge { display:inline-block; background:#ccfbf1; color:#0f766e; padding:4px 12px; border-radius:999px; font-size:12px; font-weight:bold; }
-    .footer { background:#f8fafc; padding:20px 32px; text-align:center; font-size:12px; color:#94a3b8; border-top:1px solid #e2e8f0; }
-    .divider { height:1px; background:#e2e8f0; margin:20px 0; }
-    .green-box { background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; padding:16px; margin:16px 0; text-align:center; }
-    .red-box { background:#fef2f2; border:1px solid #fecaca; border-radius:10px; padding:16px; margin:16px 0; }
-  </style>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MediQueue Healthcare</title>
 </head>
-<body>
-  <div class="wrapper">
-    <div class="card">
-      <div class="header">
-        <div class="header-logo">🏥 MediQueue</div>
-        <div class="header-sub">${HOSPITAL}</div>
-      </div>
-      <div class="body">
-        ${content}
-      </div>
-      <div class="footer">
-        <p>© 2024 MediQueue · ${HOSPITAL}</p>
-        <p>MG Road, Pune – 411001 · 020-1234-5678</p>
-        <p style="margin-top:8px;font-size:11px;">This is an automated email. Please do not reply.</p>
-      </div>
-    </div>
-  </div>
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%;">
+  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f1f5f9; padding: 32px 16px;">
+    <tr>
+      <td align="center">
+        <!-- Main Email Container -->
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 540px; background-color: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);">
+          
+          <!-- Top Brand Accent Bar -->
+          <tr>
+            <td style="height: 4px; background: linear-gradient(90deg, #0d9488 0%, #06b6d4 100%);"></td>
+          </tr>
+
+          <!-- Hospital Header -->
+          <tr>
+            <td style="padding: 28px 36px 22px 36px; border-bottom: 1px solid #f1f5f9; text-align: left;">
+              <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                <tr>
+                  <td style="vertical-align: middle;">
+                    <table border="0" cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td style="width: 36px; height: 36px; background-color: #f0fdfa; border: 1.5px solid #ccfbf1; border-radius: 10px; text-align: center; vertical-align: middle; color: #0d9488; font-size: 22px; font-weight: bold; line-height: 36px;">
+                          &#43;
+                        </td>
+                        <td style="padding-left: 12px; vertical-align: middle;">
+                          <div style="font-size: 20px; font-weight: 800; color: #0f172a; letter-spacing: -0.4px; line-height: 1.2;">Medi<span style="color: #0d9488;">Queue</span></div>
+                          <div style="font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.6px; line-height: 1.3;">City General Hospital &bull; Pune</div>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                  <td style="vertical-align: middle; text-align: right;">
+                    <span style="display: inline-block; background-color: #f8fafc; border: 1px solid #e2e8f0; color: #475569; font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 20px;">Patient Portal</span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Email Content Body -->
+          <tr>
+            <td style="padding: 32px 36px 28px 36px; text-align: left;">
+              ${content}
+            </td>
+          </tr>
+
+          <!-- Hospital Footer -->
+          <tr>
+            <td style="background-color: #f8fafc; border-top: 1px solid #e2e8f0; padding: 24px 36px; text-align: center;">
+              <p style="margin: 0 0 6px 0; font-size: 12px; font-weight: 700; color: #334155; letter-spacing: 0.2px;">City General Hospital, Pune</p>
+              <p style="margin: 0 0 12px 0; font-size: 12px; color: #64748b; line-height: 1.5;">
+                MG Road, Camp, Pune – 411001 &bull; 24x7 Helpline: 020-1234-5678
+              </p>
+              <div style="height: 1px; background-color: #e2e8f0; margin: 14px 0;"></div>
+              <p style="margin: 0; font-size: 11px; color: #94a3b8; line-height: 1.6;">
+                This is an automated security transmission. Please do not reply directly.<br/>
+                &copy; 2026 MediQueue Healthcare Systems. All rights reserved.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
 </body>
 </html>
 `;
 
-// 1. Send OTP Email
+// 1. Send OTP Email (Account Verification)
 const sendOTPEmail = async (email, name, otp) => {
   const content = `
-    <div class="title">Verify Your Email Address</div>
-    <div class="subtitle">Welcome to MediQueue! Please verify your email to activate your account.</div>
-    <p style="font-size:14px;color:#475569;">Hi <strong>${name}</strong>,</p>
-    <p style="font-size:14px;color:#475569;margin-bottom:20px;">Use the OTP below to verify your email address:</p>
-    <div class="otp-box">
-      <div class="otp-code">${otp}</div>
-      <div class="otp-label">⏰ Valid for 10 minutes only</div>
+    <h1 style="margin: 0 0 8px 0; font-size: 22px; font-weight: 800; color: #0f172a; letter-spacing: -0.4px; line-height: 1.3;">
+      Verify Your Email Address
+    </h1>
+    <p style="margin: 0 0 24px 0; font-size: 14px; color: #64748b; line-height: 1.5;">
+      Welcome to MediQueue. Please verify your email to activate your patient account.
+    </p>
+
+    <p style="margin: 0 0 16px 0; font-size: 14px; color: #334155; line-height: 1.6;">
+      Hello <strong>${name || 'Patient'}</strong>,
+    </p>
+    <p style="margin: 0 0 20px 0; font-size: 14px; color: #475569; line-height: 1.6;">
+      Use the 6-digit verification code below to complete your registration:
+    </p>
+
+    <!-- Clean OTP Block -->
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; margin: 20px 0 24px 0; text-align: center;">
+      <tr>
+        <td style="padding: 24px 16px;">
+          <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #64748b; margin-bottom: 8px;">
+            One-Time Password (OTP)
+          </div>
+          <div style="font-size: 40px; font-weight: 800; letter-spacing: 12px; color: #0d9488; font-family: 'SF Mono', Consolas, Menlo, monospace; padding-left: 12px; margin: 6px 0 14px 0;">
+            ${otp}
+          </div>
+          <span style="display: inline-block; background-color: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; font-size: 12px; font-weight: 600; padding: 4px 12px; border-radius: 20px;">
+            &#x23F1; Valid for 10 minutes only
+          </span>
+        </td>
+      </tr>
+    </table>
+
+    <!-- Security Advisory -->
+    <div style="background-color: #fffbeb; border-left: 4px solid #f59e0b; border-radius: 6px; padding: 12px 16px; margin: 20px 0 24px 0;">
+      <p style="margin: 0; font-size: 12.5px; color: #92400e; line-height: 1.5; font-weight: 500;">
+        <strong>Security Notice:</strong> MediQueue or hospital staff will never call or ask for this code. If you did not request this, please disregard this email.
+      </p>
     </div>
-    <p style="font-size:13px;color:#94a3b8;text-align:center;">Do not share this OTP with anyone.</p>
-    <div class="divider"></div>
-    <p style="font-size:13px;color:#64748b;">If you did not create an account, please ignore this email.</p>
   `;
   return await safeSendMail({
     from: `"MediQueue Hospital" <${HOSPITAL_EMAIL}>`,
     to: email,
-    subject: 'Verify Your MediQueue Account — OTP Inside',
-    html: baseTemplate(content)
+    subject: `MediQueue Verification Code: ${otp}`,
+    html: baseTemplate(content, email)
   });
 };
 
 // 1b. Send Password Reset OTP Email
 const sendPasswordResetOTPEmail = async (email, name, otp) => {
   const content = `
-    <div class="title">Password Reset Verification</div>
-    <div class="subtitle">A request was received to reset the password for your MediQueue account.</div>
-    <p style="font-size:14px;color:#475569;">Hi <strong>${name || 'User'}</strong>,</p>
-    <p style="font-size:14px;color:#475569;margin-bottom:20px;">Use the 6-digit verification code below to set a new password:</p>
-    <div class="otp-box" style="background:#f0fdfa;border-color:#0d9488;">
-      <div class="otp-code" style="color:#0d9488;">${otp}</div>
-      <div class="otp-label">⏰ Valid for 10 minutes only</div>
+    <h1 style="margin: 0 0 8px 0; font-size: 22px; font-weight: 800; color: #0f172a; letter-spacing: -0.4px; line-height: 1.3;">
+      Password Reset Request
+    </h1>
+    <p style="margin: 0 0 24px 0; font-size: 14px; color: #64748b; line-height: 1.5;">
+      A request was received to reset the password for your MediQueue account.
+    </p>
+
+    <p style="margin: 0 0 16px 0; font-size: 14px; color: #334155; line-height: 1.6;">
+      Hello <strong>${name || 'User'}</strong>,
+    </p>
+    <p style="margin: 0 0 20px 0; font-size: 14px; color: #475569; line-height: 1.6;">
+      Use the 6-digit verification code below to set a new password:
+    </p>
+
+    <!-- Clean OTP Block -->
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; margin: 20px 0 24px 0; text-align: center;">
+      <tr>
+        <td style="padding: 24px 16px;">
+          <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #64748b; margin-bottom: 8px;">
+            Password Reset Code
+          </div>
+          <div style="font-size: 40px; font-weight: 800; letter-spacing: 12px; color: #0d9488; font-family: 'SF Mono', Consolas, Menlo, monospace; padding-left: 12px; margin: 6px 0 14px 0;">
+            ${otp}
+          </div>
+          <span style="display: inline-block; background-color: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; font-size: 12px; font-weight: 600; padding: 4px 12px; border-radius: 20px;">
+            &#x23F1; Valid for 10 minutes only
+          </span>
+        </td>
+      </tr>
+    </table>
+
+    <!-- Security Advisory -->
+    <div style="background-color: #fffbeb; border-left: 4px solid #f59e0b; border-radius: 6px; padding: 12px 16px; margin: 20px 0 24px 0;">
+      <p style="margin: 0; font-size: 12.5px; color: #92400e; line-height: 1.5; font-weight: 500;">
+        <strong>Security Notice:</strong> Hospital staff will never ask for your verification code. If you did not make this request, please change your password immediately.
+      </p>
     </div>
-    <p style="font-size:13px;color:#ef4444;text-align:center;font-weight:600;">Do not share this OTP with anyone. Hospital staff will never ask for it.</p>
-    <div class="divider"></div>
-    <p style="font-size:13px;color:#64748b;">If you did not request this password reset, please ignore this email or secure your account.</p>
   `;
   return await safeSendMail({
     from: `"MediQueue Hospital" <${HOSPITAL_EMAIL}>`,
     to: email,
     subject: `MediQueue Password Reset Code: ${otp}`,
-    html: baseTemplate(content)
+    html: baseTemplate(content, email)
   });
 };
 
