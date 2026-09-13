@@ -1,4 +1,5 @@
 const nodemailer = require('nodemailer');
+const axios = require('axios');
 
 const emailUser = (process.env.EMAIL_USER || '').trim();
 const emailPass = (process.env.EMAIL_PASS || '').replace(/\s+/g, '');
@@ -6,6 +7,9 @@ const emailPass = (process.env.EMAIL_PASS || '').replace(/\s+/g, '');
 // Create transporter optimized for cloud hosting (Render/Vercel)
 const transporter = nodemailer.createTransport({
   service: 'gmail',
+  connectionTimeout: 4000, // 4 seconds max
+  greetingTimeout: 3000,
+  socketTimeout: 5000,
   auth: {
     user: emailUser,
     pass: emailPass
@@ -15,29 +19,75 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-// Verify connection on startup to warm up SMTP pool
+// Verify connection on startup
 if (emailUser && emailPass) {
   transporter.verify((err) => {
     if (err) {
-      console.warn('⚠️ [EmailService] SMTP verification failed:', err.message);
+      console.warn('⚠️ [EmailService] SMTP verification failed (cloud firewall may block SMTP ports 465/587):', err.message);
     } else {
-      console.log('✅ [EmailService] Gmail SMTP connected & connection pool ready.');
+      console.log('✅ [EmailService] Gmail SMTP connected & ready.');
     }
   });
 }
 
-// Safe mail dispatcher that checks credentials first
+// Safe mail dispatcher supporting HTTPS API (Resend / Brevo) + SMTP fallback
 const safeSendMail = async (mailOptions) => {
+  // 1. If RESEND_API_KEY is configured (HTTPS port 443 - never blocked by Render cloud firewall)
+  if (process.env.RESEND_API_KEY) {
+    try {
+      const fromAddr = process.env.RESEND_FROM || 'MediQueue <onboarding@resend.dev>';
+      const res = await axios.post('https://api.resend.com/emails', {
+        from: fromAddr,
+        to: [mailOptions.to],
+        subject: mailOptions.subject,
+        html: mailOptions.html
+      }, {
+        headers: {
+          'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        timeout: 6000
+      });
+      console.log(`✅ [EmailService:Resend] Email sent to ${mailOptions.to} (ID: ${res.data?.id})`);
+      return { success: true, messageId: res.data?.id };
+    } catch (resendErr) {
+      console.error(`❌ [EmailService:Resend] Failed:`, resendErr.response?.data || resendErr.message);
+    }
+  }
+
+  // 2. If BREVO_API_KEY is configured (HTTPS port 443)
+  if (process.env.BREVO_API_KEY) {
+    try {
+      const res = await axios.post('https://api.brevo.com/v3/smtp/email', {
+        sender: { name: 'MediQueue Hospital', email: emailUser || 'noreply@mediqueue.com' },
+        to: [{ email: mailOptions.to }],
+        subject: mailOptions.subject,
+        htmlContent: mailOptions.html
+      }, {
+        headers: {
+          'api-key': process.env.BREVO_API_KEY,
+          'Content-Type': 'application/json'
+        },
+        timeout: 6000
+      });
+      console.log(`✅ [EmailService:Brevo] Email sent to ${mailOptions.to} (ID: ${res.data?.messageId})`);
+      return { success: true, messageId: res.data?.messageId };
+    } catch (brevoErr) {
+      console.error(`❌ [EmailService:Brevo] Failed:`, brevoErr.response?.data || brevoErr.message);
+    }
+  }
+
+  // 3. Fallback to Gmail SMTP via nodemailer
   if (!emailUser || !emailPass) {
     console.warn(`⚠️ [EmailService] EMAIL_USER or EMAIL_PASS not configured. Email to "${mailOptions.to}" skipped.`);
     return { success: false, error: 'EMAIL_USER or EMAIL_PASS not configured on server.' };
   }
   try {
     const info = await transporter.sendMail(mailOptions);
-    console.log(`✅ [EmailService] Email sent to ${mailOptions.to} (Message ID: ${info.messageId})`);
+    console.log(`✅ [EmailService:SMTP] Email sent to ${mailOptions.to} (Message ID: ${info.messageId})`);
     return { success: true, messageId: info.messageId };
   } catch (err) {
-    console.error(`❌ [EmailService] Failed to send email to ${mailOptions.to}:`, err.message);
+    console.error(`❌ [EmailService:SMTP] Failed to send email to ${mailOptions.to}:`, err.message);
     return { success: false, error: err.message, code: err.code };
   }
 };
