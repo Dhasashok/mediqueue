@@ -49,7 +49,7 @@ const ForgotPassword = () => {
         toast.success('Verification code sent to your email!');
         if (res.data.fallback_otp) {
           setFallbackOtp(res.data.fallback_otp);
-          toast.info(`[Demo Mode] OTP: ${res.data.fallback_otp}`, { autoClose: 15000 });
+          toast.info(`Verification code (Backup): ${res.data.fallback_otp}`, { autoClose: 15000 });
         }
         setStep(2);
         setCooldown(30);
@@ -159,7 +159,7 @@ const ForgotPassword = () => {
       toast.success('New verification code sent!');
       if (res.data.fallback_otp) {
         setFallbackOtp(res.data.fallback_otp);
-        toast.info(`[Demo Mode] OTP: ${res.data.fallback_otp}`, { autoClose: 15000 });
+        toast.info(`Verification code (Backup): ${res.data.fallback_otp}`, { autoClose: 15000 });
       }
       setCooldown(30);
       setOtp(['', '', '', '', '', '']);
@@ -322,7 +322,7 @@ const ForgotPassword = () => {
                   background: '#f0fdf4', border: '1px solid #bbf7d0', color: '#166534',
                   fontSize: '0.8rem', padding: '6px 12px', borderRadius: 8, marginTop: 12
                 }}>
-                  Demo OTP: <strong>{fallbackOtp}</strong>
+                  Backup Code: <strong>{fallbackOtp}</strong>
                 </p>
               )}
 

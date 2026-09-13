@@ -57,12 +57,11 @@ const registerPatient = async (req, res) => {
       mailSent = false;
     }
 
-    const isLocalOrUnset = !process.env.EMAIL_USER || !process.env.EMAIL_PASS || process.env.NODE_ENV !== 'production';
     res.status(201).json({
       success: true,
-      message: mailSent ? 'OTP sent to your email. Please verify to activate your account.' : 'Account created. Email delivery pending.',
+      message: mailSent ? 'OTP sent to your email. Please verify to activate your account.' : 'Account created. Use the verification code displayed on screen.',
       email,
-      fallback_otp: (!mailSent || isLocalOrUnset) ? otp : undefined
+      fallback_otp: !mailSent ? otp : undefined
     });
   } catch (err) {
     console.error(err);
@@ -133,16 +132,20 @@ const resendOTP = async (req, res) => {
 
     console.log(`\n==================================================\n🔑 [OTP Resend] For ${email}: ${otp}\n==================================================\n`);
 
-    // Send OTP email (non-blocking)
-    sendOTPEmail(email, rows[0].first_name, otp).catch(emailErr => {
+    // Send OTP email
+    let mailSent = true;
+    try {
+      const mailRes = await sendOTPEmail(email, rows[0].first_name, otp);
+      if (mailRes && mailRes.success === false) mailSent = false;
+    } catch (emailErr) {
       console.error('Resend OTP email error:', emailErr.message);
-    });
+      mailSent = false;
+    }
 
-    const isLocalOrUnset = !process.env.EMAIL_USER || !process.env.EMAIL_PASS || process.env.NODE_ENV !== 'production';
     res.json({
       success: true,
-      message: 'New OTP sent to your email.',
-      fallback_otp: isLocalOrUnset ? otp : undefined
+      message: mailSent ? 'New OTP sent to your email.' : 'Email delivery pending. Use the verification code on screen.',
+      fallback_otp: !mailSent ? otp : undefined
     });
   } catch (err) {
     console.error(err);
@@ -305,11 +308,10 @@ const forgotPassword = async (req, res) => {
       mailSent = false;
     }
 
-    const isLocalOrUnset = !process.env.EMAIL_USER || !process.env.EMAIL_PASS || process.env.NODE_ENV !== 'production';
     res.json({
       success: true,
-      message: mailSent ? 'OTP sent to your email. Valid for 10 minutes.' : 'Password reset initiated. Email delivery pending.',
-      fallback_otp: (!mailSent || isLocalOrUnset) ? otp : undefined
+      message: mailSent ? 'OTP sent to your email. Valid for 10 minutes.' : 'Password reset code generated. Use the code on screen.',
+      fallback_otp: !mailSent ? otp : undefined
     });
   } catch (err) {
     console.error('forgotPassword error:', err);

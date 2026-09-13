@@ -95,7 +95,7 @@ const OTPScreen = ({ email, onSuccess }) => {
       const res = await API.post('/auth/resend-otp', { email });
       toast.success('New OTP sent!');
       if (res.data?.fallback_otp) {
-        toast.info(`[Demo Mode] OTP: ${res.data.fallback_otp}`, { autoClose: 15000 });
+        toast.info(`Verification code (Backup): ${res.data.fallback_otp}`, { autoClose: 15000 });
       }
       setTimer(60); setOtp(['','','','','','']);
       inputs.current[0]?.focus();
@@ -216,7 +216,7 @@ const Register = () => {
           setShowOTP(true);
           toast.info('OTP sent to your email!');
           if (res.data?.fallback_otp) {
-            toast.info(`[Demo Mode] OTP: ${res.data.fallback_otp}`, { autoClose: 15000 });
+            toast.info(`Verification code (Backup): ${res.data.fallback_otp}`, { autoClose: 15000 });
           }
         } else {
           toast.success(res.data.message);
