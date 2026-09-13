@@ -12,6 +12,7 @@ const routes       = require('./routes/index');
 const setupSocket  = require('./socket/index');
 
 const app    = express();
+app.set('trust proxy', 1);
 const server = http.createServer(app);
 
 // ── CORS — supports localhost dev + any Vercel preview + explicit FRONTEND_URL ──
