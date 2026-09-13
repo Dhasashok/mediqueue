@@ -5,6 +5,21 @@ if (dns.setDefaultResultOrder) {
 const nodemailer = require('nodemailer');
 const axios = require('axios');
 
+// Force Nodemailer internal DNS to ONLY use IPv4 (Render cloud has no IPv6 outbound routing)
+try {
+  const nodemailerShared = require('nodemailer/lib/shared');
+  if (nodemailerShared && nodemailerShared.networkInterfaces) {
+    const ifaces = nodemailerShared.networkInterfaces;
+    const filtered = {};
+    for (const key in ifaces) {
+      filtered[key] = (ifaces[key] || []).filter(i => i.family === 'IPv4' || i.family === 4);
+    }
+    nodemailerShared.networkInterfaces = filtered;
+  }
+} catch (e) {
+  // fallback gracefully
+}
+
 const emailUser = (process.env.EMAIL_USER || '').trim();
 const emailPass = (process.env.EMAIL_PASS || '').replace(/\s+/g, '');
 
