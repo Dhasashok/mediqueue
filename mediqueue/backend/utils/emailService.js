@@ -324,9 +324,13 @@ const sendAppointmentConfirmation = async (email, name, appointment) => {
     const patBefore = appointment.patients_before != null ? parseInt(appointment.patients_before, 10) : 0;
     const slotStartH = appointment.time_slot ? parseInt(appointment.time_slot.split(':')[0], 10) : 8;
     const slotStartM = (appointment.time_slot && appointment.time_slot.split(':')[1]) ? parseInt(appointment.time_slot.split(':')[1], 10) : 0;
-    const slotStart  = slotStartH * 60 + slotStartM;
-    const turnStart  = slotStart + patBefore * distMins;
-    const turnEnd    = turnStart + distMins;
+    const consultStart = slotStart + patBefore * distMins;
+    const consultEnd   = consultStart + distMins;
+
+    // Arrival buffer: department consultation duration (between 15 and 30 minutes)
+    const buffer     = Math.max(15, Math.min(30, Math.round(distMins)));
+    const arriveFrom = Math.max(0, consultStart - buffer);
+    const arriveBy   = consultStart;
 
     const fmt = (m) => {
       const total = Math.round(m);
@@ -336,15 +340,16 @@ const sendAppointmentConfirmation = async (email, name, appointment) => {
       return hh + ':' + String(mn).padStart(2, '0') + ' ' + suf;
     };
 
-    const arriveFromStr = fmt(turnStart);
-    const arriveToStr   = fmt(turnEnd);
-    const positionNum   = patBefore + 1;
+    const arriveFromStr  = fmt(arriveFrom);
+    const arriveToStr    = fmt(arriveBy);
+    const consultSlotStr = `${fmt(consultStart)} &ndash; ${fmt(consultEnd)}`;
+    const positionNum    = patBefore + 1;
 
     arrivalBlock = `
       <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f0fdf4; border: 1.5px solid #86efac; border-radius: 12px; margin-bottom: 24px; text-align: center;">
         <tr>
           <td style="padding: 20px 16px;">
-            <div style="font-size: 12px; font-weight: 700; color: #15803d; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;">🏥 Personalized Arrival Window</div>
+            <div style="font-size: 12px; font-weight: 700; color: #15803d; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;">🏥 Suggested Arrival Window</div>
             <table border="0" cellpadding="0" cellspacing="0" width="100%">
               <tr>
                 <td width="45%" style="text-align: center;">
@@ -359,7 +364,7 @@ const sendAppointmentConfirmation = async (email, name, appointment) => {
               </tr>
             </table>
             <div style="margin-top: 14px; font-size: 12.5px; color: #334155;">
-              Queue Position: <strong style="color: #0d9488;">#${positionNum}</strong> &bull; Estimated consultation: <strong>${arriveFromStr} &ndash; ${arriveToStr}</strong>
+              Queue Position: <strong style="color: #0d9488;">#${positionNum}</strong> &bull; Doctor Consultation Slot: <strong>${consultSlotStr}</strong>
             </div>
           </td>
         </tr>

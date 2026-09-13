@@ -36,9 +36,14 @@ const calcArrivalWindow = (timeSlot, patientsBefore, distributedMins) => {
   const slotStartM  = parseInt(timeSlot.split(':')[1], 10) || 0;
   const slotStart   = slotStartH * 60 + slotStartM;
 
-  const position = (patientsBefore != null ? parseInt(patientsBefore, 10) : 0) + 1;
-  const turnStart = slotStart + (position - 1) * dist;
-  const turnEnd   = turnStart + dist;
+  const position     = (patientsBefore != null ? parseInt(patientsBefore, 10) : 0) + 1;
+  const consultStart = slotStart + (position - 1) * dist;
+  const consultEnd   = consultStart + dist;
+
+  // Arrival buffer: department consultation duration (between 15 and 30 minutes)
+  const buffer     = Math.max(15, Math.min(30, Math.round(dist)));
+  const arriveFrom = Math.max(0, consultStart - buffer);
+  const arriveBy   = consultStart;
 
   const fmt = (mins) => {
     const total = Math.round(mins);
@@ -50,12 +55,12 @@ const calcArrivalWindow = (timeSlot, patientsBefore, distributedMins) => {
   };
 
   return {
-    turnTime:   `${fmt(turnStart)} – ${fmt(turnEnd)}`,
-    turnStart:  fmt(turnStart),
-    turnEnd:    fmt(turnEnd),
-    arriveFrom: fmt(turnStart),
-    arriveBy:   fmt(turnEnd),
-    position:   position,
+    turnTime:       `${fmt(consultStart)} – ${fmt(consultEnd)}`,
+    consultStart:   fmt(consultStart),
+    consultEnd:     fmt(consultEnd),
+    arriveFrom:     fmt(arriveFrom),
+    arriveBy:       fmt(arriveBy),
+    position:       position,
   };
 };
 
@@ -299,7 +304,7 @@ const BookAppointment = () => {
                     </div>
                   </div>
                   <p className="st-arrival-note">
-                    Queue Position: <strong>#{arrival.position}</strong> · Estimated consultation: <strong>{arrival.turnTime}</strong>
+                    Queue Position: <strong>#{arrival.position}</strong> · Doctor Consultation Slot: <strong>{arrival.turnTime}</strong>
                   </p>
                 </div>
               )}
