@@ -146,6 +146,16 @@ const BookAppointment = () => {
       .finally(() => setLoadingSlots(false));
   }, [doctorId, selectedDate]);
 
+  const handleSlotSelect = (slotTime) => {
+    setSelectedSlot(slotTime);
+    // On mobile, gently scroll down so user sees the active slot reflected and form ready
+    if (window.innerWidth < 768 && formRef.current) {
+      setTimeout(() => {
+        formRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }, 100);
+    }
+  };
+
   const validate = () => {
     const e = {};
     if (!selectedSlot) e.slot = 'Please choose a time slot on the left';
@@ -164,7 +174,7 @@ const BookAppointment = () => {
     if (e) e.preventDefault();
     if (!validate()) {
       if (errors.slot && !selectedSlot) {
-        toast.info('Please click a time slot to continue.');
+        toast.info('Please click an available time slot above.');
       }
       return;
     }
@@ -363,6 +373,11 @@ const BookAppointment = () => {
 
   const photoUrl = doctor.profile_image_url || fallbackPhoto;
 
+  // Clean deduplicated specialization title
+  const cleanSpecialization = (doctor.specialization && doctor.department_name && doctor.specialization.trim().toLowerCase() === doctor.department_name.trim().toLowerCase())
+    ? (doctor.specialization.toLowerCase().includes('dent') ? 'Dental Care Specialist' : doctor.specialization)
+    : (doctor.specialization ? `${doctor.specialization} · ${doctor.department_name}` : doctor.department_name);
+
   return (
     <div className="book-page">
       {/* ── Mobile Top Navigation ────────────────────────────── */}
@@ -435,7 +450,7 @@ const BookAppointment = () => {
                     <span>{doctor.years_of_experience} yrs</span>
                   </span>
                 </div>
-                <p className="dcc-spec">{doctor.specialization} · {doctor.department_name}</p>
+                <p className="dcc-spec">{cleanSpecialization}</p>
                 <div className="dcc-meta-row">
                   <span className="dcc-meta-pill fee-pill">
                     <IndianRupee size={12} />
@@ -473,7 +488,7 @@ const BookAppointment = () => {
               </div>
 
               {/* Slot Selection */}
-              <div className="picker-section-title" style={{ marginTop: 22 }}>
+              <div className="picker-section-title slot-picker-title">
                 <Clock size={16} color="#0d9488" />
                 <span>2. Select 2-Hour Time Window</span>
               </div>
@@ -495,7 +510,7 @@ const BookAppointment = () => {
                         key={s.slot}
                         type="button"
                         className={`slot-card-item ${isSelected ? 'active' : ''} ${!isAvailable ? 'disabled' : ''}`}
-                        onClick={() => isAvailable && setSelectedSlot(s.slot)}
+                        onClick={() => isAvailable && handleSlotSelect(s.slot)}
                         disabled={!isAvailable}
                         aria-pressed={isSelected}
                       >
@@ -587,8 +602,8 @@ const BookAppointment = () => {
                   </div>
                 </div>
 
-                <div className="pbc-row">
-                  <div className="pbc-field pbc-field-half">
+                <div className="pbc-row age-gender-row">
+                  <div className="pbc-field pbc-field-half age-col">
                     <label>Age *</label>
                     <input
                       type="text"
@@ -609,7 +624,7 @@ const BookAppointment = () => {
                     {errors.age && <span className="err-txt">{errors.age}</span>}
                   </div>
 
-                  <div className="pbc-field pbc-field-half">
+                  <div className="pbc-field pbc-field-half gender-col">
                     <label>Gender *</label>
                     <select
                       value={form.gender}
