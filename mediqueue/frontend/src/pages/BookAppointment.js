@@ -6,20 +6,19 @@ import {
   Calendar,
   Clock,
   Star,
-  Globe,
   IndianRupee,
   ShieldCheck,
   CheckCircle2,
   QrCode,
   Check,
   ArrowRight,
-  Edit3,
   Copy
 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 import { getDoctorById, getDoctorSlots, bookAppointment } from '../services/api';
 import './BookAppointment.css';
 
-// Local date formatting
+// Local date formatting YYYY-MM-DD
 const formatLocalDate = (d) => {
   const year = d.getFullYear();
   const month = String(d.getMonth() + 1).padStart(2, '0');
@@ -40,7 +39,6 @@ const calcArrivalWindow = (timeSlot, patientsBefore, distributedMins) => {
   const consultStart = slotStart + (position - 1) * dist;
   const consultEnd   = consultStart + dist;
 
-  // Arrival buffer: department consultation duration (between 15 and 30 minutes)
   const buffer     = Math.max(15, Math.min(30, Math.round(dist)));
   const arriveFrom = Math.max(0, consultStart - buffer);
   const arriveBy   = consultStart;
@@ -51,16 +49,16 @@ const calcArrivalWindow = (timeSlot, patientsBefore, distributedMins) => {
     const m  = total % 60;
     const suf = h < 12 ? 'AM' : 'PM';
     const hh  = h === 0 ? 12 : h > 12 ? h - 12 : h;
-    return `${hh}:${String(m).padStart(2,'0')} ${suf}`;
+    return `${hh}:${String(m).padStart(2, '0')} ${suf}`;
   };
 
   return {
-    turnTime:       `${fmt(consultStart)} – ${fmt(consultEnd)}`,
-    consultStart:   fmt(consultStart),
-    consultEnd:     fmt(consultEnd),
-    arriveFrom:     fmt(arriveFrom),
-    arriveBy:       fmt(arriveBy),
-    position:       position,
+    turnTime:     `${fmt(consultStart)} – ${fmt(consultEnd)}`,
+    consultStart: fmt(consultStart),
+    consultEnd:   fmt(consultEnd),
+    arriveFrom:   fmt(arriveFrom),
+    arriveBy:     fmt(arriveBy),
+    position:     position,
   };
 };
 
@@ -98,6 +96,7 @@ const BookAppointment = () => {
   const { doctorId } = useParams();
   const navigate = useNavigate();
   const formRef = useRef(null);
+  const { user } = useAuth();
 
   const [doctor, setDoctor] = useState(null);
   const [days] = useState(getDaysFromToday(7));
@@ -109,9 +108,20 @@ const BookAppointment = () => {
   const [loading, setLoading] = useState(false);
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [successData, setSuccessData] = useState(null);
-
-  const [step, setStep] = useState(1);
   const [copiedId, setCopiedId] = useState(false);
+
+  // Auto-fill form from logged-in user profile
+  useEffect(() => {
+    if (user) {
+      setForm(prev => ({
+        ...prev,
+        full_name: prev.full_name || user.name || (user.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : ''),
+        phone: prev.phone || user.phone || '',
+        age: prev.age || (user.age ? String(user.age) : ''),
+        gender: prev.gender || user.gender || ''
+      }));
+    }
+  }, [user]);
 
   const handleCopyBookingId = (id) => {
     if (!id) return;
@@ -138,6 +148,7 @@ const BookAppointment = () => {
 
   const validate = () => {
     const e = {};
+    if (!selectedSlot) e.slot = 'Please choose a time slot on the left';
     if (!form.full_name.trim()) e.full_name = 'Full name is required';
     if (!form.phone || !/^\d{10}$/.test(form.phone.replace(/\D/g, ''))) e.phone = 'Valid 10-digit phone required';
     const ageNum = parseInt(form.age, 10);
@@ -145,7 +156,6 @@ const BookAppointment = () => {
       e.age = 'Age must be 1 – 120';
     }
     if (!form.gender) e.gender = 'Gender is required';
-    if (!selectedSlot) e.slot = 'Please select a time slot';
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -153,15 +163,15 @@ const BookAppointment = () => {
   const handleSubmit = async (e) => {
     if (e) e.preventDefault();
     if (!validate()) {
-      if (formRef.current) {
-        formRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      if (errors.slot && !selectedSlot) {
+        toast.info('Please click a time slot to continue.');
       }
       return;
     }
     setLoading(true);
     try {
       const res = await bookAppointment({
-        doctor_id: parseInt(doctorId),
+        doctor_id: parseInt(doctorId, 10),
         department_id: doctor.department_id,
         appointment_date: selectedDate,
         time_slot: selectedSlot,
@@ -170,7 +180,7 @@ const BookAppointment = () => {
       });
       if (res.data.success) {
         setSuccessData(res.data.appointment);
-        toast.success('Appointment booked successfully!');
+        toast.success('Appointment confirmed!');
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     } catch (err) {
@@ -180,42 +190,19 @@ const BookAppointment = () => {
     }
   };
 
+  // Loading skeleton state
   if (!doctor) return (
     <div className="book-page">
-      <section className="page-header book-page-header">
-        <div className="container">
-          <div className="breadcrumb">
-            <Link to="/">Home</Link> <span>›</span> <Link to="/find-hospital">Book Appointment</Link> <span>›</span> <span>Schedule</span>
-          </div>
-          <h1>Schedule Appointment</h1>
+      <div className="container book-unified-container" style={{ paddingTop: 32 }}>
+        <div className="skeleton-grid">
+          <div className="skeleton" style={{ height: 260, borderRadius: 16 }}></div>
+          <div className="skeleton" style={{ height: 420, borderRadius: 16 }}></div>
         </div>
-      </section>
-      <section className="section" style={{ paddingTop: 32 }}>
-        <div className="container book-layout">
-          <div className="book-left">
-            <div className="card skeleton-doctor-card">
-              <div className="skeleton skel-avatar"></div>
-              <div className="skeleton skel-line medium"></div>
-              <div className="skeleton skel-line short"></div>
-              <div style={{ height: 16 }}></div>
-              {[1,2,3,4].map(i => <div key={i} className="skeleton skel-line full" style={{ marginBottom: 8 }}></div>)}
-            </div>
-          </div>
-          <div className="book-right">
-            <div className="card" style={{ padding: 28 }}>
-              <div className="skeleton skel-line medium" style={{ marginBottom: 20, height: 22 }}></div>
-              <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
-                {[1,2,3,4,5,6,7].map(i => <div key={i} className="skeleton" style={{ width: 64, height: 80, borderRadius: 14 }}></div>)}
-              </div>
-              <div className="skeleton skel-line full" style={{ height: 140, borderRadius: 14 }}></div>
-            </div>
-          </div>
-        </div>
-      </section>
+      </div>
     </div>
   );
 
-  // Success screen — Premium Horizontal Digital Boarding Pass
+  // Success screen — Digital Boarding Pass Ticket
   if (successData) {
     const patientsBefore = successData.patients_before != null
       ? successData.patients_before
@@ -232,7 +219,7 @@ const BookAppointment = () => {
     return (
       <div className="success-page">
         <div className="success-ticket-card">
-          {/* Main Details Column (Left on desktop) */}
+          {/* Main Details Column */}
           <div className="st-main-section">
             <div className="st-header">
               <div className="st-header-badge-row">
@@ -264,7 +251,7 @@ const BookAppointment = () => {
                 </button>
               </div>
 
-              {/* Summary Details Grid (No text truncation) */}
+              {/* Summary Details Grid */}
               <div className="st-summary-grid">
                 <div className="st-item">
                   <span>Doctor</span>
@@ -320,14 +307,14 @@ const BookAppointment = () => {
             </div>
           </div>
 
-          {/* Perforated Divider (Vertical on desktop, horizontal on mobile) */}
+          {/* Perforated Divider */}
           <div className="st-perforated-wrap">
             <span className="st-notch st-notch-top-or-left"></span>
             <div className="st-divider-line"></div>
             <span className="st-notch st-notch-bottom-or-right"></span>
           </div>
 
-          {/* QR Entry Pass & Actions Column (Right on desktop) */}
+          {/* QR Entry Pass & Actions Column */}
           <div className="st-pass-section">
             <div className="st-pass-content">
               <div className="st-qr-title">
@@ -365,33 +352,31 @@ const BookAppointment = () => {
     );
   }
 
+  // Doctor image resolution
+  const isFemale = (doctor.gender === 'Female') ||
+    doctor.first_name.toLowerCase().includes('nisha') ||
+    doctor.first_name.toLowerCase().includes('priya');
+
+  const fallbackPhoto = isFemale
+    ? 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=400&auto=format&fit=crop&q=80'
+    : 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=400&auto=format&fit=crop&q=80';
+
+  const photoUrl = doctor.profile_image_url || fallbackPhoto;
+
   return (
     <div className="book-page">
-      {/* Mobile Top Navigation */}
+      {/* ── Mobile Top Navigation ────────────────────────────── */}
       <div className="book-mobile-topbar">
         <div className="book-topbar-inner">
-          {step === 2 ? (
-            <button
-              type="button"
-              className="book-back-btn"
-              onClick={() => setStep(1)}
-              aria-label="Back to slots"
-            >
-              <ArrowLeft size={18} />
-            </button>
-          ) : (
-            <Link
-              to={`/department/${doctor.department_id}`}
-              className="book-back-btn"
-              aria-label="Back to doctors"
-            >
-              <ArrowLeft size={18} />
-            </Link>
-          )}
+          <Link
+            to={`/department/${doctor.department_id}`}
+            className="book-back-btn"
+            aria-label="Back to department"
+          >
+            <ArrowLeft size={18} />
+          </Link>
           <div className="book-topbar-center">
-            <h1 className="book-topbar-title">
-              {step === 1 ? 'Select Date & Slot' : 'Patient Details'}
-            </h1>
+            <h1 className="book-topbar-title">Book Appointment</h1>
             <span className="book-topbar-subtitle">
               Dr. {doctor.first_name} {doctor.last_name} · {doctor.department_name}
             </span>
@@ -400,355 +385,285 @@ const BookAppointment = () => {
         </div>
       </div>
 
-      <section className="page-header book-page-header">
-        <div className="container">
-          <div className="breadcrumb">
-            <Link to="/">Home</Link> <span>›</span>
-            <Link to="/find-hospital">Book Appointment</Link> <span>›</span>
-            <Link to={`/department/${doctor.department_id}`}>{doctor.department_name}</Link> <span>›</span>
-            <span>Schedule</span>
+      <div className="container book-unified-container">
+        {/* ── Compact Clean Desktop Header ───────────────────── */}
+        <header className="book-clean-header">
+          <div className="book-breadcrumb">
+            <Link to="/">Home</Link>
+            <span className="sep">›</span>
+            <Link to="/find-hospital">Departments</Link>
+            <span className="sep">›</span>
+            <Link to={`/department/${doctor.department_id}`}>{doctor.department_name}</Link>
+            <span className="sep">›</span>
+            <span className="current">Book OPD</span>
           </div>
-          <h1>Schedule Appointment</h1>
-        </div>
-      </section>
+          <div className="book-header-text-row">
+            <div>
+              <h1 className="book-title">Schedule Appointment</h1>
+              <p className="book-subtitle">Confirm your hospital OPD time slot in 2 simple steps</p>
+            </div>
+            <Link to={`/department/${doctor.department_id}`} className="book-back-link">
+              <ArrowLeft size={14} />
+              <span>Back to {doctor.department_name}</span>
+            </Link>
+          </div>
+        </header>
 
-      {/* Booking Step Indicator (Interactive Wizard) */}
-      <div className="container book-stepper-wrap">
-        <div className="book-stepper">
-          <div
-            className={`step-node ${step > 1 ? 'completed' : 'active'}`}
-            onClick={() => { if (step > 1) setStep(1); }}
-            style={{ cursor: step > 1 ? 'pointer' : 'default' }}
-          >
-            <span className="step-circle">{step > 1 ? <Check size={14} /> : '1'}</span>
-            <span className="step-text">Date & Slot</span>
+        {/* ── Unified Single-Screen 2-Column Grid ─────────────── */}
+        <div className="book-grid-layout">
+          {/* ── Left Column: Doctor Summary + Date & Slot Picker ── */}
+          <div className="book-col-left">
+            {/* Compact Doctor Profile Banner */}
+            <div className="card doc-compact-card">
+              <div className="dcc-avatar-wrap">
+                <img
+                  src={photoUrl}
+                  alt={`Dr. ${doctor.first_name} ${doctor.last_name}`}
+                  className="dcc-avatar"
+                  onError={(e) => { e.currentTarget.src = fallbackPhoto; }}
+                />
+                <span className="dcc-verified" title="Verified OPD Specialist">
+                  <ShieldCheck size={14} color="#ffffff" />
+                </span>
+              </div>
+
+              <div className="dcc-info">
+                <div className="dcc-name-row">
+                  <h2 className="dcc-name">Dr. {doctor.first_name} {doctor.last_name}</h2>
+                  <span className="dcc-badge-exp">
+                    <Star size={11} color="#f59e0b" fill="#f59e0b" />
+                    <span>{doctor.years_of_experience} yrs</span>
+                  </span>
+                </div>
+                <p className="dcc-spec">{doctor.specialization} · {doctor.department_name}</p>
+                <div className="dcc-meta-row">
+                  <span className="dcc-meta-pill fee-pill">
+                    <IndianRupee size={12} />
+                    <strong>₹{parseInt(doctor.consultation_fee, 10).toLocaleString('en-IN')}</strong> OPD Fee
+                  </span>
+                  <span className="dcc-meta-pill hospital-pill">
+                    City General Hospital
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Date & Slot Selection Container */}
+            <div className="card book-picker-card">
+              {/* Date Selection */}
+              <div className="picker-section-title">
+                <Calendar size={16} color="#0d9488" />
+                <span>1. Select Appointment Date</span>
+              </div>
+
+              <div className="date-picker-row">
+                {days.map(d => (
+                  <button
+                    key={d.full}
+                    type="button"
+                    className={`date-pill ${selectedDate === d.full ? 'active' : ''}`}
+                    onClick={() => { setSelectedDate(d.full); setSelectedSlot(''); }}
+                  >
+                    <span className="dp-day">{d.label}</span>
+                    <span className="dp-num">{d.date}</span>
+                    <span className="dp-month">{d.month}</span>
+                    {d.isToday && <span className="dp-today-dot"></span>}
+                  </button>
+                ))}
+              </div>
+
+              {/* Slot Selection */}
+              <div className="picker-section-title" style={{ marginTop: 22 }}>
+                <Clock size={16} color="#0d9488" />
+                <span>2. Select 2-Hour Time Window</span>
+              </div>
+
+              {loadingSlots ? (
+                <div className="slots-grid-loading">
+                  {[1, 2, 3, 4, 5, 6].map(i => (
+                    <div key={i} className="skeleton slot-skeleton-card"></div>
+                  ))}
+                </div>
+              ) : (
+                <div className="slots-grid-unified">
+                  {slots.map(s => {
+                    const isAvailable = s.available > 0 && !s.is_past && !s.is_leave;
+                    const isSelected = selectedSlot === s.slot;
+
+                    return (
+                      <button
+                        key={s.slot}
+                        type="button"
+                        className={`slot-card-item ${isSelected ? 'active' : ''} ${!isAvailable ? 'disabled' : ''}`}
+                        onClick={() => isAvailable && setSelectedSlot(s.slot)}
+                        disabled={!isAvailable}
+                        aria-pressed={isSelected}
+                      >
+                        <div className="sci-header">
+                          <strong className="sci-time">{s.slot}</strong>
+                          {isSelected && <Check size={14} className="sci-check-icon" />}
+                        </div>
+
+                        <div className="sci-footer">
+                          {isAvailable ? (
+                            <span className="sci-status-available">
+                              <span className="avail-dot"></span>
+                              <span>Available ({s.available})</span>
+                            </span>
+                          ) : s.is_past ? (
+                            <span className="sci-status-ended">Ended</span>
+                          ) : s.is_leave ? (
+                            <span className="sci-status-leave">On Leave</span>
+                          ) : (
+                            <span className="sci-status-full">Slot Full</span>
+                          )}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </div>
-          <div className={`step-line-bar ${step > 1 ? 'filled' : ''}`}></div>
-          <div className={`step-node ${step === 2 ? 'active' : ''}`}>
-            <span className="step-circle">2</span>
-            <span className="step-text">Patient Details</span>
-          </div>
-          <div className="step-line-bar"></div>
-          <div className="step-node">
-            <span className="step-circle">3</span>
-            <span className="step-text">QR Pass</span>
+
+          {/* ── Right Column: Patient Details & Instant Confirmation ── */}
+          <div className="book-col-right" ref={formRef}>
+            <div className="card patient-booking-card">
+              <div className="pbc-header">
+                <h3 className="pbc-title">Patient Details</h3>
+                <p className="pbc-subtitle">Details will appear on your digital hospital entry pass</p>
+              </div>
+
+              {/* Dynamic Live Slot Preview Bar */}
+              <div className={`pbc-slot-preview ${selectedSlot ? 'has-slot' : 'no-slot'}`}>
+                {selectedSlot ? (
+                  <div className="psp-active-wrap">
+                    <div className="psp-left">
+                      <div className="psp-slot-title">
+                        <Clock size={15} color="#0d9488" />
+                        <strong>{selectedSlot}</strong>
+                      </div>
+                      <span className="psp-date">{displayDate(selectedDate)}</span>
+                    </div>
+                    <div className="psp-right">
+                      <span className="psp-fee-tag">
+                        ₹{parseInt(doctor.consultation_fee, 10).toLocaleString('en-IN')}
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="psp-hint-wrap">
+                    <Clock size={16} color="#0d9488" />
+                    <span>Please select a time slot on the left to proceed</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Patient Form */}
+              <form onSubmit={handleSubmit} className="pbc-form">
+                <div className="pbc-row">
+                  <div className="pbc-field">
+                    <label>Full Name *</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. John Doe"
+                      value={form.full_name}
+                      onChange={e => setForm({ ...form, full_name: e.target.value })}
+                      className={errors.full_name ? 'input-error' : ''}
+                    />
+                    {errors.full_name && <span className="err-txt">{errors.full_name}</span>}
+                  </div>
+
+                  <div className="pbc-field">
+                    <label>Mobile Number *</label>
+                    <input
+                      type="tel"
+                      placeholder="10-digit mobile"
+                      value={form.phone}
+                      onChange={e => setForm({ ...form, phone: e.target.value })}
+                      className={errors.phone ? 'input-error' : ''}
+                    />
+                    {errors.phone && <span className="err-txt">{errors.phone}</span>}
+                  </div>
+                </div>
+
+                <div className="pbc-row">
+                  <div className="pbc-field pbc-field-half">
+                    <label>Age *</label>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={3}
+                      placeholder="e.g. 28"
+                      value={form.age}
+                      onKeyDown={e => {
+                        if (['Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight'].includes(e.key)) return;
+                        if (!/^\d$/.test(e.key)) e.preventDefault();
+                      }}
+                      onChange={e => {
+                        const val = e.target.value.replace(/\D/g, '').slice(0, 3);
+                        setForm(prev => ({ ...prev, age: val }));
+                      }}
+                      className={errors.age ? 'input-error' : ''}
+                    />
+                    {errors.age && <span className="err-txt">{errors.age}</span>}
+                  </div>
+
+                  <div className="pbc-field pbc-field-half">
+                    <label>Gender *</label>
+                    <select
+                      value={form.gender}
+                      onChange={e => setForm({ ...form, gender: e.target.value })}
+                      className={errors.gender ? 'input-error' : ''}
+                    >
+                      <option value="">Select Gender</option>
+                      <option>Male</option>
+                      <option>Female</option>
+                      <option>Other</option>
+                    </select>
+                    {errors.gender && <span className="err-txt">{errors.gender}</span>}
+                  </div>
+                </div>
+
+                <div className="pbc-field">
+                  <label>
+                    Reason for Visit <span className="opt-label">(Optional)</span>
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Brief description of consultation symptoms..."
+                    value={form.reason_for_visit}
+                    onChange={e => setForm({ ...form, reason_for_visit: e.target.value })}
+                  />
+                </div>
+
+                {/* Primary Green Booking Button */}
+                <button
+                  type="submit"
+                  className={`pbc-confirm-btn ${!selectedSlot ? 'disabled-btn' : ''}`}
+                  disabled={loading || !selectedSlot}
+                >
+                  {loading ? (
+                    <span>Confirming Appointment...</span>
+                  ) : (
+                    <>
+                      <CheckCircle2 size={18} />
+                      <span>
+                        Confirm Appointment {selectedSlot ? `· ₹${parseInt(doctor.consultation_fee, 10).toLocaleString('en-IN')}` : ''}
+                      </span>
+                    </>
+                  )}
+                </button>
+
+                <div className="pbc-trust-row">
+                  <ShieldCheck size={14} color="#10b981" />
+                  <span>Instant digital QR entry pass generated upon booking</span>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       </div>
-
-      <section className="section" style={{ paddingTop: 16 }}>
-        <div className="container book-layout">
-          {step === 1 ? (
-            <>
-              {/* Step 1 Left: Doctor Info Card */}
-              <div className="book-left">
-                <div className="card doc-info-card">
-                  <div className="book-doc-avatar-wrap">
-                    <div className="book-doc-photo">{doctor.first_name[0]}{doctor.last_name[0]}</div>
-                    <span className="book-doc-verified" title="Verified Specialist">
-                      <ShieldCheck size={16} color="white" />
-                    </span>
-                  </div>
-                  <div className="book-doc-body">
-                    <h2 className="book-doc-name">Dr. {doctor.first_name} {doctor.last_name}</h2>
-                    <div className="book-doc-badges-row">
-                      <span className="book-spec">{doctor.specialization}</span>
-                      <span className="book-doc-exp-badge">
-                        <Star size={11} color="#f59e0b" fill="#f59e0b" />
-                        <span>{doctor.years_of_experience} yrs exp</span>
-                      </span>
-                    </div>
-
-                    <div className="book-doc-meta">
-                      <div className="book-doc-meta-row book-doc-lang-row">
-                        <Globe size={13} color="#64748b" />
-                        <span>{doctor.languages_known}</span>
-                      </div>
-                      <div className="book-doc-meta-row book-doc-fee-row">
-                        <IndianRupee size={14} color="#0d9488" />
-                        <strong>₹{parseInt(doctor.consultation_fee, 10).toLocaleString('en-IN')} Consultation Fee</strong>
-                      </div>
-                    </div>
-
-                    <div className="book-doc-perks">
-                      <span className="bd-perk">⚡ Instant Booking Confirmation</span>
-                      <span className="bd-perk">🏥 City General Hospital OPD</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Step 1 Right: Date & Slot Picker */}
-              <div className="book-right">
-                <div className="card book-form-card">
-                  <h3 className="book-card-heading">Select Date & Time Slot</h3>
-
-                  <div className="book-sub-header">
-                    <Calendar size={16} color="#0d9488" />
-                    <span>1. Select Appointment Date</span>
-                  </div>
-
-                  <div className="date-picker">
-                    {days.map(d => (
-                      <button
-                        key={d.full}
-                        type="button"
-                        className={`date-btn ${selectedDate === d.full ? 'active' : ''}`}
-                        onClick={() => { setSelectedDate(d.full); setSelectedSlot(''); }}
-                      >
-                        <span className="date-day">{d.label}</span>
-                        <span className="date-num">{d.date}</span>
-                        <span className="date-month">{d.month}</span>
-                        {d.isToday && <span className="today-dot"></span>}
-                      </button>
-                    ))}
-                  </div>
-
-                  <div className="book-sub-header" style={{ marginTop: 22 }}>
-                    <Clock size={16} color="#0d9488" />
-                    <span>2. Select 2-Hour Window Slot</span>
-                  </div>
-
-                  {loadingSlots ? (
-                    <div className="slot-skeleton-grid">
-                      {[1,2,3,4,5,6].map(i => <div key={i} className="skeleton slot-skeleton"></div>)}
-                    </div>
-                  ) : (
-                    <div className="slots-grid">
-                      {slots.map(s => {
-                        const isAvailable = s.available > 0 && !s.is_past && !s.is_leave;
-                        return (
-                          <button
-                            key={s.slot}
-                            type="button"
-                            className={`slot-btn ${selectedSlot === s.slot ? 'active' : ''} ${!isAvailable ? 'full' : ''}`}
-                            onClick={() => isAvailable && setSelectedSlot(s.slot)}
-                            disabled={!isAvailable}
-                          >
-                            <span className="slot-time">{s.slot}</span>
-                            {isAvailable && (
-                              <>
-                                <span className="slot-count">{s.booked}/{s.booked + s.available} booked</span>
-                                <span className="slot-wait">
-                                  <Clock size={11} /> ~{s.predicted_wait}m wait
-                                </span>
-                              </>
-                            )}
-                            {s.is_past && <span className="slot-full">Ended</span>}
-                            {!s.is_past && !!s.is_leave && <span className="slot-full">Leave</span>}
-                            {!s.is_past && !s.is_leave && s.available === 0 && <span className="slot-full">Full</span>}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  )}
-
-                  {/* Step 1 Action Bar: Continue to Patient Details */}
-                  <div className="step-continue-bar">
-                    {selectedSlot ? (
-                      <div className="step-continue-inner">
-                        <div className="sci-left">
-                          <span className="sci-lbl">Selected Slot</span>
-                          <strong className="sci-slot">{selectedSlot}</strong>
-                          <span className="sci-date">{selectedDate}</span>
-                        </div>
-                        <button
-                          type="button"
-                          className="btn-continue-step"
-                          onClick={() => {
-                            setStep(2);
-                            window.scrollTo({ top: 0, behavior: 'smooth' });
-                          }}
-                        >
-                          <span>Proceed to Patient Details</span>
-                          <ArrowRight size={18} />
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="step-prompt-box">
-                        <Clock size={15} color="#0d9488" />
-                        <span>Click an available 2-hour window slot above to continue</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </>
-          ) : (
-            <>
-              {/* Step 2 Left: Selected Slot & Doctor Ticket Summary */}
-              <div className="book-left">
-                <div className="card booking-summary-card">
-                  <div className="bsc-header">
-                    <div className="book-doc-photo bsc-photo">{doctor.first_name[0]}{doctor.last_name[0]}</div>
-                    <div className="bsc-doc-info">
-                      <h3 className="bsc-doc-name">Dr. {doctor.first_name} {doctor.last_name}</h3>
-                      <span className="book-spec">{doctor.specialization}</span>
-                    </div>
-                  </div>
-
-                  <div className="bsc-ticket">
-                    <div className="bsc-ticket-item">
-                      <span className="bsc-lbl"><Calendar size={13} /> Appointment Date</span>
-                      <strong className="bsc-val">{displayDate(selectedDate)}</strong>
-                    </div>
-                    <div className="bsc-ticket-item">
-                      <span className="bsc-lbl"><Clock size={13} /> Time Slot Window</span>
-                      <strong className="bsc-val bsc-slot-highlight">{selectedSlot}</strong>
-                    </div>
-                    <div className="bsc-ticket-item bsc-fee-item">
-                      <span className="bsc-lbl"><IndianRupee size={13} /> Consultation Fee</span>
-                      <strong className="bsc-val bsc-fee">₹{parseInt(doctor.consultation_fee, 10).toLocaleString('en-IN')}</strong>
-                    </div>
-                  </div>
-
-                  <button
-                    type="button"
-                    className="btn-change-slot"
-                    onClick={() => setStep(1)}
-                  >
-                    <Edit3 size={14} />
-                    <span>Change Date or Slot</span>
-                  </button>
-
-                  <div className="book-doc-perks bsc-perks">
-                    <span className="bd-perk">⚡ Instant Booking Confirmation</span>
-                    <span className="bd-perk">🏥 City General Hospital OPD</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Step 2 Right: Patient Form */}
-              <div className="book-right">
-                <div className="card book-form-card">
-                  <div className="step2-heading-row">
-                    <div>
-                      <h3 className="book-card-heading" style={{ marginBottom: 4 }}>Patient Information</h3>
-                      <p className="step2-subtitle">
-                        Please provide patient details for hospital entry pass verification.
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      className="btn-link-step"
-                      onClick={() => setStep(1)}
-                    >
-                      ← Back to Slots
-                    </button>
-                  </div>
-
-                  <form ref={formRef} onSubmit={handleSubmit}>
-                    <div className="form-row">
-                      <div className="form-group">
-                        <label>Full Name *</label>
-                        <input
-                          placeholder="e.g. Rahul Sharma"
-                          value={form.full_name}
-                          onChange={e => setForm({ ...form, full_name: e.target.value })}
-                        />
-                        {errors.full_name && <p className="error">{errors.full_name}</p>}
-                      </div>
-                      <div className="form-group">
-                        <label>Phone Number *</label>
-                        <input
-                          type="tel"
-                          placeholder="10-digit mobile number"
-                          value={form.phone}
-                          onChange={e => setForm({ ...form, phone: e.target.value })}
-                        />
-                        {errors.phone && <p className="error">{errors.phone}</p>}
-                      </div>
-                    </div>
-
-                    <div className="form-row">
-                      <div className="form-group">
-                        <label>
-                          Age * {errors.age && <span className="field-error-msg">{errors.age}</span>}
-                        </label>
-                        <input
-                          type="text"
-                          inputMode="numeric"
-                          pattern="[0-9]*"
-                          maxLength={3}
-                          placeholder="e.g. 28"
-                          value={form.age}
-                          onKeyDown={e => {
-                            if (['Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) return;
-                            if (!/^\d$/.test(e.key)) {
-                              e.preventDefault();
-                            }
-                          }}
-                          onChange={e => {
-                            const cleaned = e.target.value.replace(/\D/g, '').slice(0, 3);
-                            setForm(prev => ({ ...prev, age: cleaned }));
-                            if (!cleaned) {
-                              setErrors(prev => ({ ...prev, age: 'Age required' }));
-                            } else {
-                              const n = parseInt(cleaned, 10);
-                              if (n < 1 || n > 120) {
-                                setErrors(prev => ({ ...prev, age: 'Must be 1 – 120' }));
-                              } else {
-                                setErrors(prev => ({ ...prev, age: '' }));
-                              }
-                            }
-                          }}
-                          className={errors.age ? 'input-invalid' : ''}
-                        />
-                      </div>
-                      <div className="form-group">
-                        <label>Gender *</label>
-                        <select value={form.gender} onChange={e => setForm({ ...form, gender: e.target.value })}>
-                          <option value="">Select Gender</option>
-                          <option>Male</option>
-                          <option>Female</option>
-                          <option>Other</option>
-                        </select>
-                        {errors.gender && <p className="error">{errors.gender}</p>}
-                      </div>
-                    </div>
-
-                    <div className="form-group">
-                      <label>Reason for Visit <span style={{ fontWeight: 400, color: 'var(--muted)' }}>(Optional)</span></label>
-                      <textarea
-                        rows={2}
-                        placeholder="Brief description of symptoms or consultation reason..."
-                        value={form.reason_for_visit}
-                        onChange={e => setForm({ ...form, reason_for_visit: e.target.value })}
-                      />
-                    </div>
-
-                    <div className="step2-action-row">
-                      <button
-                        type="button"
-                        className="btn-back-step"
-                        onClick={() => setStep(1)}
-                      >
-                        ← Back
-                      </button>
-                      <button
-                        type="submit"
-                        className="book-submit-btn"
-                        disabled={loading}
-                      >
-                        {loading ? 'Processing booking...' : (
-                          <>
-                            <Calendar size={17} />
-                            <span>Confirm Appointment · ₹{parseInt(doctor.consultation_fee, 10).toLocaleString('en-IN')}</span>
-                          </>
-                        )}
-                      </button>
-                    </div>
-                    <p className="book-submit-note">
-                      <ShieldCheck size={14} color="#0d9488" />
-                      Instant QR Entry Pass generated upon booking
-                    </p>
-                  </form>
-                </div>
-              </div>
-            </>
-          )}
-        </div>
-      </section>
     </div>
   );
 };
