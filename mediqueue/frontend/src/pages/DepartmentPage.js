@@ -2,15 +2,12 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
   ArrowLeft,
-  Search,
-  Filter,
   MapPin,
   Star,
   Monitor,
   User,
   Calendar,
-  Lightbulb,
-  X
+  Lightbulb
 } from 'lucide-react';
 import { getDoctorsByDept, getDepartments } from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -30,10 +27,8 @@ const DepartmentPage = () => {
   const { user } = useAuth();
 
   const [doctors, setDoctors] = useState([]);
-  const [departments, setDepartments] = useState([]);
   const [dept, setDept] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
   const [activeFilter, setActiveFilter] = useState('all');
 
   useEffect(() => {
@@ -42,7 +37,6 @@ const DepartmentPage = () => {
       .then(([dRes, depRes]) => {
         const rawDocs = dRes.data.doctors || [];
         const allDepts = depRes.data.departments || [];
-        setDepartments(allDepts);
         const currentDept = allDepts.find(dep => dep.id === parseInt(id, 10));
         setDept(currentDept);
 
@@ -50,7 +44,7 @@ const DepartmentPage = () => {
         const enriched = rawDocs.map(doc => {
           const rating = (4.7 + ((doc.id * 3) % 4) * 0.1).toFixed(1);
           const distance = ((doc.id * 1.7) % 6.2 + 1.2).toFixed(1) + ' km';
-          const isToday = true; // all doctors in OPD have slot capacity today
+          const isToday = true; // All active doctors have slots today
           const modes = (doc.department_name === 'Radiology' || doc.department_name === 'Emergency')
             ? ['In-Person']
             : (doc.id % 3 === 0 ? ['Online'] : ['Online', 'In-Person']);
@@ -81,30 +75,31 @@ const DepartmentPage = () => {
     navigate(`/book/${docId}`);
   };
 
-  // Filter & sort logic
+  // Filter logic: strict filtering per user requirement
   const filteredDoctors = useMemo(() => {
     let list = [...doctors];
-
-    if (search.trim()) {
-      const q = search.toLowerCase().trim();
-      list = list.filter(d =>
-        `${d.first_name} ${d.last_name}`.toLowerCase().includes(q) ||
-        (d.specialization && d.specialization.toLowerCase().includes(q))
-      );
-    }
 
     if (activeFilter === 'today') {
       list = list.filter(d => d.available_today);
     } else if (activeFilter === 'lowest_fee') {
-      list.sort((a, b) => parseFloat(a.consultation_fee) - parseFloat(b.consultation_fee));
+      if (list.length > 0) {
+        const minFee = Math.min(...list.map(d => parseFloat(d.consultation_fee) || 0));
+        list = list.filter(d => (parseFloat(d.consultation_fee) || 0) === minFee);
+      }
     } else if (activeFilter === 'most_experienced') {
-      list.sort((a, b) => (b.years_of_experience || 0) - (a.years_of_experience || 0));
+      if (list.length > 0) {
+        const maxExp = Math.max(...list.map(d => d.years_of_experience || 0));
+        list = list.filter(d => (d.years_of_experience || 0) === maxExp);
+      }
     } else if (activeFilter === 'top_rated') {
-      list.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+      if (list.length > 0) {
+        const maxRating = Math.max(...list.map(d => parseFloat(d.rating) || 0));
+        list = list.filter(d => (parseFloat(d.rating) || 0) === maxRating);
+      }
     }
 
     return list;
-  }, [doctors, search, activeFilter]);
+  }, [doctors, activeFilter]);
 
   return (
     <div className="dept-page">
@@ -125,7 +120,7 @@ const DepartmentPage = () => {
       </div>
 
       <div className="container dept-content-container">
-        {/* ── Desktop Header Matching Screenshot ───────────────── */}
+        {/* ── Desktop Clean Header (No Search, No Department List) ── */}
         <header className="fd-header dept-top-header">
           <div className="fd-header-left">
             <div className="dept-breadcrumb">
@@ -135,59 +130,17 @@ const DepartmentPage = () => {
             </div>
             <h1 className="fd-title">Find Your {dept?.name || ''} Doctor</h1>
             <p className="fd-subtitle">
-              {dept?.description || `Search verified ${dept?.name || ''} specialists—we'll help you find the right care`}
+              {dept?.description || `Verified ${dept?.name || ''} specialists at City General Hospital ready for consultation`}
             </p>
           </div>
 
           <div className="fd-header-right">
-            <div className="fd-search-wrap">
-              <Search size={17} className="fd-search-icon" />
-              <input
-                type="text"
-                placeholder={`Search ${dept?.name || 'doctor'}...`}
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                className="fd-search-input"
-              />
-              {search && (
-                <button
-                  type="button"
-                  className="fd-search-clear"
-                  onClick={() => setSearch('')}
-                  aria-label="Clear search"
-                >
-                  <X size={14} />
-                </button>
-              )}
-            </div>
-
-            <button
-              type="button"
-              className="fd-filter-btn"
-              onClick={() => navigate('/find-hospital')}
-              title="View all hospital departments"
-            >
-              <Filter size={15} />
-              <span>All Departments</span>
-            </button>
+            <Link to="/find-hospital" className="dept-back-btn-pill">
+              <ArrowLeft size={15} />
+              <span>Back to All Departments</span>
+            </Link>
           </div>
         </header>
-
-        {/* ── Department Switcher Pills Carousel ───────────────── */}
-        <div className="fd-departments-bar">
-          <Link to="/find-hospital" className="fd-dept-chip">
-            ← All Departments
-          </Link>
-          {departments.map(d => (
-            <Link
-              key={d.id}
-              to={`/department/${d.id}`}
-              className={`fd-dept-chip ${String(d.id) === String(id) ? 'active' : ''}`}
-            >
-              {d.name}
-            </Link>
-          ))}
-        </div>
 
         {/* ── Quick Filter Pills Row (All, Available Today, Lowest Fee, etc.) ── */}
         <div className="fd-pills-row">
@@ -205,7 +158,7 @@ const DepartmentPage = () => {
           </div>
 
           <div className="fd-results-count">
-            Showing <strong>{filteredDoctors.length}</strong> doctor{filteredDoctors.length !== 1 ? 's' : ''} in {dept?.name || 'Department'}
+            Showing <strong>{filteredDoctors.length}</strong> {activeFilter === 'lowest_fee' ? 'lowest fee ' : ''}doctor{filteredDoctors.length !== 1 ? 's' : ''} in {dept?.name || 'Department'}
           </div>
         </div>
 
@@ -225,19 +178,16 @@ const DepartmentPage = () => {
           </div>
         ) : filteredDoctors.length === 0 ? (
           <div className="fd-empty-state">
-            <div className="fd-empty-icon-wrap">
-              <Search size={36} color="#0d9488" />
-            </div>
             <h3>No doctors found</h3>
             <p>
-              We couldn't find any specialist in {dept?.name || 'this department'} matching "{search}".
+              No specialist currently matches the selected filter in {dept?.name || 'this department'}.
             </p>
             <button
               type="button"
               className="fd-btn-reset"
-              onClick={() => setSearch('')}
+              onClick={() => setActiveFilter('all')}
             >
-              Clear Search
+              Show All Doctors
             </button>
           </div>
         ) : (
@@ -248,7 +198,10 @@ const DepartmentPage = () => {
               const exp = doc.years_of_experience || 15;
               const distance = doc.distance || '2.1 km';
               const isToday = doc.available_today;
-              const photoUrl = doc.profile_image_url || 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=400&auto=format&fit=crop&q=80';
+              const fallbackPhoto = (doc.gender === 'Female')
+                ? 'https://images.unsplash.com/photo-1594824813629-9e8c467a840e?w=400&auto=format&fit=crop&q=80'
+                : 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=400&auto=format&fit=crop&q=80';
+              const photoUrl = doc.profile_image_url || fallbackPhoto;
 
               return (
                 <div key={doc.id} className="fd-card">
@@ -261,9 +214,7 @@ const DepartmentPage = () => {
                       loading="lazy"
                       onError={(e) => {
                         e.target.onerror = null;
-                        e.target.src = (doc.gender === 'Female')
-                          ? 'https://images.unsplash.com/photo-1594824813629-9e8c467a840e?w=400&auto=format&fit=crop&q=80'
-                          : 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=400&auto=format&fit=crop&q=80';
+                        e.target.src = fallbackPhoto;
                       }}
                     />
                     <div className="fd-distance-badge">
@@ -319,7 +270,7 @@ const DepartmentPage = () => {
                       )}
                     </div>
 
-                    {/* Card Footer: Fee & Book Now Button */}
+                    {/* Card Footer: Fee & Green Book Now Button */}
                     <div className="fd-card-footer">
                       <div className="fd-fee-block">
                         <span className="fd-fee-label">Starting at</span>

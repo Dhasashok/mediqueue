@@ -78,7 +78,7 @@ const getDoctorsByDepartment = async (req, res) => {
   try {
     const { id } = req.params;
     const [doctors] = await db.query(
-      `SELECT d.id, d.first_name, d.last_name, d.specialization, d.years_of_experience,
+      `SELECT d.id, d.first_name, d.last_name, d.gender, d.specialization, d.years_of_experience,
        d.languages_known, d.consultation_fee, d.profile_image_url, dep.name as department_name
        FROM doctors d JOIN departments dep ON d.department_id = dep.id
        WHERE d.department_id = ? AND d.is_approved = TRUE`,
