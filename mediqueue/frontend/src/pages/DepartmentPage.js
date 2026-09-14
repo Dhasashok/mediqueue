@@ -243,7 +243,7 @@ const DepartmentPage = () => {
           <div className="fd-grid">
             {filteredDoctors.map(doc => {
               const fee = parseInt(doc.consultation_fee, 10);
-              const rating = doc.rating || '4.9';
+              const rating = parseFloat(doc.rating || 4.9).toFixed(1);
               const exp = doc.years_of_experience || 15;
               const distance = doc.distance || '2.1 km';
               const isToday = doc.available_today;
