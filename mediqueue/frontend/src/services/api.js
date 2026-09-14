@@ -32,8 +32,9 @@ export const forgotPassword = (data) => API.post('/auth/forgot-password', data);
 export const resetPassword = (data) => API.post('/auth/reset-password', data);
 export const getMe = () => API.get('/auth/me');
 
-// Departments
+// Departments & Doctors
 export const getDepartments = () => API.get('/departments');
+export const getPublicDoctors = (params) => API.get('/doctors', { params });
 export const getDoctorsByDept = (id) => API.get(`/departments/${id}/doctors`);
 export const getDoctorById = (id) => API.get(`/doctors/${id}`);
 export const getDoctorSlots = (id, date) => API.get(`/doctors/${id}/slots?date=${date}`);

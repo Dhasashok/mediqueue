@@ -2,7 +2,7 @@ const express = require('express');
 const router  = express.Router();
 
 const { registerPatient, registerDoctor, verifyOTP, resendOTP, login, logout, getMe, forgotPassword, resetPassword, updateDoctorProfile } = require('../controllers/authController');
-const { getDepartments, getDoctorsByDepartment, getDoctorById, getDoctorSlots } = require('../controllers/departmentController');
+const { getDepartments, getDoctorsByDepartment, getAllPublicDoctors, getDoctorById, getDoctorSlots } = require('../controllers/departmentController');
 const { bookAppointment, getMyAppointments, getDoctorAppointments, cancelAppointment } = require('../controllers/appointmentController');
 const { getQueue, getAllQueues, checkIn, completeAppointment, markInProgress, markNoShow, getMyQueuePosition, getDeptConsultationStats } = require('../controllers/queueController');
 const { getPendingDoctors, approveDoctor, getAllDoctors, getAnalytics, getTodayAppointments, getUpcomingAppointments, getAllAppointments, adminCancelAppointment, setDoctorLeave, removeDoctorLeave, getDoctorLeaves, setMyLeave, removeMyLeave, getMyLeaves } = require('../controllers/adminController');
@@ -50,6 +50,7 @@ router.get ('/auth/me',                authMiddleware,  getMe);
 // ── Departments & Doctors ─────────────────────────────────────
 router.get('/departments',                   getDepartments);
 router.get('/departments/:id/doctors',       getDoctorsByDepartment);
+router.get('/doctors',                       getAllPublicDoctors);
 router.get('/doctors/:id',                   getDoctorById);
 router.get('/doctors/:id/slots',             getDoctorSlots);
 
