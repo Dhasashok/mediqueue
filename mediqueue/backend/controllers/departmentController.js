@@ -301,7 +301,7 @@ const getAllPublicDoctors = async (req, res) => {
     const { department_id, search, filter } = req.query;
 
     let query = `
-      SELECT d.id, d.first_name, d.last_name, d.specialization, d.years_of_experience,
+      SELECT d.id, d.first_name, d.last_name, d.gender, d.specialization, d.years_of_experience,
              d.languages_known, d.consultation_fee, d.profile_image_url, d.department_id,
              dep.name as department_name
       FROM doctors d

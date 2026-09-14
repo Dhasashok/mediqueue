@@ -1,20 +1,23 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
   ArrowLeft,
+  Filter,
   MapPin,
   Star,
   Monitor,
   User,
   Calendar,
-  Lightbulb
+  Lightbulb,
+  X,
+  Check
 } from 'lucide-react';
 import { getDoctorsByDept, getDepartments } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import './DepartmentPage.css';
 
-const QUICK_FILTERS = [
-  { id: 'all', label: 'All' },
+const FILTER_OPTIONS = [
+  { id: 'all', label: 'All Doctors' },
   { id: 'today', label: 'Available Today' },
   { id: 'lowest_fee', label: 'Lowest Fee' },
   { id: 'most_experienced', label: 'Most Experienced' },
@@ -30,6 +33,8 @@ const DepartmentPage = () => {
   const [dept, setDept] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState('all');
+  const [filterMenuOpen, setFilterMenuOpen] = useState(false);
+  const filterRef = useRef(null);
 
   useEffect(() => {
     setLoading(true);
@@ -44,7 +49,7 @@ const DepartmentPage = () => {
         const enriched = rawDocs.map(doc => {
           const rating = (4.7 + ((doc.id * 3) % 4) * 0.1).toFixed(1);
           const distance = ((doc.id * 1.7) % 6.2 + 1.2).toFixed(1) + ' km';
-          const isToday = true; // All active doctors have slots today
+          const isToday = true;
           const modes = (doc.department_name === 'Radiology' || doc.department_name === 'Emergency')
             ? ['In-Person']
             : (doc.id % 3 === 0 ? ['Online'] : ['Online', 'In-Person']);
@@ -63,6 +68,17 @@ const DepartmentPage = () => {
       .finally(() => setLoading(false));
   }, [id]);
 
+  // Close filter menu when clicking outside
+  useEffect(() => {
+    const handleOutsideClick = (e) => {
+      if (filterRef.current && !filterRef.current.contains(e.target)) {
+        setFilterMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, []);
+
   const handleBook = (docId) => {
     if (!user) {
       navigate('/login');
@@ -75,7 +91,7 @@ const DepartmentPage = () => {
     navigate(`/book/${docId}`);
   };
 
-  // Filter logic: strict filtering per user requirement
+  // Filter logic: strict filtering to match selected filter
   const filteredDoctors = useMemo(() => {
     let list = [...doctors];
 
@@ -101,6 +117,8 @@ const DepartmentPage = () => {
     return list;
   }, [doctors, activeFilter]);
 
+  const activeFilterLabel = FILTER_OPTIONS.find(f => f.id === activeFilter)?.label;
+
   return (
     <div className="dept-page">
       {/* ── Mobile Top Navigation ────────────────────────────── */}
@@ -120,49 +138,80 @@ const DepartmentPage = () => {
       </div>
 
       <div className="container dept-content-container">
-        {/* ── Desktop Clean Header (No Search, No Department List) ── */}
-        <header className="fd-header dept-top-header">
-          <div className="fd-header-left">
-            <div className="dept-breadcrumb">
-              <Link to="/">Home</Link> <span>›</span>
-              <Link to="/find-hospital">Book Appointment</Link> <span>›</span>
-              <span className="breadcrumb-current">{dept?.name || 'Specialists'}</span>
-            </div>
-            <h1 className="fd-title">Find Your {dept?.name || ''} Doctor</h1>
-            <p className="fd-subtitle">
-              {dept?.description || `Verified ${dept?.name || ''} specialists at City General Hospital ready for consultation`}
-            </p>
+        {/* ── Desktop Clean Header (Clean spacing, no redundant button) ── */}
+        <header className="dept-page-header-clean">
+          <div className="dept-breadcrumb">
+            <Link to="/">Home</Link>
+            <span className="breadcrumb-sep">›</span>
+            <Link to="/find-hospital">Book Appointment</Link>
+            <span className="breadcrumb-sep">›</span>
+            <span className="breadcrumb-current">{dept?.name || 'Specialists'}</span>
           </div>
 
-          <div className="fd-header-right">
-            <Link to="/find-hospital" className="dept-back-btn-pill">
-              <ArrowLeft size={15} />
-              <span>Back to All Departments</span>
-            </Link>
-          </div>
+          <h1 className="dept-main-title">Find Your {dept?.name || ''} Doctor</h1>
+          <p className="dept-main-subtitle">
+            {dept?.description || `Verified ${dept?.name || ''} specialists at City General Hospital ready for consultation`}
+          </p>
         </header>
 
-        {/* ── Quick Filter Pills Row (All, Available Today, Lowest Fee, etc.) ── */}
-        <div className="fd-pills-row">
-          <div className="fd-quick-pills">
-            {QUICK_FILTERS.map(qf => (
-              <button
-                key={qf.id}
-                type="button"
-                className={`fd-pill ${activeFilter === qf.id ? 'active' : ''}`}
-                onClick={() => setActiveFilter(qf.id)}
-              >
-                {qf.label}
-              </button>
-            ))}
+        {/* ── Filter Menu Action Bar ──────────────────────────── */}
+        <div className="dept-filter-bar">
+          <div className="dept-filter-controls" ref={filterRef}>
+            {/* Filter Toggle Menu Button */}
+            <button
+              type="button"
+              className={`dept-filter-menu-btn ${filterMenuOpen ? 'open' : ''} ${activeFilter !== 'all' ? 'has-active' : ''}`}
+              onClick={() => setFilterMenuOpen(prev => !prev)}
+              aria-label="Toggle filter menu"
+            >
+              <Filter size={15} />
+              <span>Filter Doctors</span>
+              <span className="filter-chevron">▾</span>
+            </button>
+
+            {/* Active Filter Pill with Clear option */}
+            {activeFilter !== 'all' && (
+              <span className="dept-active-chip">
+                <span>{activeFilterLabel}</span>
+                <button
+                  type="button"
+                  className="dept-chip-remove"
+                  onClick={() => setActiveFilter('all')}
+                  aria-label="Remove filter"
+                >
+                  <X size={12} />
+                </button>
+              </span>
+            )}
+
+            {/* Filter Dropdown Menu */}
+            {filterMenuOpen && (
+              <div className="dept-filter-dropdown">
+                <div className="dept-dropdown-title">Filter by criteria</div>
+                {FILTER_OPTIONS.map(opt => (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    className={`dept-dropdown-item ${activeFilter === opt.id ? 'active' : ''}`}
+                    onClick={() => {
+                      setActiveFilter(opt.id);
+                      setFilterMenuOpen(false);
+                    }}
+                  >
+                    <span>{opt.label}</span>
+                    {activeFilter === opt.id && <Check size={14} className="dropdown-check" />}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
-          <div className="fd-results-count">
-            Showing <strong>{filteredDoctors.length}</strong> {activeFilter === 'lowest_fee' ? 'lowest fee ' : ''}doctor{filteredDoctors.length !== 1 ? 's' : ''} in {dept?.name || 'Department'}
+          <div className="dept-count-text">
+            Showing <strong>{filteredDoctors.length}</strong> {activeFilter === 'lowest_fee' ? 'lowest fee ' : ''}doctor{filteredDoctors.length !== 1 ? 's' : ''}
           </div>
         </div>
 
-        {/* ── Doctor Cards Grid (4 Columns Matching Screenshot) ─ */}
+        {/* ── Doctor Cards Grid (4 Columns) ───────────────────── */}
         {loading ? (
           <div className="fd-grid">
             {[1, 2, 3, 4].map(n => (
@@ -199,7 +248,7 @@ const DepartmentPage = () => {
               const distance = doc.distance || '2.1 km';
               const isToday = doc.available_today;
               const fallbackPhoto = (doc.gender === 'Female')
-                ? 'https://images.unsplash.com/photo-1594824813629-9e8c467a840e?w=400&auto=format&fit=crop&q=80'
+                ? 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=400&auto=format&fit=crop&q=80'
                 : 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=400&auto=format&fit=crop&q=80';
               const photoUrl = doc.profile_image_url || fallbackPhoto;
 

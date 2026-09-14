@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════════════════════
-   DEPARTMENT DOCTOR DIRECTORY — Screenshot-Matching Modern Layout
+   DEPARTMENT DOCTOR DIRECTORY — Clean Modern Layout
    ══════════════════════════════════════════════════════════════ */
 
 .dept-page {
@@ -11,17 +11,24 @@
 }
 
 .dept-content-container {
-  padding-top: 28px;
+  padding-top: 24px;
+  max-width: 1240px;
+  margin: 0 auto;
+  box-sizing: border-box;
 }
 
-/* ── Breadcrumb Navigation ──────────────────────────────────── */
+/* ── Clean Header (Spacious Typography) ──────────────────────── */
+.dept-page-header-clean {
+  margin-bottom: 24px;
+}
+
 .dept-breadcrumb {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.78rem;
+  gap: 8px;
+  font-size: 0.82rem;
   color: #64748b;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 }
 
 .dept-breadcrumb a {
@@ -36,230 +43,194 @@
   color: #0f766e;
 }
 
+.breadcrumb-sep {
+  color: #94a3b8;
+}
+
 .dept-breadcrumb .breadcrumb-current {
   color: #1e293b;
   font-weight: 700;
 }
 
-/* ── Top Header Section (Matching Reference Screenshot) ─────── */
-.fd-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 24px;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-}
-
-.fd-header-left {
-  flex: 1;
-  min-width: 280px;
-}
-
-.fd-title {
+.dept-main-title {
   font-size: 1.85rem;
   font-weight: 800;
   color: #0f172a;
-  margin: 0 0 6px 0;
+  margin: 0 0 8px 0;
   letter-spacing: -0.4px;
-  line-height: 1.2;
+  line-height: 1.25;
   font-family: 'DM Sans', sans-serif;
 }
 
-.fd-subtitle {
+.dept-main-subtitle {
   font-size: 0.94rem;
   color: #64748b;
   margin: 0;
   font-weight: 500;
-  max-width: 540px;
-  line-height: 1.45;
+  max-width: 600px;
+  line-height: 1.5;
 }
 
-.fd-header-right {
+/* ── Filter Menu Action Bar ──────────────────────────────────── */
+.dept-filter-bar {
   display: flex;
   align-items: center;
-  gap: 12px;
-  flex-shrink: 0;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  gap: 16px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 16px;
 }
 
-/* Search input with pill container */
-.fd-search-wrap {
+.dept-filter-controls {
+  position: relative;
   display: flex;
   align-items: center;
-  background: white;
-  border: 1.5px solid #cbd5e1;
-  border-radius: 999px;
-  padding: 8px 16px;
-  width: 320px;
-  max-width: 100%;
-  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.03);
-  transition: all 0.2s ease;
-  box-sizing: border-box;
+  gap: 10px;
 }
 
-.fd-search-wrap:focus-within {
-  border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
-}
-
-.fd-search-icon {
-  color: #64748b;
-  flex-shrink: 0;
-}
-
-.fd-search-input {
-  border: none;
-  outline: none;
-  width: 100%;
-  font-size: 0.88rem;
-  font-family: inherit;
-  color: #0f172a;
-  background: transparent;
-  margin-left: 8px;
-}
-
-.fd-search-input::placeholder {
-  color: #94a3b8;
-}
-
-.fd-search-clear {
-  background: #f1f5f9;
-  border: none;
-  border-radius: 50%;
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #64748b;
-  cursor: pointer;
-  padding: 0;
-  flex-shrink: 0;
-  transition: all 0.2s;
-}
-
-.fd-search-clear:hover {
-  background: #e2e8f0;
-  color: #0f172a;
-}
-
-/* Filter button */
-.fd-filter-btn {
+/* Filter Menu Button */
+.dept-filter-menu-btn {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  gap: 8px;
   background: white;
   border: 1.5px solid #cbd5e1;
   border-radius: 999px;
   padding: 8px 18px;
-  font-size: 0.86rem;
+  font-size: 0.84rem;
   font-weight: 700;
   color: #334155;
   cursor: pointer;
   transition: all 0.2s ease;
   box-shadow: 0 2px 6px rgba(15, 23, 42, 0.03);
-  text-decoration: none;
 }
 
-.fd-filter-btn:hover {
-  border-color: #0f172a;
-  color: #0f172a;
-  background: #f8fafc;
-}
-
-/* ── Department Switcher Carousel (Pills) ───────────────────── */
-.fd-departments-bar {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  padding-bottom: 6px;
-  margin-bottom: 14px;
-  scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
-}
-
-.fd-departments-bar::-webkit-scrollbar {
-  display: none;
-}
-
-.fd-dept-chip {
-  padding: 6px 14px;
-  border-radius: 999px;
-  background: white;
-  border: 1.5px solid #e2e8f0;
-  font-size: 0.80rem;
-  font-weight: 700;
-  color: #475569;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.2s ease;
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-}
-
-.fd-dept-chip:hover {
+.dept-filter-menu-btn:hover,
+.dept-filter-menu-btn.open {
   border-color: #0d9488;
   color: #0d9488;
   background: #f0fdfa;
 }
 
-.fd-dept-chip.active {
-  background: #0d9488;
-  color: white;
-  border-color: #0d9488;
-  box-shadow: 0 2px 8px rgba(13, 148, 136, 0.25);
-}
-
-/* ── Quick Pills Row (All, Available Today, Lowest Fee, etc.) ── */
-.fd-pills-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.fd-quick-pills {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.fd-pill {
-  padding: 6px 16px;
-  border-radius: 999px;
-  background: white;
-  border: 1.5px solid #e2e8f0;
-  font-size: 0.80rem;
-  font-weight: 600;
-  color: #475569;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.fd-pill:hover {
-  border-color: #94a3b8;
-  color: #0f172a;
-}
-
-/* Active pill is a dark capsule as seen in the reference screenshot */
-.fd-pill.active {
+.dept-filter-menu-btn.has-active {
   background: #1e293b;
   color: white;
   border-color: #1e293b;
-  box-shadow: 0 2px 8px rgba(30, 41, 59, 0.2);
 }
 
-.fd-results-count {
-  font-size: 0.82rem;
+.filter-chevron {
+  font-size: 0.75rem;
+  transition: transform 0.2s;
+}
+
+.dept-filter-menu-btn.open .filter-chevron {
+  transform: rotate(180deg);
+}
+
+/* Active Filter Pill with remove button */
+.dept-active-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #065f46;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 0.80rem;
+  font-weight: 700;
+}
+
+.dept-chip-remove {
+  background: rgba(0, 0, 0, 0.08);
+  border: none;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: inherit;
+  padding: 0;
+  transition: background 0.15s;
+}
+
+.dept-chip-remove:hover {
+  background: rgba(0, 0, 0, 0.18);
+}
+
+/* Filter Dropdown Menu */
+.dept-filter-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  background: white;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 8px;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.12);
+  z-index: 50;
+  min-width: 220px;
+  animation: dropdown-fade 0.18s ease-out;
+}
+
+@keyframes dropdown-fade {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.dept-dropdown-title {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #94a3b8;
+  font-weight: 800;
+  padding: 6px 12px;
+}
+
+.dept-dropdown-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 12px;
+  border: none;
+  background: none;
+  border-radius: 10px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: left;
+}
+
+.dept-dropdown-item:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.dept-dropdown-item.active {
+  background: #f0fdfa;
+  color: #0d9488;
+  font-weight: 700;
+}
+
+.dropdown-check {
+  color: #0d9488;
+}
+
+.dept-count-text {
+  font-size: 0.85rem;
   color: #64748b;
 }
 
-.fd-results-count strong {
+.dept-count-text strong {
   color: #0f172a;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 /* ── 4-Column Responsive Doctor Cards Grid ─────────────────── */
@@ -337,9 +308,9 @@
   color: #0d9488;
 }
 
-/* Card Content Body */
+/* Card Content Body with clean spacing */
 .fd-card-body {
-  padding: 16px;
+  padding: 16px 18px 18px;
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -351,7 +322,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  margin-bottom: 3px;
+  margin-bottom: 4px;
 }
 
 .fd-doc-name {
@@ -465,7 +436,7 @@
   border-radius: 6px;
 }
 
-/* Card Footer: Fee & Book Now */
+/* Card Footer: Fee & Green Book Now Button */
 .fd-card-footer {
   display: flex;
   align-items: center;
@@ -493,7 +464,7 @@
   color: #0f172a;
 }
 
-/* Green Primary Book Now Button */
+/* Vibrant Emerald Green Primary Book Now Button */
 .fd-book-btn {
   background: #10b981;
   color: white;
@@ -514,29 +485,6 @@
   background: #059669;
   transform: translateY(-1px);
   box-shadow: 0 6px 16px rgba(16, 185, 129, 0.38);
-}
-
-/* Back to Departments Pill */
-.dept-back-btn-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  background: white;
-  border: 1.5px solid #cbd5e1;
-  border-radius: 999px;
-  padding: 8px 18px;
-  font-size: 0.84rem;
-  font-weight: 700;
-  color: #334155;
-  text-decoration: none;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.03);
-}
-
-.dept-back-btn-pill:hover {
-  border-color: #0d9488;
-  color: #0d9488;
-  background: #f0fdfa;
 }
 
 /* ── Mobile Top Navigation ──────────────────────────────────── */
@@ -616,18 +564,6 @@
   margin: 20px 0;
 }
 
-.fd-empty-icon-wrap {
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  background: #f0fdfa;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 16px;
-  border: 1px solid #ccfbf1;
-}
-
 .fd-empty-state h3 {
   font-size: 1.25rem;
   font-weight: 800;
@@ -696,17 +632,6 @@
 }
 
 @media (max-width: 860px) {
-  .fd-header {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  .fd-header-right {
-    width: 100%;
-  }
-  .fd-search-wrap {
-    flex: 1;
-    width: auto;
-  }
   .fd-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 16px;
@@ -717,8 +642,11 @@
   .dept-mobile-topbar {
     display: block;
   }
+  .dept-breadcrumb {
+    display: none; /* Mobile top bar already has back arrow and title */
+  }
   .dept-content-container {
-    padding-top: 14px;
+    padding-top: 16px;
   }
 }
 
@@ -726,7 +654,7 @@
   .dept-page {
     padding-bottom: 40px;
   }
-  .fd-title {
+  .dept-main-title {
     font-size: 1.45rem;
   }
   .fd-grid {
