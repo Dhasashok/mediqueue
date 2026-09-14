@@ -324,6 +324,7 @@ const sendAppointmentConfirmation = async (email, name, appointment) => {
     const patBefore = appointment.patients_before != null ? parseInt(appointment.patients_before, 10) : 0;
     const slotStartH = appointment.time_slot ? parseInt(appointment.time_slot.split(':')[0], 10) : 8;
     const slotStartM = (appointment.time_slot && appointment.time_slot.split(':')[1]) ? parseInt(appointment.time_slot.split(':')[1], 10) : 0;
+    const slotStart  = slotStartH * 60 + slotStartM;
     const consultStart = slotStart + patBefore * distMins;
     const consultEnd   = consultStart + distMins;
 

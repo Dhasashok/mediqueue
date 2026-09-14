@@ -87,44 +87,44 @@
 .book-page-header {
   background: linear-gradient(135deg, #091325 0%, #0f2240 60%, #112d55 100%);
   color: white;
-  padding: 22px 0 24px;
+  padding: 16px 0 18px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 .book-page-header h1 {
-  font-size: 1.6rem;
+  font-size: 1.5rem;
   font-weight: 800;
-  margin: 6px 0 4px;
+  margin: 4px 0 2px;
   letter-spacing: -0.3px;
 }
 .book-page-header p {
   color: #94a3b8;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   margin: 0;
 }
 
 /* ── Stepper (Interactive 2-Step Flow) ─────────────────── */
 .book-stepper-wrap {
-  padding-top: 14px;
-  margin-bottom: 4px;
+  padding-top: 10px;
+  margin-bottom: 2px;
+  display: flex;
+  justify-content: center;
 }
 .book-stepper {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  max-width: 460px;
-  margin: 0 auto;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  padding: 6px 20px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
   gap: 12px;
 }
 .step-node {
   display: flex;
   align-items: center;
   gap: 8px;
-  opacity: 0.55;
-  transition: all 0.2s;
-  user-select: none;
-}
-.step-node.active, .step-node.completed {
-  opacity: 1;
+  cursor: default;
 }
 .step-circle {
   width: 28px;
@@ -154,11 +154,10 @@
   color: #334155;
 }
 .step-line-bar {
-  flex: 1;
+  width: 44px;
   height: 2px;
   background: #e2e8f0;
   border-radius: 999px;
-  max-width: 60px;
   transition: background 0.3s;
 }
 .step-line-bar.filled {
@@ -652,27 +651,31 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 10px;
 }
 .bsc-lbl {
-  font-size: 0.74rem;
+  font-size: 0.76rem;
   color: #64748b;
   font-weight: 600;
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  white-space: nowrap;
 }
 .bsc-val {
-  font-size: 0.86rem;
+  font-size: 0.88rem;
   font-weight: 700;
   color: #0f172a;
+  white-space: nowrap;
 }
 .bsc-slot-highlight {
   color: #0f766e;
-  font-size: 0.92rem;
+  font-size: 0.90rem;
   font-weight: 800;
   background: #ccfbf1;
-  padding: 2px 8px;
+  padding: 3px 10px;
   border-radius: 6px;
+  white-space: nowrap;
 }
 .bsc-fee-item {
   border-top: 1px solid #e2e8f0;
@@ -706,7 +709,22 @@
   background: #f0fdfa;
 }
 .bsc-perks {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   margin-top: 14px;
+}
+.bsc-perks .bd-perk {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f0fdfa;
+  border: 1px solid #ccfbf1;
+  color: #0f766e;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 8px 12px;
+  border-radius: 8px;
 }
 
 /* ── Step 2 Right: Patient Form Header & Actions ───────── */

@@ -582,7 +582,7 @@ const BookAppointment = () => {
                   <div className="bsc-ticket">
                     <div className="bsc-ticket-item">
                       <span className="bsc-lbl"><Calendar size={13} /> Appointment Date</span>
-                      <strong className="bsc-val">{selectedDate}</strong>
+                      <strong className="bsc-val">{displayDate(selectedDate)}</strong>
                     </div>
                     <div className="bsc-ticket-item">
                       <span className="bsc-lbl"><Clock size={13} /> Time Slot Window</span>
