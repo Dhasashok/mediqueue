@@ -248,6 +248,23 @@ const demoDoctors = [
     profile_image_url: 'https://images.unsplash.com/photo-1594824813629-9e8c467a840e?w=400&auto=format&fit=crop&q=80',
   },
 
+  // Radiology (dept 11)
+  {
+    first_name: 'Meenakshi',
+    last_name: 'Sundaram',
+    email: 'meenakshi.sundaram@hospital.com',
+    phone: '9876543217',
+    date_of_birth: '1984-09-17',
+    gender: 'Female',
+    specialization: 'Consultant Radiologist',
+    department_id: 11,
+    years_of_experience: 13,
+    medical_license_no: 'MCI-RAD-3391',
+    languages_known: 'English, Hindi, Tamil',
+    consultation_fee: 500.00,
+    profile_image_url: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=400&auto=format&fit=crop&q=80',
+  },
+
   // Emergency (dept 12)
   {
     first_name: 'Arjun',

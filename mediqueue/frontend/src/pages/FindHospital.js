@@ -1,329 +1,186 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Search,
-  Filter,
   MapPin,
-  Star,
-  Monitor,
-  User,
-  Calendar,
-  Lightbulb,
-  X
+  Phone,
+  Clock,
+  Zap
 } from 'lucide-react';
-import { getDepartments, getPublicDoctors } from '../services/api';
-import { useAuth } from '../context/AuthContext';
+import { getDepartments } from '../services/api';
 import './FindHospital.css';
 
-const QUICK_FILTERS = [
-  { id: 'all', label: 'All' },
-  { id: 'today', label: 'Available Today' },
-  { id: 'lowest_fee', label: 'Lowest Fee' },
-  { id: 'most_experienced', label: 'Most Experienced' },
-  { id: 'top_rated', label: 'Top Rated' }
-];
+const DEPT_ICONS = {
+  'Dentistry':        { icon: '🦷', color: '#3b82f6', light: '#eff6ff', wait: '15m' },
+  'Cardiology':       { icon: '❤️', color: '#ef4444', light: '#fef2f2', wait: '20m' },
+  'Orthopedics':      { icon: '🦴', color: '#f59e0b', light: '#fffbeb', wait: '12m' },
+  'General Medicine': { icon: '🩺', color: '#10b981', light: '#ecfdf5', wait: '8m' },
+  'Neurology':        { icon: '🧠', color: '#8b5cf6', light: '#f5f3ff', wait: '25m' },
+  'Pediatrics':       { icon: '👶', color: '#f97316', light: '#fff7ed', wait: '10m' },
+  'Dermatology':      { icon: '💊', color: '#ec4899', light: '#fdf2f8', wait: '15m' },
+  'ENT':              { icon: '👂', color: '#06b6d4', light: '#ecfeff', wait: '10m' },
+  'Ophthalmology':    { icon: '👁️', color: '#6366f1', light: '#eef2ff', wait: '18m' },
+  'Gynecology':       { icon: '🌸', color: '#f43f5e', light: '#fff1f2', wait: '15m' },
+  'Radiology':        { icon: '🔬', color: '#0ea5e9', light: '#f0f9ff', wait: '5m' },
+  'Emergency':        { icon: '🚑', color: '#dc2626', light: '#fef2f2', wait: '< 2m' },
+};
 
 const FindHospital = () => {
-  const [searchParams] = useSearchParams();
-  const initialDept = searchParams.get('dept') || 'all';
-
   const [departments, setDepartments] = useState([]);
-  const [doctors, setDoctors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [selectedDept, setSelectedDept] = useState(initialDept);
-  const [activeFilter, setActiveFilter] = useState('all');
-  const [showFilterPanel, setShowFilterPanel] = useState(false);
-
   const navigate = useNavigate();
-  const { user } = useAuth();
 
-  // Load initial departments and doctors
   useEffect(() => {
-    fetchData();
+    getDepartments()
+      .then(r => setDepartments(r.data.departments || []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, []);
 
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      const [deptRes, docRes] = await Promise.all([
-        getDepartments(),
-        getPublicDoctors()
-      ]);
-      setDepartments(deptRes.data.departments || []);
-      setDoctors(docRes.data.doctors || []);
-    } catch (err) {
-      console.error('Failed to load doctors/departments:', err);
-    } finally {
-      setLoading(false);
+  useEffect(() => {
+    if (!loading && window.location.hash === '#bottom') {
+      const cards = document.querySelectorAll('.fh-dept-card');
+      if (cards.length > 0) {
+        cards[cards.length - 1].scrollIntoView({ behavior: 'instant', block: 'center' });
+      }
     }
-  };
+  }, [loading]);
 
-  // Filter & sort logic
-  const filteredDoctors = useMemo(() => {
-    let list = [...doctors];
-
-    // Department filter
-    if (selectedDept !== 'all') {
-      list = list.filter(d => d.department_id === parseInt(selectedDept, 10));
-    }
-
-    // Search query filter (name, specialization, department)
-    if (search.trim()) {
-      const q = search.toLowerCase().trim();
-      list = list.filter(d =>
-        `${d.first_name} ${d.last_name}`.toLowerCase().includes(q) ||
-        (d.specialization && d.specialization.toLowerCase().includes(q)) ||
-        (d.department_name && d.department_name.toLowerCase().includes(q))
-      );
-    }
-
-    // Quick category filters
-    if (activeFilter === 'today') {
-      list = list.filter(d => d.available_today);
-    } else if (activeFilter === 'lowest_fee') {
-      list.sort((a, b) => parseFloat(a.consultation_fee) - parseFloat(b.consultation_fee));
-    } else if (activeFilter === 'most_experienced') {
-      list.sort((a, b) => (b.years_of_experience || 0) - (a.years_of_experience || 0));
-    } else if (activeFilter === 'top_rated') {
-      list.sort((a, b) => (b.rating || 0) - (a.rating || 0));
-    }
-
-    return list;
-  }, [doctors, selectedDept, search, activeFilter]);
-
-  const handleBookNow = (docId) => {
-    if (!user) {
-      navigate('/login');
-      return;
-    }
-    if (user.role !== 'patient') {
-      alert('Only patients can book appointments.');
-      return;
-    }
-    navigate(`/book/${docId}`);
-  };
+  const filtered = departments.filter(d => {
+    return d.name.toLowerCase().includes(search.toLowerCase()) ||
+      (d.description && d.description.toLowerCase().includes(search.toLowerCase()));
+  });
 
   return (
-    <div className="find-doctor-page">
-      <div className="container">
-        {/* ── Top Header Section ─────────────────────────────── */}
-        <header className="fd-header">
-          <div className="fd-header-left">
-            <h1 className="fd-title">Find Your Doctor</h1>
-            <p className="fd-subtitle">
-              Search by name, specialty, or location—we'll help you find the right care
-            </p>
+    <div className="fh-page">
+
+      {/* ── Compact Professional Hospital Header ─────────────────────────────── */}
+      <section className="fh-hero">
+        <div className="fh-hero-bg"></div>
+        <div className="container fh-hero-inner">
+          <div className="breadcrumb">
+            <a href="/">Home</a>
+            <span>›</span>
+            <span>Book Appointment</span>
           </div>
 
-          <div className="fd-header-right">
-            <div className="fd-search-wrap">
-              <Search size={17} className="fd-search-icon" />
-              <input
-                type="text"
-                placeholder="Try 'cardiologist' or 'Dr. Smith'..."
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                className="fd-search-input"
-              />
-              {search && (
-                <button
-                  type="button"
-                  className="fd-search-clear"
-                  onClick={() => setSearch('')}
-                  aria-label="Clear search"
-                >
-                  <X size={14} />
-                </button>
-              )}
-            </div>
-
-            <button
-              type="button"
-              className={`fd-filter-btn ${showFilterPanel ? 'active' : ''}`}
-              onClick={() => setShowFilterPanel(prev => !prev)}
-            >
-              <Filter size={15} />
-              <span>Filter</span>
-            </button>
-          </div>
-        </header>
-
-        {/* ── Department Selector Chips (Dynamic Department Filtering) ── */}
-        <div className="fd-departments-bar">
-          <button
-            type="button"
-            className={`fd-dept-chip ${selectedDept === 'all' ? 'active' : ''}`}
-            onClick={() => setSelectedDept('all')}
-          >
-            All Departments
-          </button>
-          {departments.map(dept => (
-            <button
-              key={dept.id}
-              type="button"
-              className={`fd-dept-chip ${selectedDept === String(dept.id) ? 'active' : ''}`}
-              onClick={() => setSelectedDept(String(dept.id))}
-            >
-              {dept.name}
-            </button>
-          ))}
-        </div>
-
-        {/* ── Quick Filter Pills Row (All, Available Today, Lowest Fee, etc.) ── */}
-        <div className="fd-pills-row">
-          <div className="fd-quick-pills">
-            {QUICK_FILTERS.map(qf => (
-              <button
-                key={qf.id}
-                type="button"
-                className={`fd-pill ${activeFilter === qf.id ? 'active' : ''}`}
-                onClick={() => setActiveFilter(qf.id)}
-              >
-                {qf.label}
-              </button>
-            ))}
-          </div>
-
-          <div className="fd-results-count">
-            Showing <strong>{filteredDoctors.length}</strong> doctor{filteredDoctors.length !== 1 ? 's' : ''}
-          </div>
-        </div>
-
-        {/* ── Doctor Cards Grid (4 Columns) ────────────────────── */}
-        {loading ? (
-          <div className="fd-grid">
-            {[1, 2, 3, 4, 5, 6, 7, 8].map(n => (
-              <div key={n} className="fd-card fd-skeleton-card">
-                <div className="fd-skel-photo"></div>
-                <div className="fd-card-body">
-                  <div className="fd-skel-line medium"></div>
-                  <div className="fd-skel-line short"></div>
-                  <div className="fd-skel-line full"></div>
-                </div>
+          <div className="fh-hero-compact">
+            <div className="fh-hero-main">
+              <div className="fh-title-row">
+                <h1 className="fh-title">City General Hospital</h1>
+                <span className="fh-live-badge">
+                  <span className="fh-live-dot"></span> Online Booking Active
+                </span>
               </div>
-            ))}
-          </div>
-        ) : filteredDoctors.length === 0 ? (
-          <div className="fd-empty-state">
-            <div className="fd-empty-icon-wrap">
-              <Search size={36} color="#0d9488" />
+              <p className="fh-subtitle">Pune, Maharashtra · NABH Accredited</p>
             </div>
-            <h3>No doctors found</h3>
-            <p>
-              We couldn't find any specialist matching your criteria. Try adjusting your search or clearing department filters.
-            </p>
-            <button
-              type="button"
-              className="fd-btn-reset"
-              onClick={() => {
-                setSearch('');
-                setSelectedDept('all');
-                setActiveFilter('all');
-              }}
-            >
-              Reset All Filters
-            </button>
+
+            <div className="fh-meta-pills">
+              <span className="fh-pill"><MapPin size={13} /> MG Road, Pune – 411001</span>
+              <span className="fh-pill"><Phone size={13} /> 020-1234-5678</span>
+              <span className="fh-pill"><Clock size={13} /> Mon–Sat 8AM–8PM</span>
+              <span className="fh-pill fh-pill-red"><Zap size={13} /> Emergency 24/7</span>
+            </div>
           </div>
-        ) : (
-          <div className="fd-grid">
-            {filteredDoctors.map(doc => {
-              const fee = parseInt(doc.consultation_fee, 10);
-              const rating = doc.rating || '4.9';
-              const exp = doc.years_of_experience || 15;
-              const distance = doc.distance || '2.1 km';
-              const isToday = doc.available_today;
-              const photoUrl = doc.profile_image_url || 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=400&auto=format&fit=crop&q=80';
+        </div>
+      </section>
 
-              return (
-                <div key={doc.id} className="fd-card">
-                  {/* Doctor Image Container with Distance Badge */}
-                  <div className="fd-card-img-wrap">
-                    <img
-                      src={photoUrl}
-                      alt={`Dr. ${doc.first_name} ${doc.last_name}`}
-                      className="fd-card-img"
-                      loading="lazy"
-                    />
-                    <div className="fd-distance-badge">
-                      <MapPin size={11} className="fd-pin-icon" />
-                      <span>{distance}</span>
-                    </div>
-                  </div>
+      {/* ── Search Bar ──────────────────── */}
+      <div className="fh-search-bar">
+        <div className="container fh-search-inner">
+          <div className="fh-search-left">
+            <h2 className="fh-search-title">Book Appointment</h2>
+            <p className="fh-search-sub">
+              City General Hospital, Pune · {filtered.length} department{filtered.length !== 1 ? 's' : ''} available
+            </p>
+          </div>
+          <div className="fh-search-box">
+            <Search size={16} className="fh-search-icon" color="#0d9488" />
+            <input
+              type="text"
+              placeholder="Search department..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
+            {search && (
+              <button 
+                onClick={() => setSearch('')}
+                className="fh-search-clear"
+                aria-label="Clear search"
+              >
+                ×
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
 
-                  {/* Doctor Card Content */}
-                  <div className="fd-card-body">
-                    {/* Name & Availability Pill */}
-                    <div className="fd-card-header-row">
-                      <h3 className="fd-doc-name" title={`Dr. ${doc.first_name} ${doc.last_name}`}>
-                        Dr. {doc.first_name} {doc.last_name}
-                      </h3>
-                      <span className={`fd-avail-badge ${isToday ? 'avail-today' : 'avail-future'}`}>
-                        <span className="fd-avail-dot"></span>
-                        {isToday ? 'Today' : (doc.availability_label || 'Tomorrow')}
-                      </span>
-                    </div>
+      {/* ── Department Grid ──────────────────────────── */}
+      <section className="fh-depts-section">
+        <div className="container">
+          {loading ? (
+            <div className="loading-screen"><div className="spinner"></div></div>
+          ) : filtered.length === 0 ? (
+            <div className="fh-empty-state">
+              <Search size={48} color="#94a3b8" />
+              <h3>No departments found</h3>
+              <p>We couldn't find any department matching "{search}". Try searching for another symptom or department.</p>
+              <button className="btn-primary" onClick={() => setSearch('')}>
+                Reset Search
+              </button>
+            </div>
+          ) : (
+            <div className="fh-dept-grid">
+              {filtered.map((d, idx) => {
+                const meta = DEPT_ICONS[d.name] || {
+                  icon: '🏥',
+                  color: '#0d9488',
+                  light: '#f0fdf4'
+                };
+                return (
+                  <div
+                    key={d.id}
+                    className="fh-dept-card"
+                    style={{ '--dept-color': meta.color, '--dept-light': meta.light, animationDelay: `${idx * 0.04}s` }}
+                    onClick={() => navigate(`/department/${d.id}`)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => e.key === 'Enter' && navigate(`/department/${d.id}`)}
+                  >
+                    {/* Top color strip */}
+                    <div className="fhdc-strip" style={{ background: meta.color }}></div>
 
-                    {/* Specialty / Department */}
-                    <div className="fd-specialty">
-                      {doc.specialization || doc.department_name}
-                    </div>
-
-                    {/* Experience & Rating Row */}
-                    <div className="fd-meta-row">
-                      <span className="fd-meta-item">
-                        <Lightbulb size={13} className="fd-bulb-icon" />
-                        <span>{exp} years experience</span>
-                      </span>
-                      <span className="fd-meta-sep">·</span>
-                      <span className="fd-rating-badge">
-                        <Star size={12} fill="#f59e0b" color="#f59e0b" />
-                        <strong>{rating}</strong>
-                      </span>
-                    </div>
-
-                    {/* Consultation Modes (Online / In-Person) */}
-                    <div className="fd-modes-row">
-                      {(doc.modes && doc.modes.includes('Online')) && (
-                        <span className="fd-mode-tag">
-                          <Monitor size={11} />
-                          <span>Online</span>
-                        </span>
-                      )}
-                      {(doc.modes && doc.modes.includes('In-Person')) && (
-                        <span className="fd-mode-tag">
-                          <User size={11} />
-                          <span>In-Person</span>
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Card Footer: Fee & Book Now Button */}
-                    <div className="fd-card-footer">
-                      <div className="fd-fee-block">
-                        <span className="fd-fee-label">Starting at</span>
-                        <div className="fd-fee-amount">
-                          ₹{fee.toLocaleString('en-IN')}
-                        </div>
+                    <div className="fhdc-main-row">
+                      {/* Icon */}
+                      <div className="fhdc-icon-wrap" style={{ background: meta.light, color: meta.color, borderColor: meta.color + '33' }}>
+                        {meta.icon}
                       </div>
 
-                      <button
-                        type="button"
-                        className="fd-book-btn"
-                        onClick={() => handleBookNow(doc.id)}
-                        aria-label={`Book appointment with Dr. ${doc.first_name} ${doc.last_name}`}
-                      >
-                        <Calendar size={14} />
-                        <span>Book Now</span>
-                      </button>
+                      {/* Info */}
+                      <div className="fhdc-info">
+                        <h3 className="fhdc-name">{d.name}</h3>
+                        <p className="fhdc-desc">{d.description}</p>
+                      </div>
+
+                      {/* Mobile action button */}
+                      <span className="fhdc-mobile-tap-btn">
+                        Book
+                      </span>
+                    </div>
+
+                    {/* Book button / footer */}
+                    <div className="fhdc-btn">
+                      <span>Book Appointment</span>
                     </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </section>
+
     </div>
   );
 };

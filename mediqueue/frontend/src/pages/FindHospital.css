@@ -1,605 +1,467 @@
-/* ══════════════════════════════════════════════════════════════
-   FIND YOUR DOCTOR — Redesigned Page (Matching Reference SS)
-   ══════════════════════════════════════════════════════════════ */
+/* ════════════════════════════════════════════════════════
+   FIND HOSPITAL PAGE — Modern Health App UI
+════════════════════════════════════════════════════════ */
 
-.find-doctor-page {
-  background: #f8fafc;
-  min-height: calc(100vh - 70px);
-  padding: 32px 0 64px;
-  width: 100%;
-  box-sizing: border-box;
+.fh-page { background: #f8fafc; min-height: 100vh; }
+
+/* ── Compact Professional Hospital Header (Desktop) ───── */
+.fh-hero {
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 65%, #0f766e 100%);
+  padding: 22px 0 24px; position: relative; overflow: hidden;
 }
-
-/* ── Top Header Section ─────────────────────────────────────── */
-.fd-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 24px;
-  margin-bottom: 22px;
-  flex-wrap: wrap;
+.fh-hero-bg {
+  position: absolute; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(circle at 85% 30%, rgba(13,148,136,0.18) 0%, transparent 45%),
+    radial-gradient(circle at 10% 80%, rgba(8,145,178,0.12) 0%, transparent 40%);
 }
+.fh-hero-inner { position: relative; z-index: 1; }
 
-.fd-header-left {
-  flex: 1;
-  min-width: 280px;
-}
-
-.fd-title {
-  font-size: 1.85rem;
-  font-weight: 800;
-  color: #0f172a;
-  margin: 0 0 6px 0;
-  letter-spacing: -0.4px;
-  line-height: 1.2;
-}
-
-.fd-subtitle {
-  font-size: 0.94rem;
-  color: #64748b;
-  margin: 0;
-  font-weight: 500;
-  max-width: 520px;
-  line-height: 1.45;
-}
-
-.fd-header-right {
+.fh-hero-inner .breadcrumb {
   display: flex;
   align-items: center;
-  gap: 12px;
-  flex-shrink: 0;
+  gap: 8px;
+  font-size: 0.78rem;
+  margin-bottom: 12px;
 }
-
-/* Search input with pill container */
-.fd-search-wrap {
-  display: flex;
-  align-items: center;
-  background: white;
-  border: 1.5px solid #cbd5e1;
-  border-radius: 999px;
-  padding: 8px 16px;
-  width: 320px;
-  max-width: 100%;
-  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.03);
-  transition: all 0.2s ease;
-  box-sizing: border-box;
-}
-
-.fd-search-wrap:focus-within {
-  border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
-}
-
-.fd-search-icon {
-  color: #64748b;
-  flex-shrink: 0;
-}
-
-.fd-search-input {
-  border: none;
-  outline: none;
-  width: 100%;
-  font-size: 0.88rem;
-  font-family: inherit;
-  color: #0f172a;
-  background: transparent;
-  margin-left: 8px;
-}
-
-.fd-search-input::placeholder {
+.fh-hero-inner .breadcrumb a {
   color: #94a3b8;
+  text-decoration: none;
+  transition: color 0.15s;
 }
-
-.fd-search-clear {
-  background: #f1f5f9;
-  border: none;
-  border-radius: 50%;
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #64748b;
-  cursor: pointer;
-  padding: 0;
-  flex-shrink: 0;
-  transition: all 0.2s;
+.fh-hero-inner .breadcrumb a:hover {
+  color: #5eead4;
 }
-
-.fd-search-clear:hover {
-  background: #e2e8f0;
-  color: #0f172a;
-}
-
-/* Filter button */
-.fd-filter-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  background: white;
-  border: 1.5px solid #cbd5e1;
-  border-radius: 999px;
-  padding: 8px 18px;
-  font-size: 0.86rem;
-  font-weight: 700;
-  color: #334155;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.03);
-}
-
-.fd-filter-btn:hover,
-.fd-filter-btn.active {
-  border-color: #0f172a;
-  color: #0f172a;
-  background: #f8fafc;
-}
-
-/* ── Department Bar (Pill Carousel) ─────────────────────────── */
-.fd-departments-bar {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  padding-bottom: 6px;
-  margin-bottom: 14px;
-  scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
-}
-
-.fd-departments-bar::-webkit-scrollbar {
-  display: none;
-}
-
-.fd-dept-chip {
-  padding: 6px 14px;
-  border-radius: 999px;
-  background: white;
-  border: 1.5px solid #e2e8f0;
-  font-size: 0.80rem;
-  font-weight: 700;
-  color: #475569;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.2s ease;
-}
-
-.fd-dept-chip:hover {
-  border-color: #0d9488;
-  color: #0d9488;
-  background: #f0fdfa;
-}
-
-.fd-dept-chip.active {
-  background: #0d9488;
-  color: white;
-  border-color: #0d9488;
-  box-shadow: 0 2px 8px rgba(13, 148, 136, 0.25);
-}
-
-/* ── Quick Pills Row (Matching Reference Screenshot) ───────── */
-.fd-pills-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.fd-quick-pills {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.fd-pill {
-  padding: 6px 16px;
-  border-radius: 999px;
-  background: white;
-  border: 1.5px solid #e2e8f0;
-  font-size: 0.80rem;
-  font-weight: 600;
-  color: #475569;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.fd-pill:hover {
-  border-color: #94a3b8;
-  color: #0f172a;
-}
-
-/* Active pill is a sleek dark capsule as seen in screenshot */
-.fd-pill.active {
-  background: #1e293b;
-  color: white;
-  border-color: #1e293b;
-  box-shadow: 0 2px 8px rgba(30, 41, 59, 0.2);
-}
-
-.fd-results-count {
-  font-size: 0.82rem;
-  color: #64748b;
-}
-
-.fd-results-count strong {
-  color: #0f172a;
-  font-weight: 700;
-}
-
-/* ── 4-Column Responsive Doctor Cards Grid ─────────────────── */
-.fd-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 20px;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-/* ── Doctor Card ────────────────────────────────────────────── */
-.fd-card {
-  background: white;
-  border-radius: 20px;
-  border: 1.5px solid #e2e8f0;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  transition: all 0.25s ease;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.02);
-}
-
-.fd-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
-  border-color: #cbd5e1;
-}
-
-/* Doctor Image Backdrop Container */
-.fd-card-img-wrap {
-  position: relative;
-  width: 100%;
-  height: 180px;
-  background: linear-gradient(180deg, #f8fafc 0%, #edf2f7 100%);
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  overflow: hidden;
-}
-
-.fd-card-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: top center;
-  transition: transform 0.3s ease;
-}
-
-.fd-card:hover .fd-card-img {
-  transform: scale(1.03);
-}
-
-/* Distance Pill Badge (Top Right of Image) */
-.fd-distance-badge {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(6px);
-  border: 1px solid rgba(255, 255, 255, 0.85);
-  border-radius: 999px;
-  padding: 3px 8px;
-  font-size: 0.70rem;
-  font-weight: 600;
-  color: #475569;
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
-  z-index: 2;
-}
-
-.fd-pin-icon {
-  color: #0d9488;
-}
-
-/* Card Content Body */
-.fd-card-body {
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-}
-
-/* Header Row: Name & Availability */
-.fd-card-header-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 3px;
-}
-
-.fd-doc-name {
-  font-size: 1.02rem;
-  font-weight: 800;
-  color: #0f172a;
-  margin: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  flex: 1;
-}
-
-/* Availability Pill */
-.fd-avail-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 2px 8px;
-  border-radius: 999px;
-  font-size: 0.68rem;
-  font-weight: 700;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.fd-avail-badge.avail-today {
-  background: #ecfdf5;
-  color: #059669;
-  border: 1px solid #a7f3d0;
-}
-
-.fd-avail-badge.avail-future {
-  background: #f1f5f9;
-  color: #64748b;
-  border: 1px solid #e2e8f0;
-}
-
-.fd-avail-dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: currentColor;
-}
-
-/* Specialty */
-.fd-specialty {
-  font-size: 0.80rem;
-  color: #64748b;
-  font-weight: 500;
-  margin-bottom: 8px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* Experience & Rating Row */
-.fd-meta-row {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.74rem;
-  color: #64748b;
-  font-weight: 500;
-  margin-bottom: 10px;
-}
-
-.fd-meta-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.fd-bulb-icon {
-  color: #64748b;
-}
-
-.fd-meta-sep {
+.fh-hero-inner .breadcrumb span {
   color: #cbd5e1;
 }
 
-.fd-rating-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  color: #0f172a;
-}
-
-.fd-rating-badge strong {
-  font-weight: 700;
-}
-
-/* Consultation Modes */
-.fd-modes-row {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 14px;
-}
-
-.fd-mode-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 0.70rem;
-  font-weight: 600;
-  color: #475569;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  padding: 2px 7px;
-  border-radius: 6px;
-}
-
-/* Card Footer: Fee & Book Now */
-.fd-card-footer {
+.fh-hero-compact {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-top: 12px;
-  border-top: 1px solid #f1f5f9;
-  margin-top: auto;
+  gap: 20px;
+  flex-wrap: wrap;
 }
-
-.fd-fee-block {
+.fh-hero-main {
+  flex: 1;
+  min-width: 280px;
+}
+.fh-title-row {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
 }
-
-.fd-fee-label {
-  font-size: 0.66rem;
-  color: #94a3b8;
-  font-weight: 600;
-  text-transform: capitalize;
-}
-
-.fd-fee-amount {
-  font-size: 1.10rem;
-  font-weight: 800;
-  color: #0f172a;
-}
-
-/* Blue Primary Book Now Button (Exact Match to Screenshot) */
-.fd-book-btn {
-  background: #2563eb;
+.fh-title {
   color: white;
-  border: none;
-  border-radius: 10px;
-  padding: 8px 14px;
-  font-size: 0.82rem;
-  font-weight: 700;
-  cursor: pointer;
+  font-size: clamp(1.4rem, 2.8vw, 1.85rem);
+  font-weight: 800;
+  margin: 0;
+  line-height: 1.2;
+}
+.fh-live-badge {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.22);
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border: 1px solid rgba(74, 222, 128, 0.25);
+}
+.fh-live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #22c55e;
+  animation: fh-pulse 1.8s ease-in-out infinite;
+}
+@keyframes fh-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.5); }
+  50% { box-shadow: 0 0 0 5px rgba(34, 197, 94, 0); }
 }
 
-.fd-book-btn:hover {
-  background: #1d4ed8;
-  transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.32);
+.fh-subtitle {
+  color: #94a3b8;
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-top: 4px;
+}
+.fh-meta-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.fh-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #cbd5e1;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.fh-pill-red {
+  background: rgba(239, 68, 68, 0.15);
+  color: #fca5a5;
+  border-color: rgba(239, 68, 68, 0.25);
 }
 
-/* ── Empty State ────────────────────────────────────────────── */
-.fd-empty-state {
-  text-align: center;
+/* ── Aligned Compact Search Bar (Desktop) ─────────────── */
+.fh-search-bar {
+  background: white;
+  border-bottom: 1px solid #e2e8f0;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+  position: sticky;
+  top: 52px;
+  z-index: 40;
+}
+.fh-search-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 14px 0;
+}
+.fh-search-left {
+  text-align: left;
+}
+.fh-search-title {
+  font-size: 1.22rem;
+  color: var(--navy);
+  margin: 0 0 2px;
+  font-weight: 800;
+  font-family: 'DM Sans', sans-serif;
+  letter-spacing: -0.3px;
+}
+.fh-search-sub {
+  font-size: 0.82rem;
+  color: var(--muted);
+  font-weight: 500;
+  margin: 0;
+}
+.fh-mobile-instruction {
+  display: none;
+}
+.fh-search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f8fafc;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 999px;
+  padding: 0 16px;
+  height: 42px;
+  width: 100%;
+  max-width: 360px;
+  transition: all 0.2s;
+  box-sizing: border-box;
+}
+.fh-search-box:focus-within {
+  border-color: var(--teal);
+  background: white;
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.12);
+}
+.fh-search-box input {
+  border: none;
+  outline: none;
+  background: none;
+  font-size: 0.88rem;
+  color: var(--navy);
+  width: 100%;
+  font-family: 'DM Sans', sans-serif;
+}
+.fh-search-box input::placeholder {
+  color: #94a3b8;
+}
+.fh-search-clear {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #94a3b8;
+  font-size: 1.2rem;
+  line-height: 1;
+  padding: 0 2px;
+}
+.fh-search-clear:hover {
+  color: var(--navy);
+}
+
+/* ── Department Grid ──────────────────────────────────── */
+.fh-depts-section { padding: 28px 0 80px; }
+.fh-dept-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+/* Dept Card */
+.fh-dept-card {
   background: white;
   border-radius: 20px;
-  border: 1.5px solid #e2e8f0;
-  padding: 48px 24px;
-  margin: 20px 0;
+  overflow: hidden;
+  border: 1.5px solid var(--border);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: fh-fade 0.4s ease both;
+  outline: none;
+}
+@keyframes fh-fade {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fh-dept-card:hover, .fh-dept-card:focus-visible {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.08);
+  border-color: var(--dept-color, var(--teal));
 }
 
-.fd-empty-icon-wrap {
+.fhdc-strip {
+  height: 4px;
+  width: 0;
+  transition: width 0.3s ease;
+}
+.fh-dept-card:hover .fhdc-strip {
+  width: 100%;
+}
+
+.fhdc-main-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+}
+
+/* Icon area */
+.fhdc-icon-wrap {
   width: 64px;
   height: 64px;
-  border-radius: 50%;
-  background: #f0fdfa;
+  border-radius: 18px;
+  margin: 24px auto 14px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 16px;
-  border: 1px solid #ccfbf1;
+  font-size: 1.6rem;
+  border: 1.5px solid;
+  transition: transform 0.25s;
+}
+.fh-dept-card:hover .fhdc-icon-wrap {
+  transform: scale(1.08) rotate(-4deg);
 }
 
-.fd-empty-state h3 {
-  font-size: 1.25rem;
+/* Info */
+.fhdc-info {
+  padding: 0 20px;
+  flex: 1;
+  text-align: center;
+  width: 100%;
+}
+.fhdc-name {
+  font-size: 1.08rem;
   font-weight: 800;
   color: #0f172a;
   margin-bottom: 6px;
 }
-
-.fd-empty-state p {
+.fhdc-desc {
+  font-size: 0.82rem;
   color: #64748b;
-  font-size: 0.88rem;
-  max-width: 440px;
-  margin: 0 auto 18px;
+  line-height: 1.5;
+  margin-bottom: 20px;
 }
 
-.fd-btn-reset {
-  background: #0f172a;
-  color: white;
-  border: none;
-  border-radius: 10px;
-  padding: 9px 18px;
+.fhdc-mobile-tap-btn {
+  display: none;
+}
+
+/* Book button without > */
+.fhdc-btn {
+  margin: 0 18px 18px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: var(--dept-light, #f0fdfa);
+  color: var(--dept-color, var(--teal));
+  border: 1.5px solid currentColor;
   font-size: 0.84rem;
   font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.22s ease;
+}
+.fh-dept-card:hover .fhdc-btn,
+.fh-dept-card:focus-visible .fhdc-btn {
+  background: var(--dept-color, var(--teal));
+  color: #ffffff;
+  border-color: var(--dept-color, var(--teal));
 }
 
-.fd-btn-reset:hover {
-  background: #334155;
+/* Empty state */
+.fh-empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  background: white;
+  border-radius: 20px;
+  border: 1px dashed #cbd5e1;
+  max-width: 480px;
+  margin: 0 auto;
+}
+.fh-empty-state h3 {
+  font-size: 1.25rem;
+  color: #0f172a;
+  margin: 16px 0 8px;
+}
+.fh-empty-state p {
+  color: #64748b;
+  font-size: 0.9rem;
+  margin-bottom: 24px;
 }
 
-/* ── Skeleton Loaders ───────────────────────────────────────── */
-.fd-skeleton-card {
-  height: 330px;
+/* ── Responsive ───────────────────────────────────────── */
+@media (max-width: 1100px) {
+  .fh-dept-grid { grid-template-columns: repeat(3, 1fr); }
 }
 
-.fd-skel-photo {
-  height: 180px;
-  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
-  background-size: 600px 100%;
-  animation: shimmer 1.4s infinite;
+@media (max-width: 800px) {
+  .fh-dept-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+  .fh-search-inner { flex-direction: column; align-items: stretch; gap: 12px; }
+  .fh-search-box { max-width: 100%; width: 100%; }
 }
 
-.fd-skel-line {
-  height: 14px;
-  margin: 8px 0;
-  border-radius: 4px;
-  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
-  background-size: 600px 100%;
-  animation: shimmer 1.4s infinite;
-}
-
-.fd-skel-line.short { width: 50%; }
-.fd-skel-line.medium { width: 75%; }
-.fd-skel-line.full { width: 100%; }
-
-@keyframes shimmer {
-  0% { background-position: -600px 0; }
-  100% { background-position: 600px 0; }
-}
-
-/* ── Responsive Breakpoints ─────────────────────────────────── */
-@media (max-width: 1200px) {
-  .fd-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+@media (max-width: 600px) {
+  /* Hide the heavy dark header on mobile */
+  .fh-hero {
+    display: none !important;
   }
-}
 
-@media (max-width: 860px) {
-  .fd-header {
+  /* Compact, static title and instruction bar on mobile */
+  .fh-search-bar {
+    position: static !important;
+    background: white;
+    border-bottom: 1px solid #e2e8f0;
+    box-shadow: none !important;
+    margin: 0;
+    padding: 0;
+  }
+  .fh-search-inner {
     flex-direction: column;
-    align-items: stretch;
-  }
-  .fd-header-right {
+    align-items: flex-start;
+    gap: 2px;
+    padding: 14px 16px !important;
+    box-sizing: border-box;
     width: 100%;
   }
-  .fd-search-wrap {
-    flex: 1;
-    width: auto;
+  .fh-search-left {
+    width: 100%;
+    text-align: left;
+    padding: 0;
+    margin: 0;
   }
-  .fd-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16px;
+  .fh-search-title {
+    font-size: 1.25rem !important;
+    font-weight: 800 !important;
+    color: #0f172a !important;
+    font-family: 'DM Sans', sans-serif !important;
+    margin: 0 0 2px !important;
+    text-align: left;
+    padding: 0;
   }
-}
+  .fh-search-sub {
+    font-size: 0.78rem !important;
+    color: #64748b !important;
+    font-weight: 500 !important;
+    margin: 0 !important;
+    text-align: left;
+    line-height: 1.35;
+    padding: 0;
+  }
 
-@media (max-width: 540px) {
-  .find-doctor-page {
-    padding: 20px 0 40px;
+  /* Remove search box on mobile completely */
+  .fh-search-box {
+    display: none !important;
   }
-  .fd-title {
-    font-size: 1.45rem;
+
+  /* Departments list */
+  .fh-depts-section {
+    padding: 14px 0 80px !important;
   }
-  .fd-grid {
+  .fh-dept-grid {
     grid-template-columns: 1fr;
-    gap: 14px;
+    gap: 10px;
   }
-  .fd-card-img-wrap {
-    height: 190px;
+
+  /* Modern Mobile Horizontal Touch Card layout */
+  .fh-dept-card {
+    border-radius: 16px;
+    padding: 14px 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  }
+  .fhdc-strip {
+    display: none;
+  }
+  .fhdc-main-row {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    text-align: left;
+    width: 100%;
+  }
+  .fhdc-icon-wrap {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    margin: 0;
+    font-size: 1.35rem;
+    flex-shrink: 0;
+  }
+  .fhdc-info {
+    padding: 0;
+    text-align: left;
+    flex: 1;
+    min-width: 0;
+  }
+  .fhdc-name {
+    font-size: 0.98rem;
+    margin-bottom: 2px;
+  }
+  .fhdc-desc {
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-bottom: 0;
+    font-size: 0.76rem;
+  }
+  /* Standardized Branded MediQueue Teal Button */
+  .fhdc-mobile-tap-btn {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    flex-shrink: 0;
+    background: #f0fdfa !important;
+    border: 1.5px solid #0d9488 !important;
+    color: #0f766e !important;
+    transition: all 0.18s ease;
+  }
+  .fhdc-mobile-tap-btn:active {
+    background: #0d9488 !important;
+    color: white !important;
+  }
+  .fhdc-btn {
+    display: none;
   }
 }

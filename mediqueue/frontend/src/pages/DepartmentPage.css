@@ -1,10 +1,17 @@
 /* ════════════════════════════════════════════════════════
-   DEPARTMENT PAGE — Modern Doctor Directory
-════════════════════════════════════════════════════════ */
+   DEPARTMENT PAGE — Modern Doctor Directory (Screenshot Matching)
+   ════════════════════════════════════════════════════════ */
+
+@import './FindHospital.css';
 
 .dept-page {
   background: #f8fafc;
-  min-height: 100vh;
+  min-height: calc(100vh - 70px);
+  padding-bottom: 60px;
+}
+
+.dept-content-container {
+  padding-top: 24px;
 }
 
 /* ── Mobile top bar with back navigation ─────────────── */
@@ -67,458 +74,34 @@
   flex-shrink: 0;
 }
 
-/* ── Desktop Page Header ──────────────────────────────── */
-.dept-page-header {
-  background: linear-gradient(135deg, #091325 0%, #0f2240 60%, #112d55 100%);
-  color: white;
-  padding: 28px 0 32px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-.dept-header-container {
+/* ── Breadcrumbs ──────────────────────────────────────── */
+.dept-breadcrumb {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 24px;
+  gap: 6px;
+  font-size: 0.76rem;
+  color: #64748b;
+  margin-bottom: 6px;
 }
-.dept-header-left {
-  max-width: 700px;
-}
-.dept-page-header .breadcrumb {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.82rem;
-  color: rgba(255, 255, 255, 0.6);
-  margin-bottom: 8px;
-}
-.dept-page-header .breadcrumb a {
-  color: rgba(255, 255, 255, 0.75);
+.dept-breadcrumb a {
+  color: #0d9488;
   text-decoration: none;
-  transition: color 0.2s;
-}
-.dept-page-header .breadcrumb a:hover {
-  color: #2dd4bf;
-}
-.dept-page-header h1 {
-  font-size: 1.95rem;
-  font-weight: 800;
-  margin: 0 0 6px;
-  color: #ffffff;
-  font-family: 'DM Sans', sans-serif;
-  letter-spacing: -0.02em;
-}
-.dept-page-header p {
-  font-size: 0.92rem;
-  color: rgba(255, 255, 255, 0.75);
-  margin: 0;
-  line-height: 1.45;
-}
-.dept-header-icon-badge {
-  width: 68px;
-  height: 68px;
-  border-radius: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.07) !important;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1.5px solid rgba(255, 255, 255, 0.16) !important;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
-  flex-shrink: 0;
-}
-.dept-header-emoji {
-  font-size: 2.1rem;
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
-}
-
-/* ── Section Header Row ───────────────────────────────── */
-.dept-main-section {
-  padding: 24px 0 60px;
-}
-.dept-sec-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 22px;
-  flex-wrap: wrap;
-  gap: 14px;
-}
-.dept-sec-title {
-  margin: 0;
-  font-size: 1.25rem;
-  font-weight: 800;
-  color: #0f172a;
-  font-family: 'DM Sans', sans-serif;
-}
-.dept-sec-sub {
-  font-size: 0.82rem;
-  color: #64748b;
-  font-weight: 500;
-}
-
-/* Search input */
-.dept-search-wrap {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: white;
-  border: 1.5px solid #cbd5e1;
-  border-radius: 999px;
-  padding: 7px 16px;
-  min-width: 240px;
-  transition: all 0.2s;
-}
-.dept-search-wrap:focus-within {
-  border-color: #0d9488;
-  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.12);
-}
-.dept-search-wrap .search-input {
-  border: none;
-  outline: none;
-  font-size: 0.85rem;
-  color: #0f172a;
-  width: 100%;
-  font-family: inherit;
-  padding: 0;
-}
-
-/* ── Doctor Card (Premium Modern Layout) ──────────────── */
-.doctors-list {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-}
-.doctor-card {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: white;
-  border-radius: 22px;
-  border: 1.5px solid #e2e8f0;
-  padding: 22px 28px;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
-  gap: 28px;
-}
-.doctor-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.07);
-  border-color: #cbd5e1;
-}
-
-/* Profile Section (Left) */
-.doc-profile-section {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  flex: 1;
-  min-width: 0;
-}
-.doc-avatar-wrap {
-  position: relative;
-  flex-shrink: 0;
-}
-.doc-photo {
-  width: 72px;
-  height: 72px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #0d9488 0%, #0284c7 100%);
-  color: white;
-  font-size: 1.4rem;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 6px 16px rgba(13, 148, 136, 0.24);
-  letter-spacing: 0.5px;
-}
-.doc-online-dot {
-  position: absolute;
-  bottom: 2px;
-  right: 2px;
-  width: 15px;
-  height: 15px;
-  border-radius: 50%;
-  background: #22c55e;
-  border: 2.5px solid white;
-  box-shadow: 0 2px 5px rgba(34, 197, 94, 0.4);
-}
-
-.doc-profile-info {
-  flex: 1;
-  min-width: 0;
-}
-.doc-name-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 5px;
-  flex-wrap: wrap;
-}
-.doc-name-row h3 {
-  margin: 0;
-  font-size: 1.22rem;
-  font-weight: 800;
-  color: #0f172a;
-  font-family: 'DM Sans', sans-serif;
-  letter-spacing: -0.01em;
-}
-.doc-verified-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  background: #f0fdfa;
-  border: 1px solid #ccfbf1;
-  color: #0f766e;
-  padding: 2px 8px;
-  border-radius: 999px;
-  font-size: 0.72rem;
-  font-weight: 700;
-}
-
-/* Tag Line */
-.doc-tag-line {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 6px;
-  flex-wrap: wrap;
-}
-.doc-exp-tag {
-  display: inline-flex;
-  align-items: center;
-  font-size: 0.8rem;
-  color: #475569;
   font-weight: 600;
 }
-
-/* Trust Row */
-.doc-trust-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.8rem;
-  color: #64748b;
-  margin-bottom: 6px;
-  flex-wrap: wrap;
+.dept-breadcrumb a:hover {
+  text-decoration: underline;
 }
-.doc-rating-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  color: #0f172a;
-  font-size: 0.8rem;
-}
-.doc-rating-badge strong {
+.dept-breadcrumb .breadcrumb-current {
+  color: #1e293b;
   font-weight: 700;
 }
-.doc-rating-badge .review-count {
-  color: #64748b;
-  font-weight: 500;
-}
-.doc-dot-sep {
-  color: #cbd5e1;
-  font-weight: 700;
-}
-.doc-lang-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  color: #64748b;
-}
 
-/* Perks Row */
-.doc-perks-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 0.78rem;
-  flex-wrap: wrap;
-}
-.doc-perk-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  color: #475569;
-  font-weight: 500;
-}
-.doc-perk-item.active {
-  color: #15803d;
-  font-weight: 600;
-}
-
-.doc-mobile-btn-fee {
-  display: none;
-}
-
-/* Booking Section (Right Column) */
-.doc-booking-section {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 10px;
-  flex-shrink: 0;
-  border-left: 1px solid #f1f5f9;
-  padding-left: 24px;
-}
-.doc-desktop-price {
-  text-align: right;
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-}
-.ddp-label {
-  font-size: 0.68rem;
-  color: #64748b;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-.ddp-amount {
-  font-size: 1.45rem;
-  font-weight: 800;
-  color: #0f766e;
-  font-family: 'DM Sans', sans-serif;
-  line-height: 1.2;
-}
-.ddp-sub {
-  font-size: 0.72rem;
-  color: #94a3b8;
-  font-weight: 500;
-}
-.doc-book-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 11px 24px;
-  border-radius: 12px;
-  font-weight: 700;
-  font-size: 0.92rem;
-  background: #0d9488;
-  color: white;
-  border: none;
-  box-shadow: 0 4px 14px rgba(13, 148, 136, 0.28);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  cursor: pointer;
-}
-.doc-book-btn:hover {
-  background: #0f766e;
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(13, 148, 136, 0.38);
-}
-
-/* ── Responsive Design (Mobile) ───────────────────────── */
-@media (max-width: 860px) {
-  /* Show clean topbar on mobile */
+/* ── Responsive Mobile ────────────────────────────────── */
+@media (max-width: 768px) {
   .dept-mobile-topbar {
-    display: block !important;
-    position: static !important;
+    display: block;
   }
-
-  /* Completely hide the bulky dark hero on mobile */
-  .dept-page-header {
-    display: none !important;
-  }
-
-  .dept-main-section {
-    padding: 12px 0 40px;
-  }
-
-  .dept-sec-row {
-    margin-bottom: 12px;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 8px;
-  }
-  .dept-sec-left {
-    display: none; /* Already in mobile topbar */
-  }
-  .dept-search-wrap {
-    width: 100%;
-    box-sizing: border-box;
-  }
-
-  /* Mobile Doctor Card */
-  .doctor-card {
-    flex-direction: column;
-    align-items: stretch;
-    padding: 16px;
-    gap: 12px;
-    border-radius: 18px;
-    max-width: 100%;
-    box-sizing: border-box;
-    overflow: hidden;
-  }
-
-  /* Profile layout */
-  .doc-profile-section {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    width: 100%;
-    min-width: 0;
-    max-width: 100%;
-  }
-  .doc-profile-info {
-    min-width: 0;
-    flex: 1;
-    overflow: hidden;
-  }
-  .doc-photo {
-    width: 52px;
-    height: 52px;
-    font-size: 1.15rem;
-  }
-  .doc-name-row {
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-bottom: 4px;
-  }
-  .doc-name-row h3 {
-    font-size: 1.05rem;
-    white-space: normal;
-  }
-  .doc-tag-line {
-    margin-bottom: 4px;
-    flex-wrap: wrap;
-    gap: 6px;
-  }
-  .doc-trust-row {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 3px;
-    margin-bottom: 6px;
-    font-size: 0.76rem;
-  }
-  .doc-dot-sep {
-    display: none;
-  }
-  .doc-perks-row {
-    font-size: 0.74rem;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-
-  /* Booking button */
-  .doc-booking-section {
-    width: 100%;
-    border-left: none;
-    padding-left: 0;
-  }
-  .doc-desktop-price {
-    display: none;
-  }
-  .doc-book-btn {
-    width: 100%;
-    justify-content: center;
-    padding: 13px;
-    font-size: 0.94rem;
-  }
-  .doc-mobile-btn-fee {
-    display: inline-block !important;
-    font-weight: 800;
-    margin-left: 4px;
-    opacity: 0.95;
+  .dept-top-header {
+    margin-top: 10px;
   }
 }
