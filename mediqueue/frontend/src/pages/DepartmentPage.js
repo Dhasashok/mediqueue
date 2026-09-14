@@ -259,6 +259,12 @@ const DepartmentPage = () => {
                       alt={`Dr. ${doc.first_name} ${doc.last_name}`}
                       className="fd-card-img"
                       loading="lazy"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = (doc.gender === 'Female')
+                          ? 'https://images.unsplash.com/photo-1594824813629-9e8c467a840e?w=400&auto=format&fit=crop&q=80'
+                          : 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=400&auto=format&fit=crop&q=80';
+                      }}
                     />
                     <div className="fd-distance-badge">
                       <MapPin size={11} className="fd-pin-icon" />
