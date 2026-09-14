@@ -84,7 +84,14 @@ const getDaysFromToday = (count = 7) => {
 
 const displayDate = (dateStr) => {
   if (!dateStr) return '';
-  return dateStr.split('T')[0];
+  const raw = dateStr.split('T')[0];
+  const parts = raw.split('-');
+  if (parts.length === 3) {
+    const y = parts[0], m = parseInt(parts[1], 10), d = parseInt(parts[2], 10);
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return `${d} ${months[m - 1]} ${y}`;
+  }
+  return raw;
 };
 
 const BookAppointment = () => {
@@ -134,7 +141,9 @@ const BookAppointment = () => {
     if (!form.full_name.trim()) e.full_name = 'Full name is required';
     if (!form.phone || !/^\d{10}$/.test(form.phone.replace(/\D/g, ''))) e.phone = 'Valid 10-digit phone required';
     const ageNum = parseInt(form.age, 10);
-    if (!form.age || isNaN(ageNum) || ageNum < 1 || ageNum > 120) e.age = 'Please enter a valid age (1 - 120)';
+    if (!form.age || isNaN(ageNum) || ageNum < 1 || ageNum > 120) {
+      e.age = 'Age must be 1 – 120';
+    }
     if (!form.gender) e.gender = 'Gender is required';
     if (!selectedSlot) e.slot = 'Please select a time slot';
     setErrors(e);
@@ -400,7 +409,6 @@ const BookAppointment = () => {
             <span>Schedule</span>
           </div>
           <h1>Schedule Appointment</h1>
-          <p>Choose your preferred date and slot to book your OPD consultation.</p>
         </div>
       </section>
 
@@ -654,19 +662,38 @@ const BookAppointment = () => {
 
                     <div className="form-row">
                       <div className="form-group">
-                        <label>Age *</label>
+                        <label>
+                          Age * {errors.age && <span className="field-error-msg">{errors.age}</span>}
+                        </label>
                         <input
-                          type="number"
-                          min="1"
-                          max="120"
-                          placeholder="28"
+                          type="text"
+                          inputMode="numeric"
+                          pattern="[0-9]*"
+                          maxLength={3}
+                          placeholder="e.g. 28"
                           value={form.age}
-                          onChange={e => {
-                            const cleaned = e.target.value.replace(/[^0-9]/g, '');
-                            setForm({ ...form, age: cleaned });
+                          onKeyDown={e => {
+                            if (['Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) return;
+                            if (!/^\d$/.test(e.key)) {
+                              e.preventDefault();
+                            }
                           }}
+                          onChange={e => {
+                            const cleaned = e.target.value.replace(/\D/g, '').slice(0, 3);
+                            setForm(prev => ({ ...prev, age: cleaned }));
+                            if (!cleaned) {
+                              setErrors(prev => ({ ...prev, age: 'Age required' }));
+                            } else {
+                              const n = parseInt(cleaned, 10);
+                              if (n < 1 || n > 120) {
+                                setErrors(prev => ({ ...prev, age: 'Must be 1 – 120' }));
+                              } else {
+                                setErrors(prev => ({ ...prev, age: '' }));
+                              }
+                            }
+                          }}
+                          className={errors.age ? 'input-invalid' : ''}
                         />
-                        {errors.age && <p className="error">{errors.age}</p>}
                       </div>
                       <div className="form-group">
                         <label>Gender *</label>
@@ -683,7 +710,7 @@ const BookAppointment = () => {
                     <div className="form-group">
                       <label>Reason for Visit <span style={{ fontWeight: 400, color: 'var(--muted)' }}>(Optional)</span></label>
                       <textarea
-                        rows={3}
+                        rows={2}
                         placeholder="Brief description of symptoms or consultation reason..."
                         value={form.reason_for_visit}
                         onChange={e => setForm({ ...form, reason_for_visit: e.target.value })}
