@@ -569,7 +569,7 @@ const BookAppointment = () => {
                 ) : (
                   <div className="psp-hint-wrap">
                     <Clock size={16} color="#0d9488" />
-                    <span>Please select a time slot on the left to proceed</span>
+                    <span>Please select an available time slot to proceed</span>
                   </div>
                 )}
               </div>
@@ -652,7 +652,7 @@ const BookAppointment = () => {
                   />
                 </div>
 
-                {/* Primary Green Booking Button */}
+                {/* Primary Teal Booking Button */}
                 <button
                   type="submit"
                   className={`pbc-confirm-btn ${!selectedSlot ? 'disabled-btn' : ''}`}
@@ -660,11 +660,16 @@ const BookAppointment = () => {
                 >
                   {loading ? (
                     <span>Confirming Appointment...</span>
+                  ) : !selectedSlot ? (
+                    <>
+                      <Clock size={17} />
+                      <span>Select a Time Slot to Continue</span>
+                    </>
                   ) : (
                     <>
                       <CheckCircle2 size={18} />
                       <span>
-                        Confirm Appointment {selectedSlot ? `· ₹${parseInt(doctor.consultation_fee, 10).toLocaleString('en-IN')}` : ''}
+                        Confirm Appointment · ₹{parseInt(doctor.consultation_fee, 10).toLocaleString('en-IN')}
                       </span>
                     </>
                   )}

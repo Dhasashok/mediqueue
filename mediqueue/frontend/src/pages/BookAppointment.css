@@ -590,7 +590,7 @@
   font-weight: 600;
 }
 
-/* Primary Green Booking Button */
+/* Primary MediQueue Brand Teal Booking Button */
 .pbc-confirm-btn {
   display: flex;
   align-items: center;
@@ -598,7 +598,7 @@
   gap: 8px;
   width: 100%;
   padding: 12px 18px;
-  background: #10b981;
+  background: #0d9488;
   color: white;
   border: none;
   border-radius: 12px;
@@ -606,13 +606,13 @@
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.28);
+  box-shadow: 0 4px 14px rgba(13, 148, 136, 0.28);
   margin-top: 4px;
 }
 .pbc-confirm-btn:hover:not(:disabled) {
-  background: #059669;
+  background: #0f766e;
   transform: translateY(-1px);
-  box-shadow: 0 6px 18px rgba(16, 185, 129, 0.38);
+  box-shadow: 0 6px 18px rgba(13, 148, 136, 0.38);
 }
 .pbc-confirm-btn.disabled-btn,
 .pbc-confirm-btn:disabled {
@@ -976,12 +976,13 @@
     box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04) !important;
   }
   .dcc-avatar-wrap {
-    width: 48px !important;
-    height: 48px !important;
+    width: 52px !important;
+    height: 52px !important;
   }
   .dcc-avatar {
-    width: 48px !important;
-    height: 48px !important;
+    width: 52px !important;
+    height: 52px !important;
+    object-position: center 20% !important;
   }
   .dcc-verified {
     width: 15px !important;
