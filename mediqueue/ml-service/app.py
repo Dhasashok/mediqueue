@@ -221,12 +221,33 @@ def health():
         'status': 'OK',
         'model_loaded': model is not None,
         'service': 'MediQueue ML Service',
-        'dataset': 'Hospital_Wait_Time_Data.csv',
         'features': FEATURES if FEATURES else []
     })
 
+# ─── Retrain Endpoint ──────────────────────────────────────────
+@app.route('/retrain', methods=['POST'])
+def trigger_retrain():
+    """Trigger the continuous retraining & IQR cleaning pipeline."""
+    try:
+        from retrain import run_pipeline
+        success = run_pipeline()
+        if success:
+            load_models()
+            return jsonify({
+                'success': True,
+                'message': 'ML model successfully retrained on cleaned TiDB records and reloaded.'
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'message': 'Retraining pipeline completed with warnings or no data.'
+            }), 400
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 # Auto-load models on module import for production WSGI servers
 load_models()
+
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5001))
