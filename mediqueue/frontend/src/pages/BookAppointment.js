@@ -12,7 +12,8 @@ import {
   QrCode,
   Check,
   ArrowRight,
-  Copy
+  Copy,
+  Zap
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { getDoctorById, getDoctorSlots, bookAppointment } from '../services/api';
@@ -521,16 +522,21 @@ const BookAppointment = () => {
 
                         <div className="sci-footer">
                           {isAvailable ? (
-                            <span className="sci-status-available">
-                              <span className="avail-dot"></span>
-                              <span>Available ({s.available})</span>
-                            </span>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                              <span className="sci-status-available">
+                                <span className="avail-dot"></span>
+                                <span>{s.available} left</span>
+                              </span>
+                              <span style={{ fontSize: '0.64rem', color: '#64748b', fontWeight: 600 }}>
+                                max {s.capacity}
+                              </span>
+                            </div>
                           ) : s.is_past ? (
                             <span className="sci-status-ended">Ended</span>
                           ) : s.is_leave ? (
                             <span className="sci-status-leave">On Leave</span>
                           ) : (
-                            <span className="sci-status-full">Slot Full</span>
+                            <span className="sci-status-full">Slot Full ({s.capacity}/{s.capacity})</span>
                           )}
                         </div>
                       </button>
@@ -551,22 +557,53 @@ const BookAppointment = () => {
 
               {/* Dynamic Live Slot Preview Bar */}
               <div className={`pbc-slot-preview ${selectedSlot ? 'has-slot' : 'no-slot'}`}>
-                {selectedSlot ? (
-                  <div className="psp-active-wrap">
-                    <div className="psp-left">
-                      <div className="psp-slot-title">
-                        <Clock size={15} color="#0d9488" />
-                        <strong>{selectedSlot}</strong>
+                {selectedSlot ? (() => {
+                  const selectedSlotObj = slots.find(s => s.slot === selectedSlot);
+                  return (
+                    <div>
+                      <div className="psp-active-wrap">
+                        <div className="psp-left">
+                          <div className="psp-slot-title">
+                            <Clock size={15} color="#0d9488" />
+                            <strong>{selectedSlot}</strong>
+                          </div>
+                          <span className="psp-date">{displayDate(selectedDate)}</span>
+                        </div>
+                        <div className="psp-right">
+                          <span className="psp-fee-tag">
+                            ₹{parseInt(doctor.consultation_fee, 10).toLocaleString('en-IN')}
+                          </span>
+                        </div>
                       </div>
-                      <span className="psp-date">{displayDate(selectedDate)}</span>
+
+                      {selectedSlotObj && (
+                        <div style={{
+                          marginTop: 8,
+                          paddingTop: 8,
+                          borderTop: '1px dashed #99f6e4',
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          fontSize: '0.74rem',
+                          color: '#0f766e',
+                          flexWrap: 'wrap',
+                          gap: 6
+                        }}>
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                            <Zap size={13} color="#0d9488" />
+                            <span>AI Slot Capacity: <strong>{selectedSlotObj.capacity} patients</strong></span>
+                          </span>
+                          <span>
+                            Treatment: <strong>~{Math.round(selectedSlotObj.consultation_avg || 15)}m/patient</strong>
+                          </span>
+                          <span style={{ background: '#ccfbf1', padding: '2px 7px', borderRadius: 6, fontWeight: 600 }}>
+                            {selectedSlotObj.booked === 0 ? '✨ 0 ahead in queue' : `⏳ ~${selectedSlotObj.predicted_wait}m wait (${selectedSlotObj.booked} ahead)`}
+                          </span>
+                        </div>
+                      )}
                     </div>
-                    <div className="psp-right">
-                      <span className="psp-fee-tag">
-                        ₹{parseInt(doctor.consultation_fee, 10).toLocaleString('en-IN')}
-                      </span>
-                    </div>
-                  </div>
-                ) : (
+                  );
+                })() : (
                   <div className="psp-hint-wrap">
                     <Clock size={16} color="#0d9488" />
                     <span>Please select an available time slot to proceed</span>

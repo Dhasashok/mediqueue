@@ -46,25 +46,10 @@ const cleanOldQueueEntries = async () => {
 // Updates dept_consultation_stats
 // slot_capacity = floor(120 / real_avg_mins)
 // ════════════════════════════════════════════════════════════
-const recalculateDeptStats = async () => {
+const recalculateDeptStats = async (minSamplesOverride = 5) => {
   try {
-    console.log(`\n🔄 ML Recalculation — using ALL historical consultation data`);
+    console.log(`\n🔄 ML Recalculation — using historical consultation data (minSamples=${minSamplesOverride})`);
 
-    // ── Only reliable data: treatment_start_time records ───────
-    // treatment_start_time is set when doctor clicks ▶ Start
-    // consultation_mins = completed_at - treatment_start_time = TRUE treatment duration
-    // If treatment_start_time is NULL → consultation_mins includes queue wait (wrong)
-    // Require MIN_RELIABLE_SAMPLES per dept before updating anything
-    // ── Thresholds (tuned for real hospital use) ─────────────
-    // MIN_CONSULT_MINS: A real consultation takes at least 5 min.
-    //   Values < 5 min = test runs, accidental completions, or click errors.
-    //   We reject these to prevent corrupt data from lowering the avg.
-    // MAX_CONSULT_MINS: Hard cap at 60 min per session.
-    //   Values > 60 min = doctor forgot to click Complete, system error.
-    // DATE WINDOW: Last 20 days only.
-    //   Older data may reflect different doctors/patient load.
-    //   20 days keeps the avg fresh and representative of current hospital speed.
-    //   As real data accumulates day by day, the avg self-corrects naturally.
     const MIN_CONSULT_MINS = 5;   // below this = test/accidental
     const MAX_CONSULT_MINS = 60;  // above this = forgot to complete
     const DAYS_WINDOW      = 20;  // only use data from last 20 days
@@ -95,33 +80,19 @@ const recalculateDeptStats = async () => {
     }
 
     // Only use reliable data (treatment_start_time recorded)
-    // No fallback query — if data is incomplete, skip entirely
     const deptIds = reliableStats.map(r => r.department_id);
 
     if (deptIds.length === 0) {
       console.log('   No reliable consultation data yet — all seeded values preserved. ⏸️');
-      return;
+      return { updatedCount: 0, skippedCount: 0, reason: 'No new completed consultation records with start time' };
     }
 
-    // Minimum reliable samples required before ANY update is made
-    // Below this threshold → keep existing seeded values completely untouched
-    const MIN_RELIABLE_SAMPLES = 5;  // need 5+ real consultations per dept before updating
+    const MIN_RELIABLE_SAMPLES = Math.max(1, minSamplesOverride || 5);
     let updatedCount = 0;
     let skippedCount = 0;
 
     for (const deptId of deptIds) {
       const reliable = reliableMap[deptId];
-
-      // ── STRICT RULE: Only update if we have enough RELIABLE data ─────
-      // Reliable = treatment_start_time was recorded (doctor clicked ▶ Start)
-      // This gives TRUE consultation time: doctor-starts → doctor-completes
-      // If doctor never clicks ▶ Start, check_in_time is used which includes
-      // the entire queue wait — making avg = 54 min instead of 14 min.
-      //
-      // If data is incomplete (no reliable records, or < MIN_RELIABLE_SAMPLES):
-      //   → DO NOTHING. Keep seeded values from dummy_ml_data.sql exactly as-is.
-      //   → The avg, slot_capacity, and last_updated are all preserved.
-      //   → Nothing changes until real treatment-start data accumulates.
 
       if (!reliable || reliable.total_samples < MIN_RELIABLE_SAMPLES) {
         const reason = !reliable
@@ -129,10 +100,9 @@ const recalculateDeptStats = async () => {
           : `only ${reliable.total_samples} reliable sample(s) — need ${MIN_RELIABLE_SAMPLES}`;
         console.log(`   Dept ${deptId}: SKIPPED (${reason}) — keeping seeded values ⏸️`);
         skippedCount++;
-        continue; // ← skip entirely, touch nothing
+        continue;
       }
 
-      // We have enough reliable data → update BOTH avg and slot_capacity
       const avgMins  = parseFloat(reliable.avg_consultation_mins) || 20.0;
       const samples  = reliable.total_samples;
       const capacity = Math.max(3, Math.floor(120 / avgMins));
@@ -152,9 +122,11 @@ const recalculateDeptStats = async () => {
       updatedCount++;
     }
 
-    console.log(`\n✅ ML done: ${updatedCount} dept(s) updated, ${skippedCount} skipped (incomplete data).\n`);
+    console.log(`\n✅ ML done: ${updatedCount} dept(s) updated, ${skippedCount} skipped.\n`);
+    return { updatedCount, skippedCount, totalDepts: deptIds.length };
   } catch (e) {
     console.error('❌ recalculateDeptStats error:', e.message);
+    return { updatedCount: 0, skippedCount: 0, error: e.message };
   }
 };
 
@@ -568,8 +540,81 @@ const getDeptConsultationStats = async (req, res) => {
   }
 };
 
+// ── Trigger ML Recalculation manually (Admin) ───────────────
+const triggerMLRecalculation = async (req, res) => {
+  try {
+    const minSamples = req.body?.minSamples != null ? parseInt(req.body.minSamples, 10) : 1;
+    const result = await recalculateDeptStats(minSamples);
+    const [stats] = await db.query(
+      `SELECT dcs.*, dep.name as dept_name
+       FROM dept_consultation_stats dcs
+       JOIN departments dep ON dcs.department_id = dep.id
+       ORDER BY dcs.avg_consultation_mins DESC`
+    );
+    res.json({
+      success: true,
+      message: result?.updatedCount > 0
+        ? `ML Recalculation complete: Updated ${result.updatedCount} department dynamic capacities.`
+        : 'ML Recalculation checked: Existing values preserved (awaiting new completed consultations).',
+      result,
+      stats
+    });
+  } catch (err) {
+    console.error('❌ triggerMLRecalculation error:', err.message);
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// ── Manual / Custom Adjustment for Dept Treatment Time & Capacity ──
+const updateDeptCapacity = async (req, res) => {
+  try {
+    const { department_id, avg_consultation_mins } = req.body;
+    const deptId = parseInt(department_id, 10);
+    const avgMins = parseFloat(avg_consultation_mins);
+
+    if (!deptId || isNaN(avgMins) || avgMins < 3 || avgMins > 120) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid department ID or consultation duration (must be 3-120 minutes).'
+      });
+    }
+
+    // Dynamic slot capacity: floor(120 / avg_consultation_mins), minimum 3
+    const slot_capacity = Math.max(3, Math.floor(120 / avgMins));
+
+    await db.query(
+      `INSERT INTO dept_consultation_stats
+         (department_id, avg_consultation_mins, slot_capacity, total_samples, last_updated)
+       VALUES (?, ?, ?, 1, NOW())
+       ON DUPLICATE KEY UPDATE
+         avg_consultation_mins = VALUES(avg_consultation_mins),
+         slot_capacity         = VALUES(slot_capacity),
+         last_updated          = NOW()`,
+      [deptId, avgMins, slot_capacity]
+    );
+
+    const [updated] = await db.query(
+      `SELECT dcs.*, dep.name as dept_name
+       FROM dept_consultation_stats dcs
+       JOIN departments dep ON dcs.department_id = dep.id
+       WHERE dcs.department_id = ?`,
+      [deptId]
+    );
+
+    res.json({
+      success: true,
+      message: `Updated ${updated[0]?.dept_name || 'Department'}: ${avgMins} min avg treatment → dynamic capacity set to ${slot_capacity} patients per 2-hour slot!`,
+      dept: updated[0]
+    });
+  } catch (err) {
+    console.error('❌ updateDeptCapacity error:', err.message);
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
 module.exports = {
   getQueue, getAllQueues, checkIn, completeAppointment,
   markInProgress, markNoShow, getMyQueuePosition, getDeptConsultationStats,
   getRealSlotCapacity, scheduleMidnightRecalculation, recalculateDeptStats,
+  triggerMLRecalculation, updateDeptCapacity
 };

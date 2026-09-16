@@ -6,7 +6,7 @@ import { getPendingDoctors, approveDoctor, getAllDoctors, getAnalytics } from '.
 import {
   QrCode, Camera, RefreshCw, CheckCircle2, XCircle, X, ArrowRight, AlertCircle,
   CalendarCheck, Clock, Users, FileText, BarChart3, UserCheck, Stethoscope, Cpu, CalendarX, Calendar, Menu, Search, LogOut,
-  Building2
+  Building2, Sparkles, Sliders, Zap
 } from 'lucide-react';
 import API from '../services/api';
 import './Dashboard.css';
@@ -351,6 +351,10 @@ const AdminDashboard = () => {
   const [leaveCheckDate, setLeaveCheckDate]     = useState('');
   const [mlStats, setMlStats] = useState([]);
   const [mlLoading, setMlLoading] = useState(false);
+  const [recalLoading, setRecalLoading] = useState(false);
+  const [simDeptId, setSimDeptId] = useState('');
+  const [simMins, setSimMins] = useState(15);
+  const [simLoading, setSimLoading] = useState(false);
   const [doctorSearch, setDoctorSearch] = useState('');
 
   const loadQueues = useCallback(() => {
@@ -368,10 +372,55 @@ const AdminDashboard = () => {
   const loadMlStats = useCallback(() => {
     setMlLoading(true);
     API.get('/queue/dept-stats')
-      .then(r => setMlStats(r.data.stats || []))
+      .then(r => {
+        const stats = r.data.stats || [];
+        setMlStats(stats);
+        if (stats.length > 0 && !simDeptId) {
+          setSimDeptId(stats[0].department_id);
+          setSimMins(parseFloat(stats[0].avg_consultation_mins) || 15);
+        }
+      })
       .catch(() => {})
       .finally(() => setMlLoading(false));
-  }, []);
+  }, [simDeptId]);
+
+  const handleRecalculateML = async () => {
+    setRecalLoading(true);
+    try {
+      const res = await API.post('/admin/recalculate-ml', { minSamples: 1 });
+      toast.success(res.data.message || 'ML Recalculation completed successfully!');
+      if (res.data.stats && res.data.stats.length > 0) {
+        setMlStats(res.data.stats);
+      } else {
+        loadMlStats();
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'ML Recalculation failed.');
+    } finally {
+      setRecalLoading(false);
+    }
+  };
+
+  const handleApplySimulatedCapacity = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    if (!simDeptId) {
+      toast.warning('Please select a department to apply dynamic capacity.');
+      return;
+    }
+    setSimLoading(true);
+    try {
+      const res = await API.post('/admin/update-dept-capacity', {
+        department_id: simDeptId,
+        avg_consultation_mins: simMins
+      });
+      toast.success(res.data.message);
+      loadMlStats();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to update department capacity.');
+    } finally {
+      setSimLoading(false);
+    }
+  };
 
   const loadLeaves = useCallback(() => {
     API.get('/admin/doctor-leaves')
@@ -1199,9 +1248,20 @@ const AdminDashboard = () => {
                       iconType="ml"
                       title="AI Wait Time Intelligence"
                       action={
-                        <button className="btn btn-outline btn-sm" onClick={loadMlStats} disabled={mlLoading}>
-                          {mlLoading ? 'Refreshing...' : '↻ Refresh Models'}
-                        </button>
+                        <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                          <button
+                            className="btn btn-primary btn-sm"
+                            style={{ background: '#0d9488', borderColor: '#0d9488', display: 'flex', alignItems: 'center', gap: 6, color: '#ffffff' }}
+                            onClick={handleRecalculateML}
+                            disabled={recalLoading || mlLoading}
+                          >
+                            <Sparkles size={14} />
+                            <span>{recalLoading ? 'Recalculating...' : '⚡ Recalculate AI Capacities'}</span>
+                          </button>
+                          <button className="btn btn-outline btn-sm" onClick={loadMlStats} disabled={mlLoading}>
+                            {mlLoading ? 'Refreshing...' : '↻ Refresh Models'}
+                          </button>
+                        </div>
                       }
                     />
 
@@ -1217,6 +1277,105 @@ const AdminDashboard = () => {
                       </div>
                     ) : (
                       <div>
+                        {/* Dynamic Treatment Duration & Slot Capacity Simulator */}
+                        <div style={{
+                          background: '#f0fdfa',
+                          border: '1.5px solid #99f6e4',
+                          borderRadius: 14,
+                          padding: '16px 20px',
+                          marginBottom: 20
+                        }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10, marginBottom: 14 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                              <Sliders size={18} color="#0d9488" />
+                              <strong style={{ fontSize: '0.95rem', color: '#0f766e' }}>Interactive Treatment Duration & Capacity Calibrator</strong>
+                            </div>
+                            <span style={{ fontSize: '0.74rem', background: '#ccfbf1', color: '#0f766e', fontWeight: 600, padding: '4px 10px', borderRadius: 6 }}>
+                              Math: ⌊120 min slot ÷ Avg Treatment Duration⌋
+                            </span>
+                          </div>
+
+                          <form onSubmit={handleApplySimulatedCapacity} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 14, alignItems: 'end' }}>
+                            <div>
+                              <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#334155', marginBottom: 4 }}>
+                                Select Department
+                              </label>
+                              <select
+                                className="form-control"
+                                style={{ fontSize: '0.85rem', height: 38, background: '#ffffff' }}
+                                value={simDeptId}
+                                onChange={(e) => {
+                                  const id = e.target.value;
+                                  setSimDeptId(id);
+                                  const found = mlStats.find(s => String(s.department_id) === String(id));
+                                  if (found) setSimMins(parseFloat(found.avg_consultation_mins) || 15);
+                                }}
+                              >
+                                <option value="">-- Select Department --</option>
+                                {mlStats.map(s => (
+                                  <option key={s.department_id} value={s.department_id}>
+                                    {s.dept_name} (Current: {parseFloat(s.avg_consultation_mins).toFixed(1)}m → {s.slot_capacity} cap)
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+
+                            <div>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                                <label style={{ fontSize: '0.78rem', fontWeight: 600, color: '#334155' }}>
+                                  Treatment Time per Patient
+                                </label>
+                                <strong style={{ fontSize: '0.82rem', color: '#0d9488' }}>{simMins} minutes</strong>
+                              </div>
+                              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                                <input
+                                  type="range"
+                                  min="5"
+                                  max="40"
+                                  step="1"
+                                  value={simMins}
+                                  onChange={(e) => setSimMins(parseFloat(e.target.value))}
+                                  style={{ flex: 1, accentColor: '#0d9488' }}
+                                />
+                                <input
+                                  type="number"
+                                  min="5"
+                                  max="60"
+                                  value={simMins}
+                                  onChange={(e) => setSimMins(parseFloat(e.target.value) || 15)}
+                                  style={{ width: 55, height: 36, padding: '0 6px', fontSize: '0.85rem', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                                />
+                              </div>
+                            </div>
+
+                            <div>
+                              <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#334155', marginBottom: 4 }}>
+                                Calculated Slot Capacity
+                              </label>
+                              <div style={{ background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: 8, height: 38, display: 'flex', alignItems: 'center', justifyContent: 'space-around', padding: '0 10px' }}>
+                                <span style={{ fontSize: '0.82rem', color: '#0f172a' }}>
+                                  <strong>{Math.max(3, Math.floor(120 / (simMins || 15)))}</strong> patients / 2hr
+                                </span>
+                                <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
+                                  (~{Math.max(3, Math.floor(120 / (simMins || 15))) * 6}/day)
+                                </span>
+                              </div>
+                            </div>
+
+                            <div>
+                              <button
+                                type="submit"
+                                className="btn btn-primary"
+                                style={{ height: 38, width: '100%', background: '#0d9488', borderColor: '#0d9488', fontSize: '0.82rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+                                disabled={simLoading || !simDeptId}
+                              >
+                                <Zap size={14} />
+                                <span>{simLoading ? 'Saving...' : '💾 Apply Dynamic Capacity'}</span>
+                              </button>
+                            </div>
+                          </form>
+                        </div>
+
                         {/* Legend */}
                         <div style={{ display: 'flex', gap: 20, marginBottom: 16, flexWrap: 'wrap' }}>
                           <span style={{ fontSize: '0.78rem', color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center', gap: 6 }}>

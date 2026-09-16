@@ -4,7 +4,7 @@ const router  = express.Router();
 const { registerPatient, registerDoctor, verifyOTP, resendOTP, login, logout, getMe, forgotPassword, resetPassword, updateDoctorProfile } = require('../controllers/authController');
 const { getDepartments, getDoctorsByDepartment, getAllPublicDoctors, getDoctorById, getDoctorSlots } = require('../controllers/departmentController');
 const { bookAppointment, getMyAppointments, getDoctorAppointments, cancelAppointment } = require('../controllers/appointmentController');
-const { getQueue, getAllQueues, checkIn, completeAppointment, markInProgress, markNoShow, getMyQueuePosition, getDeptConsultationStats } = require('../controllers/queueController');
+const { getQueue, getAllQueues, checkIn, completeAppointment, markInProgress, markNoShow, getMyQueuePosition, getDeptConsultationStats, triggerMLRecalculation, updateDeptCapacity } = require('../controllers/queueController');
 const { getPendingDoctors, approveDoctor, getAllDoctors, getAnalytics, getTodayAppointments, getUpcomingAppointments, getAllAppointments, adminCancelAppointment, setDoctorLeave, removeDoctorLeave, getDoctorLeaves, setMyLeave, removeMyLeave, getMyLeaves } = require('../controllers/adminController');
 const { authMiddleware, roleCheck } = require('../middleware/auth');
 const { savePrescription, getMyPrescriptions, getPrescriptionByAppointment, deletePrescription } = require('../controllers/prescriptionController');
@@ -79,6 +79,8 @@ router.get('/admin/today-appointments',       authMiddleware, roleCheck('admin')
 router.get('/admin/upcoming-appointments',    authMiddleware, roleCheck('admin'), getUpcomingAppointments);
 router.get('/admin/all-appointments',         authMiddleware, roleCheck('admin'), getAllAppointments);
 router.put('/admin/appointments/:id/cancel',  authMiddleware, roleCheck('admin'), adminCancelAppointment);
+router.post('/admin/recalculate-ml',          authMiddleware, roleCheck('admin'), triggerMLRecalculation);
+router.post('/admin/update-dept-capacity',    authMiddleware, roleCheck('admin'), updateDeptCapacity);
 
 // ── Prescriptions ─────────────────────────────────────────────
 router.post  ('/prescriptions',                             authMiddleware, roleCheck('doctor'),  savePrescription);
