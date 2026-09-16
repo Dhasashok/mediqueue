@@ -50,9 +50,12 @@ const recalculateDeptStats = async (minSamplesOverride = 5) => {
   try {
     console.log(`\n🔄 ML Recalculation — using historical consultation data (minSamples=${minSamplesOverride})`);
 
-    const MIN_CONSULT_MINS = 5;   // below this = test/accidental
-    const MAX_CONSULT_MINS = 60;  // above this = forgot to complete
-    const DAYS_WINDOW      = 20;  // only use data from last 20 days
+    // ── Department-Aware Dynamic Outlier Filter ─────────────────
+    // Rather than a naive static 5-60 min filter (which treats ENT and Neurology the same):
+    // Valid Range = [max(4.0, dcs.avg_consultation_mins * 0.45), min(60.0, dcs.avg_consultation_mins * 1.75)]
+    // Example: ENT (12m) → valid between 5.4m and 21.0m (rejects 45m anomaly)
+    //          Neurology (30m) → valid between 13.5m and 52.5m (accepts 45m complex consultation!)
+    const DAYS_WINDOW = 20;  // only use data from last 20 days
 
     const [reliableStats] = await db.query(
       `SELECT
@@ -63,14 +66,15 @@ const recalculateDeptStats = async (minSamplesOverride = 5) => {
          ROUND(MAX(q.consultation_mins), 1)   as max_mins
        FROM queue q
        JOIN appointments a ON q.appointment_id = a.id
+       JOIN dept_consultation_stats dcs ON a.department_id = dcs.department_id
        WHERE q.status = 'Completed'
          AND q.consultation_mins IS NOT NULL
-         AND q.consultation_mins >= ?
-         AND q.consultation_mins <= ?
          AND q.treatment_start_time IS NOT NULL
+         AND q.consultation_mins >= GREATEST(4.0, dcs.avg_consultation_mins * 0.45)
+         AND q.consultation_mins <= LEAST(60.0, dcs.avg_consultation_mins * 1.75)
          AND a.appointment_date >= DATE_SUB(CURDATE(), INTERVAL ? DAY)
        GROUP BY a.department_id`,
-      [MIN_CONSULT_MINS, MAX_CONSULT_MINS, DAYS_WINDOW]
+      [DAYS_WINDOW]
     );
 
     // Build a map of reliable data by dept
@@ -393,22 +397,34 @@ const completeAppointment = async (req, res) => {
     // null values are excluded from recalculateDeptStats query
     // → seeded ML values remain unchanged. Clean and correct.
     //
-    // Thresholds:
-    //   < 5 min  = accidental click / test run → reject
-    //   > 60 min = doctor forgot to complete → reject
+    // ── Department-Aware Outlier Filter ─────────────────────────
+    // Dynamic valid range relative to department baseline:
+    // ENT (12m baseline) → 5.4m to 21.0m (45m is rejected as forgotten/anomaly)
+    // Neurology (30m baseline) → 13.5m to 52.5m (45m is accepted as valid!)
     let consultationMins = null;
-    const SAVE_MIN_MINS  = 5;
-    const SAVE_MAX_MINS  = 60;
 
     if (treatmentStartTime) {
       const diffMins = (new Date() - new Date(treatmentStartTime)) / 60000;
-      if (diffMins >= SAVE_MIN_MINS && diffMins <= SAVE_MAX_MINS) {
+
+      let baselineAvg = 20.0;
+      try {
+        const [deptStats] = await db.query(
+          'SELECT avg_consultation_mins FROM dept_consultation_stats WHERE department_id = ?',
+          [deptId]
+        );
+        if (deptStats.length > 0) baselineAvg = parseFloat(deptStats[0].avg_consultation_mins) || 20.0;
+      } catch (e) { /* fallback to 20.0 */ }
+
+      const deptMinMins = Math.max(4.0, Math.round(baselineAvg * 0.45 * 10) / 10);
+      const deptMaxMins = Math.min(60.0, Math.round(baselineAvg * 1.75 * 10) / 10);
+
+      if (diffMins >= deptMinMins && diffMins <= deptMaxMins) {
         consultationMins = Math.round(diffMins * 10) / 10;
-        console.log(`📊 Saved: Dept ${deptId} → ${consultationMins} min ✅`);
-      } else if (diffMins < SAVE_MIN_MINS) {
-        console.log(`⚠️ Skipped: ${diffMins.toFixed(1)} min — too short (< ${SAVE_MIN_MINS} min), likely accidental`);
+        console.log(`📊 Saved: Dept ${deptId} → ${consultationMins} min (Specialty Window: ${deptMinMins}m - ${deptMaxMins}m) ✅`);
+      } else if (diffMins < deptMinMins) {
+        console.log(`⚠️ Skipped: Dept ${deptId} ${diffMins.toFixed(1)} min — below specialty minimum (${deptMinMins}m), likely accidental click`);
       } else {
-        console.log(`⚠️ Skipped: ${Math.round(diffMins)} min — too long (> ${SAVE_MAX_MINS} min), likely forgot to complete`);
+        console.log(`⚠️ Skipped: Dept ${deptId} ${Math.round(diffMins)} min — exceeded specialty ceiling (${deptMaxMins}m), anomaly or forgot to complete`);
       }
     } else {
       // Doctor did not click ▶ Start → no reliable time measurement
