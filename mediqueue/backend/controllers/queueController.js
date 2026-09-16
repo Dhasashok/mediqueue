@@ -109,16 +109,17 @@ const recalculateDeptStats = async (minSamplesOverride = 5) => {
 
       await db.query(
         `INSERT INTO dept_consultation_stats
-           (department_id, avg_consultation_mins, slot_capacity, total_samples, last_updated)
-         VALUES (?, ?, ?, ?, NOW())
+           (department_id, avg_consultation_mins, slot_capacity, today_slot_capacity, effective_date, total_samples, last_updated)
+         VALUES (?, ?, ?, ?, DATE_ADD(CURDATE(), INTERVAL 1 DAY), ?, NOW())
          ON DUPLICATE KEY UPDATE
            avg_consultation_mins = VALUES(avg_consultation_mins),
            slot_capacity         = VALUES(slot_capacity),
+           effective_date        = DATE_ADD(CURDATE(), INTERVAL 1 DAY),
            total_samples         = VALUES(total_samples),
            last_updated          = NOW()`,
-        [deptId, avgMins, capacity, samples]
+        [deptId, avgMins, capacity, capacity, samples]
       );
-      console.log(`   Dept ${deptId}: avg=${avgMins}min → capacity=${capacity}/slot (${samples} reliable samples) ✅`);
+      console.log(`   Dept ${deptId}: avg=${avgMins}min → capacity=${capacity}/slot (effective tomorrow) ✅`);
       updatedCount++;
     }
 
@@ -150,8 +151,17 @@ const scheduleMidnightRecalculation = () => {
     console.log(`⏰ ML recalculation scheduled in ${hrsUntil} min (at 23:59 IST daily)`);
 
     setTimeout(async () => {
-      console.log('\n🤖 Running nightly ML recalculation...');
+      console.log('\n🤖 Running nightly ML recalculation and rolling over capacity for tomorrow...');
       await recalculateDeptStats();
+      // Roll over dynamic capacity to today_slot_capacity for the new day
+      try {
+        await db.query(
+          `UPDATE dept_consultation_stats
+           SET today_slot_capacity = slot_capacity, effective_date = NULL`
+        );
+      } catch (rollErr) {
+        console.warn('Could not roll over today_slot_capacity:', rollErr.message);
+      }
       scheduleNext(); // ← self-reschedule for next night (not setInterval)
     }, msUntil);
   };
@@ -159,20 +169,31 @@ const scheduleMidnightRecalculation = () => {
   scheduleNext();
 };
 
-// ── Get real slot capacity from DB ────────────────────────────
-const getRealSlotCapacity = async (department_id) => {
+// ── Get real slot capacity from DB (Next-Day Safe) ─────────────
+const getRealSlotCapacity = async (department_id, targetDate = null) => {
   try {
     const [rows] = await db.query(
-      `SELECT slot_capacity, avg_consultation_mins, total_samples
+      `SELECT slot_capacity, today_slot_capacity, effective_date, avg_consultation_mins, total_samples
        FROM dept_consultation_stats WHERE department_id = ?`,
       [department_id]
     );
     if (rows.length > 0 && rows[0].total_samples > 0) {
+      const row = rows[0];
+      const today = getLocalToday();
+      const isToday = !targetDate || targetDate === today;
+
+      // 🛡️ CRITICAL RULE: If booking for Today, use today_slot_capacity to protect active schedule!
+      // Dynamic slot capacity applies starting tomorrow / future dates.
+      const capacity = isToday
+        ? (row.today_slot_capacity || row.slot_capacity || 6)
+        : (row.slot_capacity || 6);
+
       return {
-        capacity: rows[0].slot_capacity,
-        avg_mins: parseFloat(rows[0].avg_consultation_mins),
-        samples:  rows[0].total_samples,
-        source:   'real_data'
+        capacity,
+        avg_mins: parseFloat(row.avg_consultation_mins),
+        samples:  row.total_samples,
+        isToday,
+        source:   isToday ? 'today_locked_capacity' : 'next_day_dynamic_capacity'
       };
     }
     return { capacity: 6, avg_mins: 20.0, samples: 0, source: 'default_20min' };
@@ -582,15 +603,20 @@ const updateDeptCapacity = async (req, res) => {
     // Dynamic slot capacity: floor(120 / avg_consultation_mins), minimum 3
     const slot_capacity = Math.max(3, Math.floor(120 / avgMins));
 
+    // 🛡️ CRITICAL OPERATIONAL RULE:
+    // Today's schedule is active and MUST NOT be retroactively disrupted.
+    // The new dynamic capacity is scheduled with effective_date = TOMORROW.
+    // today_slot_capacity remains untouched so today's booked patients and queue are 100% safe.
     await db.query(
       `INSERT INTO dept_consultation_stats
-         (department_id, avg_consultation_mins, slot_capacity, total_samples, last_updated)
-       VALUES (?, ?, ?, 1, NOW())
+         (department_id, avg_consultation_mins, slot_capacity, today_slot_capacity, effective_date, total_samples, last_updated)
+       VALUES (?, ?, ?, ?, DATE_ADD(CURDATE(), INTERVAL 1 DAY), 1, NOW())
        ON DUPLICATE KEY UPDATE
          avg_consultation_mins = VALUES(avg_consultation_mins),
          slot_capacity         = VALUES(slot_capacity),
+         effective_date        = DATE_ADD(CURDATE(), INTERVAL 1 DAY),
          last_updated          = NOW()`,
-      [deptId, avgMins, slot_capacity]
+      [deptId, avgMins, slot_capacity, slot_capacity]
     );
 
     const [updated] = await db.query(
@@ -603,7 +629,7 @@ const updateDeptCapacity = async (req, res) => {
 
     res.json({
       success: true,
-      message: `Updated ${updated[0]?.dept_name || 'Department'}: ${avgMins} min avg treatment → dynamic capacity set to ${slot_capacity} patients per 2-hour slot!`,
+      message: `Updated ${updated[0]?.dept_name || 'Department'}: ${avgMins} min treatment → dynamic capacity set to ${slot_capacity} patients/slot (Effective Tomorrow. Today locked at ${updated[0]?.today_slot_capacity || slot_capacity}).`,
       dept: updated[0]
     });
   } catch (err) {

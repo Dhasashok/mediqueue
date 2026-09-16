@@ -176,6 +176,12 @@ const getDoctorSlots = async (req, res) => {
     const deptId  = docRows.length > 0 ? parseInt(docRows[0].department_id) : 1;
     const avgWait = DEPT_AVG_WAIT[deptId] || 50;
 
+    // ── Date calculation (IST-aware) ────────────────────────
+    const now        = new Date();
+    const istNow     = new Date(now.getTime() + 5.5 * 60 * 60000);
+    const todayStr   = `${istNow.getUTCFullYear()}-${String(istNow.getUTCMonth()+1).padStart(2,'0')}-${String(istNow.getUTCDate()).padStart(2,'0')}`;
+    const isToday    = (date === todayStr);
+
     // ── DYNAMIC: try real DB stats first, fall back to dataset defaults ──
     let capacity    = DEPT_SLOT_CAPACITY[deptId] || 6;
     let consultMins = DEPT_CONSULTATION_MINS[deptId] || 18.6;
@@ -183,14 +189,21 @@ const getDoctorSlots = async (req, res) => {
 
     try {
       const [statsRows] = await db.query(
-        `SELECT slot_capacity, avg_consultation_mins, total_samples
+        `SELECT slot_capacity, today_slot_capacity, effective_date, avg_consultation_mins, total_samples
          FROM dept_consultation_stats WHERE department_id = ?`,
         [deptId]
       );
       if (statsRows.length > 0 && statsRows[0].total_samples > 0) {
-        capacity    = statsRows[0].slot_capacity;
-        consultMins = parseFloat(statsRows[0].avg_consultation_mins);
-        dataSource  = `real_data_${statsRows[0].total_samples}_samples`;
+        const row   = statsRows[0];
+        consultMins = parseFloat(row.avg_consultation_mins);
+
+        // 🛡️ CRITICAL OPERATIONAL RULE:
+        // For TODAY: Use today_slot_capacity (locked for today) so ongoing schedule is NEVER disrupted!
+        // For TOMORROW / FUTURE: Use dynamic slot_capacity.
+        capacity    = isToday
+          ? (row.today_slot_capacity || row.slot_capacity || 6)
+          : (row.slot_capacity || 6);
+        dataSource  = isToday ? 'today_locked_capacity' : 'next_day_dynamic_capacity';
       }
     } catch (e) {
       // dept_consultation_stats table may not exist yet — use defaults
@@ -240,15 +253,7 @@ const getDoctorSlots = async (req, res) => {
     const distributedMins = Math.round((120 / capacity) * 100) / 100;
 
     // ── Past slot detection (today only) ─────────────────────
-    // Slot is "past" if its END hour <= current IST hour
-    // e.g. at 11:27 IST: 8:00-10:00 (ends 10) → past ✓
-    //                    10:00-12:00 (ends 12) → still open ✓
-    // Future dates: isToday = false → no slots blocked as past
-    const now        = new Date();
-    const istNow     = new Date(now.getTime() + 5.5 * 60 * 60000);
-    const todayStr   = `${istNow.getUTCFullYear()}-${String(istNow.getUTCMonth()+1).padStart(2,'0')}-${String(istNow.getUTCDate()).padStart(2,'0')}`;
-    const isToday    = (date === todayStr);
-    const istHour    = istNow.getUTCHours() + istNow.getUTCMinutes() / 60;
+    const istHour = istNow.getUTCHours() + istNow.getUTCMinutes() / 60;
 
     const slotsData = slots.map(slot => {
       const bookedCount = bookedMap[slot] || 0;

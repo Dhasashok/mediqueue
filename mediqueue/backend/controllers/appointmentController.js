@@ -90,10 +90,10 @@ const bookAppointment = async (req, res) => {
       });
     }
 
-    // Dynamic slot capacity from dept_consultation_stats (real ML data)
-    // Falls back to dataset default if no real data yet
-    const { capacity: slotCapacity, avg_mins, source } = await getRealSlotCapacity(deptId);
-    console.log(`📊 Dept ${deptId}: capacity=${slotCapacity}/slot avg=${avg_mins}min [${source}]`);
+    // Dynamic slot capacity from dept_consultation_stats (Next-Day Safe)
+    // If cleanDate is today, locks to today_slot_capacity; if tomorrow+, uses dynamic capacity
+    const { capacity: slotCapacity, avg_mins, source } = await getRealSlotCapacity(deptId, cleanDate);
+    console.log(`📊 Dept ${deptId} [Date: ${cleanDate}]: capacity=${slotCapacity}/slot avg=${avg_mins}min [${source}]`);
 
     // Check slot capacity
     const [slotCount] = await db.query(

@@ -1291,7 +1291,7 @@ const AdminDashboard = () => {
                               <strong style={{ fontSize: '0.95rem', color: '#0f766e' }}>Interactive Treatment Duration & Capacity Calibrator</strong>
                             </div>
                             <span style={{ fontSize: '0.74rem', background: '#ccfbf1', color: '#0f766e', fontWeight: 600, padding: '4px 10px', borderRadius: 6 }}>
-                              Math: ⌊120 min slot ÷ Avg Treatment Duration⌋
+                              🛡️ Applies Tomorrow — Today's active queue is locked & safe
                             </span>
                           </div>
 
@@ -1370,7 +1370,7 @@ const AdminDashboard = () => {
                                 disabled={simLoading || !simDeptId}
                               >
                                 <Zap size={14} />
-                                <span>{simLoading ? 'Saving...' : '💾 Apply Dynamic Capacity'}</span>
+                                <span>{simLoading ? 'Saving...' : '💾 Apply Dynamic Capacity (Effective Tomorrow)'}</span>
                               </button>
                             </div>
                           </form>
@@ -1434,7 +1434,11 @@ const AdminDashboard = () => {
                                     <p style={{ fontSize: '1.4rem', fontWeight: 700, color: '#1d4ed8', margin: 0, lineHeight: 1 }}>
                                       {s.slot_capacity}
                                     </p>
-                                    <p style={{ fontSize: '0.7rem', color: 'var(--color-text-secondary)', margin: '4px 0 0' }}>capacity / 2hr slot</p>
+                                    <p style={{ fontSize: '0.7rem', color: 'var(--color-text-secondary)', margin: '4px 0 0' }}>
+                                      {s.today_slot_capacity && s.today_slot_capacity !== s.slot_capacity
+                                        ? `tomorrow (today: ${s.today_slot_capacity})`
+                                        : 'capacity / 2hr slot'}
+                                    </p>
                                   </div>
                                 </div>
 
