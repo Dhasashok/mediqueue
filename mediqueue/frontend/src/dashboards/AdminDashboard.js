@@ -1278,98 +1278,96 @@ const AdminDashboard = () => {
                     ) : (
                       <div>
                         {/* Dynamic Treatment Duration & Slot Capacity Simulator */}
-                        <div style={{
-                          background: '#f0fdfa',
-                          border: '1.5px solid #99f6e4',
-                          borderRadius: 14,
-                          padding: '16px 20px',
-                          marginBottom: 20
-                        }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10, marginBottom: 14 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <div className="ml-calibrator-card">
+                          <div className="ml-calibrator-header">
+                            <div className="ml-calibrator-title">
                               <Sliders size={18} color="#0d9488" />
-                              <strong style={{ fontSize: '0.95rem', color: '#0f766e' }}>Interactive Treatment Duration & Capacity Calibrator</strong>
+                              <strong>Interactive Treatment Duration & Capacity Calibrator</strong>
                             </div>
-                            <span style={{ fontSize: '0.74rem', background: '#ccfbf1', color: '#0f766e', fontWeight: 600, padding: '4px 10px', borderRadius: 6 }}>
+                            <span className="ml-calibrator-badge">
                               🛡️ Applies Tomorrow — Today's active queue is locked & safe
                             </span>
                           </div>
 
-                          <form onSubmit={handleApplySimulatedCapacity} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 14, alignItems: 'end' }}>
-                            <div>
-                              <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#334155', marginBottom: 4 }}>
-                                Select Department
-                              </label>
-                              <select
-                                className="form-control"
-                                style={{ fontSize: '0.85rem', height: 38, background: '#ffffff' }}
-                                value={simDeptId}
-                                onChange={(e) => {
-                                  const id = e.target.value;
-                                  setSimDeptId(id);
-                                  const found = mlStats.find(s => String(s.department_id) === String(id));
-                                  if (found) setSimMins(parseFloat(found.avg_consultation_mins) || 15);
-                                }}
-                              >
-                                <option value="">-- Select Department --</option>
-                                {mlStats.map(s => (
-                                  <option key={s.department_id} value={s.department_id}>
-                                    {s.dept_name} (Current: {parseFloat(s.avg_consultation_mins).toFixed(1)}m → {s.slot_capacity} cap)
-                                  </option>
-                                ))}
-                              </select>
-                            </div>
-
-                            <div>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                                <label style={{ fontSize: '0.78rem', fontWeight: 600, color: '#334155' }}>
-                                  Treatment Time per Patient
+                          <form onSubmit={handleApplySimulatedCapacity} className="ml-calibrator-form">
+                            <div className="ml-calibrator-inputs-grid">
+                              <div className="ml-calibrator-field">
+                                <label className="ml-calibrator-label">
+                                  Select Department
                                 </label>
-                                <strong style={{ fontSize: '0.82rem', color: '#0d9488' }}>{simMins} minutes</strong>
+                                <select
+                                  className="form-control"
+                                  style={{ fontSize: '0.85rem', height: 40, background: '#ffffff' }}
+                                  value={simDeptId}
+                                  onChange={(e) => {
+                                    const id = e.target.value;
+                                    setSimDeptId(id);
+                                    const found = mlStats.find(s => String(s.department_id) === String(id));
+                                    if (found) setSimMins(parseFloat(found.avg_consultation_mins) || 15);
+                                  }}
+                                >
+                                  <option value="">-- Select Department --</option>
+                                  {mlStats.map(s => (
+                                    <option key={s.department_id} value={s.department_id}>
+                                      {s.dept_name} (Current: {parseFloat(s.avg_consultation_mins).toFixed(1)}m → {s.slot_capacity} cap)
+                                    </option>
+                                  ))}
+                                </select>
                               </div>
-                              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                                <input
-                                  type="range"
-                                  min="5"
-                                  max="40"
-                                  step="1"
-                                  value={simMins}
-                                  onChange={(e) => setSimMins(parseFloat(e.target.value))}
-                                  style={{ flex: 1, accentColor: '#0d9488' }}
-                                />
-                                <input
-                                  type="number"
-                                  min="5"
-                                  max="60"
-                                  value={simMins}
-                                  onChange={(e) => setSimMins(parseFloat(e.target.value) || 15)}
-                                  style={{ width: 55, height: 36, padding: '0 6px', fontSize: '0.85rem', borderRadius: 6, border: '1px solid #cbd5e1' }}
-                                />
+
+                              <div className="ml-calibrator-field">
+                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                                  <label className="ml-calibrator-label" style={{ marginBottom: 0 }}>
+                                    Treatment Time per Patient
+                                  </label>
+                                  <strong style={{ fontSize: '0.84rem', color: '#0d9488' }}>{simMins} minutes</strong>
+                                </div>
+                                <div className="ml-calibrator-slider-row">
+                                  <input
+                                    type="range"
+                                    min="5"
+                                    max="40"
+                                    step="1"
+                                    value={simMins}
+                                    onChange={(e) => setSimMins(parseFloat(e.target.value))}
+                                    style={{ flex: 1, accentColor: '#0d9488', height: 6, cursor: 'pointer' }}
+                                  />
+                                  <input
+                                    type="number"
+                                    min="5"
+                                    max="60"
+                                    value={simMins}
+                                    onChange={(e) => setSimMins(parseFloat(e.target.value) || 15)}
+                                    style={{ width: 60, height: 40, padding: '0 8px', fontSize: '0.88rem', borderRadius: 8, border: '1.5px solid #cbd5e1', textAlign: 'center', background: '#ffffff', fontWeight: 600 }}
+                                  />
+                                </div>
+                              </div>
+
+                              <div className="ml-calibrator-field">
+                                <label className="ml-calibrator-label">
+                                  Calculated Slot Capacity
+                                </label>
+                                <div style={{ background: '#ffffff', border: '1.5px solid #cbd5e1', borderRadius: 8, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'space-around', padding: '0 12px' }}>
+                                  <span style={{ fontSize: '0.84rem', color: '#0f172a', fontWeight: 600 }}>
+                                    <strong style={{ color: '#0f766e', fontSize: '0.95rem' }}>{Math.max(3, Math.floor(120 / (simMins || 15)))}</strong> patients / 2hr
+                                  </span>
+                                  <span style={{ fontSize: '0.76rem', color: '#64748b', fontWeight: 500 }}>
+                                    (~{Math.max(3, Math.floor(120 / (simMins || 15))) * 6}/day)
+                                  </span>
+                                </div>
                               </div>
                             </div>
 
-                            <div>
-                              <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#334155', marginBottom: 4 }}>
-                                Calculated Slot Capacity
-                              </label>
-                              <div style={{ background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: 8, height: 38, display: 'flex', alignItems: 'center', justifyContent: 'space-around', padding: '0 10px' }}>
-                                <span style={{ fontSize: '0.82rem', color: '#0f172a' }}>
-                                  <strong>{Math.max(3, Math.floor(120 / (simMins || 15)))}</strong> patients / 2hr
-                                </span>
-                                <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
-                                  (~{Math.max(3, Math.floor(120 / (simMins || 15))) * 6}/day)
-                                </span>
+                            <div className="ml-calibrator-actions-row">
+                              <div className="ml-calibrator-hint">
+                                <span>⚡ Calibrate duration to re-balance queue capacity limits across OPD slots.</span>
                               </div>
-                            </div>
-
-                            <div>
                               <button
                                 type="submit"
-                                className="btn btn-primary"
-                                style={{ height: 38, width: '100%', background: '#0d9488', borderColor: '#0d9488', fontSize: '0.82rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+                                className="ml-calibrator-submit-btn"
                                 disabled={simLoading || !simDeptId}
                               >
-                                <Zap size={14} />
+                                <Zap size={15} />
                                 <span>{simLoading ? 'Saving...' : '💾 Apply Dynamic Capacity (Effective Tomorrow)'}</span>
                               </button>
                             </div>
@@ -1389,7 +1387,7 @@ const AdminDashboard = () => {
                         </div>
 
                         {/* Stats grid */}
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))', gap: 14 }}>
                           {mlStats.map(s => {
                             const isReal = s.total_samples > 0;
                             const barPct = Math.min(100, Math.round((s.avg_consultation_mins / 30) * 100));
