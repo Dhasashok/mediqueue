@@ -22,6 +22,7 @@ import numpy as np
 import pandas as pd
 import json
 import os
+import secrets
 
 app = Flask(__name__)
 CORS(app)
@@ -225,9 +226,17 @@ def health():
     })
 
 # ─── Retrain Endpoint ──────────────────────────────────────────
+ML_INTERNAL_SECRET = os.getenv('ML_INTERNAL_SECRET')
+
 @app.route('/retrain', methods=['POST'])
 def trigger_retrain():
-    """Trigger the continuous retraining & IQR cleaning pipeline."""
+    """Trigger the continuous retraining & IQR cleaning pipeline with token security."""
+    if ML_INTERNAL_SECRET:
+        auth_header = request.headers.get('Authorization', '')
+        token = auth_header.replace('Bearer ', '').strip() if auth_header.startswith('Bearer ') else request.headers.get('X-ML-Secret', '')
+        if not token or not secrets.compare_digest(token, ML_INTERNAL_SECRET):
+            return jsonify({'success': False, 'error': 'Unauthorized: Valid Bearer token required for ML retraining'}), 401
+
     try:
         from retrain import run_pipeline
         success = run_pipeline()

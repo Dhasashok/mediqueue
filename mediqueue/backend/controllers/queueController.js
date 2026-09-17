@@ -1,3 +1,4 @@
+const axios = require('axios');
 const db = require('../models/db');
 const { sendCheckInEmail, sendCompletionEmail } = require('../utils/emailService');
 
@@ -166,6 +167,21 @@ const scheduleMidnightRecalculation = () => {
       } catch (rollErr) {
         console.warn('Could not roll over today_slot_capacity:', rollErr.message);
       }
+
+      // Automatically trigger Python ML microservice retraining (Zero-PII pipeline)
+      const mlUrl = process.env.ML_SERVICE_URL || 'http://localhost:5001';
+      const mlSecret = process.env.ML_INTERNAL_SECRET;
+      try {
+        console.log('🤖 Triggering automated ML Random Forest retraining...');
+        const headers = mlSecret ? { Authorization: `Bearer ${mlSecret}` } : {};
+        const mlRes = await axios.post(`${mlUrl}/retrain`, {}, { headers, timeout: 60000 });
+        if (mlRes.data.success) {
+          console.log('✅ Automated ML retraining finished:', mlRes.data.message);
+        }
+      } catch (mlErr) {
+        console.warn('⚠️ Nightly ML auto-retraining note:', mlErr.response?.data?.error || mlErr.message);
+      }
+
       scheduleNext(); // ← self-reschedule for next night (not setInterval)
     }, msUntil);
   };

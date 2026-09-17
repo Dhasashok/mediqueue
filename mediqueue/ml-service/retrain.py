@@ -66,32 +66,82 @@ def get_db_connection():
         database=DB_NAME
     )
 
-def fetch_completed_consultations():
-    """Extract raw completed consultation data from TiDB queue and appointments."""
-    conn = get_db_connection()
-    query = """
+def ensure_clean_view(conn):
+    """Ensure the privacy-preserving, zero-PII SQL view exists."""
+    cursor = conn.cursor()
+    create_view_sql = """
+        CREATE OR REPLACE VIEW v_ml_clean_metrics AS
         SELECT 
             q.id AS queue_id,
             q.department_id,
             COALESCE(d.name, '') AS department_name,
-            q.doctor_id,
             q.consultation_mins,
+            TIMESTAMPDIFF(MINUTE, q.check_in_time, q.treatment_start_time) AS actual_wait_mins,
+            HOUR(q.check_in_time) AS arrival_hour,
+            DAYOFWEEK(q.check_in_time) AS day_of_week,
+            MONTH(q.check_in_time) AS visit_month,
             a.age AS patient_age,
             a.gender,
             a.reason_for_visit,
             a.time_slot,
             q.check_in_time,
             q.treatment_start_time,
-            q.completed_at
+            q.completed_at,
+            CASE WHEN q.department_id = 12 THEN 1 ELSE 0 END AS is_emergency
         FROM queue q
         JOIN appointments a ON q.appointment_id = a.id
         LEFT JOIN departments d ON q.department_id = d.id
         WHERE q.status = 'Completed' 
           AND q.consultation_mins IS NOT NULL
-        ORDER BY q.id ASC
+          AND q.treatment_start_time IS NOT NULL;
+    """
+    cursor.execute(create_view_sql)
+    conn.commit()
+    cursor.close()
+
+def fetch_completed_consultations():
+    """
+    Extract strictly privacy-preserving de-identified operational metrics.
+    Zero access to patient passwords, contact details, doctor or admin identities.
+    """
+    conn = get_db_connection()
+    ensure_clean_view(conn)
+
+    # Strictly query the privacy-preserving view (no raw tables queried directly)
+    query = """
+        SELECT 
+            queue_id,
+            department_id,
+            department_name,
+            consultation_mins,
+            actual_wait_mins,
+            arrival_hour,
+            day_of_week,
+            visit_month,
+            patient_age,
+            gender,
+            reason_for_visit,
+            time_slot,
+            check_in_time,
+            treatment_start_time,
+            completed_at,
+            is_emergency
+        FROM v_ml_clean_metrics
+        ORDER BY queue_id ASC
     """
     df = pd.read_sql(query, conn)
     conn.close()
+
+    # Strict privacy safeguard: verify that zero sensitive columns ever enter ML memory
+    FORBIDDEN_COLUMNS = {
+        'password_hash', 'password', 'email', 'phone', 'first_name', 'last_name',
+        'full_name', 'otp', 'otp_expiry', 'diagnosis', 'medicines', 'pdf_data',
+        'qr_code_data', 'patient_id', 'doctor_id', 'username'
+    }
+    exposed = FORBIDDEN_COLUMNS.intersection(set(df.columns))
+    if exposed:
+        raise PermissionError(f"🔒 PRIVACY VIOLATION DETECTED: Sensitive columns {exposed} found in ML memory!")
+
     return df
 
 def clean_by_iqr(df):
