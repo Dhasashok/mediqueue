@@ -354,8 +354,8 @@
   .hero-mobile-clinical {
     display: flex !important;
     flex-direction: column !important;
-    justify-content: space-between !important;
-    gap: 12px !important;
+    justify-content: flex-start !important;
+    gap: 14px !important;
     width: 100% !important;
     max-width: 100% !important;
     min-width: 0 !important;
@@ -364,10 +364,10 @@
 
   .hero-v2 {
     background: linear-gradient(155deg, #0b1329 0%, #112240 50%, #0d4a52 100%) !important;
-    min-height: calc(100dvh - 52px) !important;
+    min-height: auto !important;
     display: flex !important;
     flex-direction: column !important;
-    justify-content: space-between !important;
+    justify-content: flex-start !important;
     border-radius: 0 !important;
     box-shadow: none !important;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
@@ -384,8 +384,8 @@
     flex: 1 !important;
     display: flex !important;
     flex-direction: column !important;
-    justify-content: space-between !important;
-    padding: 16px 16px 20px 16px !important;
+    justify-content: flex-start !important;
+    padding: 16px 16px 24px 16px !important;
     text-align: left !important;
     width: 100% !important;
     max-width: 100% !important;
@@ -410,6 +410,7 @@
     max-width: 100% !important;
     min-width: 0 !important;
     box-sizing: border-box !important;
+    margin-bottom: 4px !important;
   }
 
   /* Hospital location & live status strip */
