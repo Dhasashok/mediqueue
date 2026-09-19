@@ -359,18 +359,42 @@
 
   .hero-v2 {
     background: linear-gradient(155deg, #0b1329 0%, #112240 50%, #0d4a52 100%) !important;
-    min-height: auto !important;
+    min-height: calc(100dvh - 52px) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
     border-radius: 0 !important;
     box-shadow: none !important;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+    box-sizing: border-box !important;
   }
   .hero-blob {
     display: none !important;
   }
   .hero-v2-inner {
-    padding-top: 20px !important;
-    padding-bottom: 24px !important;
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    padding-top: 18px !important;
+    padding-bottom: 22px !important;
     text-align: left !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  .hero-mobile-clinical {
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    gap: 14px !important;
+    width: 100% !important;
+  }
+
+  .m-top-group {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
   }
 
   /* Hospital location & live status strip */
@@ -385,7 +409,7 @@
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25) !important;
     padding: 6px 12px !important;
     border-radius: 999px !important;
-    margin-bottom: 14px !important;
+    margin-bottom: 12px !important;
     align-self: flex-start !important;
   }
   .m-pulse-dot {
@@ -421,71 +445,175 @@
     color: #ffffff !important;
     line-height: 1.25 !important;
     letter-spacing: -0.02em !important;
-    margin-bottom: 10px !important;
+    margin-bottom: 8px !important;
     text-align: left !important;
   }
   .m-hero-sub {
     font-size: 0.88rem !important;
     line-height: 1.5 !important;
     color: #94a3b8 !important;
-    margin-bottom: 20px !important;
+    margin-bottom: 0 !important;
     text-align: left !important;
   }
 
-  /* 4-Up Quick Access Matrix */
-  .m-quick-grid {
-    display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
-    gap: 12px !important;
-    margin-bottom: 16px !important;
+  /* Actions Group */
+  .m-actions-group {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
     width: 100% !important;
   }
-  .m-quick-card {
+
+  /* Big Featured Doctor Booking Card */
+  .m-featured-card {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    background: linear-gradient(135deg, rgba(13, 148, 136, 0.32) 0%, rgba(15, 23, 42, 0.65) 100%) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    border: 1px solid rgba(45, 212, 191, 0.45) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3), 0 0 20px rgba(13, 148, 136, 0.15) !important;
+    border-radius: 18px !important;
+    padding: 14px 16px !important;
+    text-decoration: none !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    transition: transform 0.15s ease, background 0.15s ease !important;
+    -webkit-tap-highlight-color: transparent !important;
+  }
+  .m-featured-card:active {
+    transform: scale(0.98) !important;
+    background: linear-gradient(135deg, rgba(13, 148, 136, 0.4) 0%, rgba(15, 23, 42, 0.75) 100%) !important;
+  }
+  .m-fc-left {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    overflow: hidden !important;
+    text-align: left !important;
+  }
+  .m-fc-icon-wrap {
+    width: 46px !important;
+    height: 46px !important;
+    border-radius: 14px !important;
+    background: rgba(16, 185, 129, 0.25) !important;
+    color: #34d399 !important;
+    border: 1px solid rgba(52, 211, 153, 0.45) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+  }
+  .m-fc-text {
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+    text-align: left !important;
+  }
+  .m-fc-badge {
+    font-size: 0.62rem !important;
+    font-weight: 800 !important;
+    color: #5eead4 !important;
+    letter-spacing: 0.05em !important;
+    text-transform: uppercase !important;
+    margin-bottom: 2px !important;
+  }
+  .m-fc-title {
+    font-size: 0.98rem !important;
+    font-weight: 800 !important;
+    color: #ffffff !important;
+    line-height: 1.25 !important;
+    white-space: nowrap !important;
+  }
+  .m-fc-sub {
+    font-size: 0.72rem !important;
+    color: #94a3b8 !important;
+    font-weight: 500 !important;
+    line-height: 1.3 !important;
+    white-space: nowrap !important;
+  }
+  .m-fc-arrow {
+    width: 34px !important;
+    height: 34px !important;
+    border-radius: 50% !important;
+    background: rgba(45, 212, 191, 0.2) !important;
+    color: #5eead4 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+    margin-left: 10px !important;
+  }
+
+  /* Secondary Duo Grid (Wide & Comfortable) */
+  .m-duo-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px !important;
+    width: 100% !important;
+  }
+  .m-duo-card {
     display: flex !important;
     align-items: center !important;
     gap: 10px !important;
     background: rgba(255, 255, 255, 0.06) !important;
-    backdrop-filter: blur(16px) !important;
-    -webkit-backdrop-filter: blur(16px) !important;
+    backdrop-filter: blur(14px) !important;
+    -webkit-backdrop-filter: blur(14px) !important;
     border: 1px solid rgba(255, 255, 255, 0.12) !important;
     border-radius: 16px !important;
-    padding: 12px 14px !important;
+    padding: 12px 12px !important;
     text-decoration: none !important;
-    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2) !important;
+    box-sizing: border-box !important;
     transition: transform 0.15s ease, background 0.15s ease !important;
     -webkit-tap-highlight-color: transparent !important;
-    box-sizing: border-box !important;
   }
-  .m-quick-card:active {
+  .m-duo-card:active {
     transform: scale(0.97) !important;
     background: rgba(255, 255, 255, 0.12) !important;
   }
-  .m-qc-primary {
-    border-color: rgba(52, 211, 153, 0.35) !important;
-  }
-  .m-qc-teal {
+  .m-duo-queue {
     border-color: rgba(45, 212, 191, 0.35) !important;
   }
-  .m-qc-indigo {
+  .m-duo-pass {
     border-color: rgba(165, 180, 252, 0.35) !important;
   }
-  .m-qc-rose {
-    border-color: rgba(251, 113, 133, 0.35) !important;
-  }
-  .m-qc-icon-wrap {
-    width: 40px !important;
-    height: 40px !important;
+  .m-duo-icon {
+    width: 38px !important;
+    height: 38px !important;
     border-radius: 12px !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
     flex-shrink: 0 !important;
   }
-  .m-qci-emerald {
-    background: rgba(16, 185, 129, 0.22) !important;
-    color: #34d399 !important;
-    border: 1px solid rgba(52, 211, 153, 0.3) !important;
+  .m-duo-text {
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+    text-align: left !important;
   }
+  .m-duo-title {
+    font-size: 0.85rem !important;
+    font-weight: 750 !important;
+    color: #ffffff !important;
+    line-height: 1.2 !important;
+    white-space: nowrap !important;
+  }
+  .m-duo-sub {
+    font-size: 0.68rem !important;
+    color: #94a3b8 !important;
+    font-weight: 500 !important;
+    line-height: 1.3 !important;
+    white-space: nowrap !important;
+  }
+  .m-duo-arrow {
+    color: #64748b !important;
+    margin-left: auto !important;
+    flex-shrink: 0 !important;
+  }
+
   .m-qci-teal {
     background: rgba(13, 148, 136, 0.22) !important;
     color: #2dd4bf !important;
@@ -496,30 +624,64 @@
     color: #a5b4fc !important;
     border: 1px solid rgba(165, 180, 252, 0.3) !important;
   }
-  .m-qci-rose {
-    background: rgba(244, 63, 94, 0.22) !important;
-    color: #fb7185 !important;
-    border: 1px solid rgba(251, 113, 133, 0.3) !important;
-  }
-  .m-qc-text {
+
+  /* Emergency Hotline Bar */
+  .m-emergency-bar {
     display: flex !important;
-    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    background: rgba(244, 63, 94, 0.12) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    border: 1px solid rgba(244, 63, 94, 0.32) !important;
+    border-radius: 14px !important;
+    padding: 10px 14px !important;
+    text-decoration: none !important;
+    box-sizing: border-box !important;
+    width: 100% !important;
+    transition: transform 0.15s ease, background 0.15s ease !important;
+    -webkit-tap-highlight-color: transparent !important;
+  }
+  .m-emergency-bar:active {
+    transform: scale(0.98) !important;
+    background: rgba(244, 63, 94, 0.2) !important;
+  }
+  .m-emg-left {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
     overflow: hidden !important;
-    text-align: left !important;
   }
-  .m-qc-title {
-    font-size: 0.85rem !important;
-    font-weight: 750 !important;
+  .m-emg-icon {
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 8px !important;
+    background: rgba(244, 63, 94, 0.25) !important;
+    color: #fb7185 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+  }
+  .m-emg-text {
+    font-size: 0.78rem !important;
+    color: #fecdd3 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+  .m-emg-text strong {
     color: #ffffff !important;
-    line-height: 1.2 !important;
-    white-space: nowrap !important;
   }
-  .m-qc-sub {
-    font-size: 0.70rem !important;
-    color: #94a3b8 !important;
-    font-weight: 500 !important;
-    line-height: 1.3 !important;
-    white-space: nowrap !important;
+  .m-emg-action {
+    font-size: 0.72rem !important;
+    font-weight: 800 !important;
+    background: #e11d48 !important;
+    color: #ffffff !important;
+    padding: 4px 10px !important;
+    border-radius: 999px !important;
+    flex-shrink: 0 !important;
+    margin-left: 8px !important;
   }
 
   /* Live Ticker Card */
