@@ -1360,7 +1360,8 @@ const AdminDashboard = () => {
 
                             <div className="ml-calibrator-actions-row">
                               <div className="ml-calibrator-hint">
-                                <span>⚡ Calibrate duration to re-balance queue capacity limits across OPD slots.</span>
+                                <Sparkles size={14} color="#0d9488" />
+                                <span>Calibrate duration to re-balance queue capacity limits across OPD slots.</span>
                               </div>
                               <button
                                 type="submit"
@@ -1368,7 +1369,7 @@ const AdminDashboard = () => {
                                 disabled={simLoading || !simDeptId}
                               >
                                 <Zap size={15} />
-                                <span>{simLoading ? 'Saving...' : '💾 Apply Dynamic Capacity (Effective Tomorrow)'}</span>
+                                <span>{simLoading ? 'Applying Changes...' : 'Apply Dynamic Capacity (Effective Tomorrow)'}</span>
                               </button>
                             </div>
                           </form>
@@ -1390,7 +1391,8 @@ const AdminDashboard = () => {
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))', gap: 14 }}>
                           {mlStats.map(s => {
                             const isReal = s.total_samples > 0;
-                            const barPct = Math.min(100, Math.round((s.avg_consultation_mins / 30) * 100));
+                            const maxScaleMins = 45;
+                            const barPct = Math.min(100, Math.round((s.avg_consultation_mins / maxScaleMins) * 100));
                             const lastUpdated = s.last_updated
                               ? new Date(s.last_updated).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })
                               : 'Never';
@@ -1428,15 +1430,28 @@ const AdminDashboard = () => {
                                     </p>
                                     <p style={{ fontSize: '0.7rem', color: 'var(--color-text-secondary)', margin: '4px 0 0' }}>min avg / patient</p>
                                   </div>
-                                  <div style={{ textAlign: 'center', background: 'var(--color-background-primary)', borderRadius: 8, padding: '10px 8px' }}>
-                                    <p style={{ fontSize: '1.4rem', fontWeight: 700, color: '#1d4ed8', margin: 0, lineHeight: 1 }}>
-                                      {s.slot_capacity}
-                                    </p>
-                                    <p style={{ fontSize: '0.7rem', color: 'var(--color-text-secondary)', margin: '4px 0 0' }}>
-                                      {s.today_slot_capacity && s.today_slot_capacity !== s.slot_capacity
-                                        ? `tomorrow (today: ${s.today_slot_capacity})`
-                                        : 'capacity / 2hr slot'}
-                                    </p>
+                                  <div style={{ textAlign: 'center', background: 'var(--color-background-primary)', borderRadius: 8, padding: '10px 8px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                                    {s.today_slot_capacity && s.today_slot_capacity !== s.slot_capacity ? (
+                                      <div>
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, lineHeight: 1 }}>
+                                          <span style={{ fontSize: '1.25rem', fontWeight: 700, color: '#334155' }}>{s.today_slot_capacity}</span>
+                                          <span style={{ fontSize: '0.85rem', color: '#0d9488', fontWeight: 700 }}>→</span>
+                                          <span style={{ fontSize: '1.35rem', fontWeight: 800, color: '#0d9488' }}>{s.slot_capacity}</span>
+                                        </div>
+                                        <p style={{ fontSize: '0.68rem', color: '#0f766e', fontWeight: 600, margin: '5px 0 0' }}>
+                                          today → tomorrow
+                                        </p>
+                                      </div>
+                                    ) : (
+                                      <div>
+                                        <p style={{ fontSize: '1.4rem', fontWeight: 700, color: '#1d4ed8', margin: 0, lineHeight: 1 }}>
+                                          {s.slot_capacity}
+                                        </p>
+                                        <p style={{ fontSize: '0.7rem', color: 'var(--color-text-secondary)', margin: '4px 0 0' }}>
+                                          capacity / 2hr slot
+                                        </p>
+                                      </div>
+                                    )}
                                   </div>
                                 </div>
 
@@ -1444,7 +1459,7 @@ const AdminDashboard = () => {
                                 <div style={{ marginBottom: 8 }}>
                                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                                     <span style={{ fontSize: '0.72rem', color: 'var(--color-text-secondary)' }}>Avg consultation time</span>
-                                    <span style={{ fontSize: '0.72rem', color: 'var(--color-text-secondary)' }}>30 min max</span>
+                                    <span style={{ fontSize: '0.72rem', color: 'var(--color-text-secondary)' }}>45m scale</span>
                                   </div>
                                   <div style={{ height: 6, background: 'var(--color-border-tertiary)', borderRadius: 4, overflow: 'hidden' }}>
                                     <div style={{
