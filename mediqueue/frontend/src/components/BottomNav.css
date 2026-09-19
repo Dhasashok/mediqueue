@@ -31,8 +31,8 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    gap: 3px;
+    justify-content: flex-end;
+    padding-bottom: 9px;
     height: 100%;
     color: #64748b;
     text-decoration: none;
@@ -45,6 +45,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    margin-bottom: 4px;
     transition: transform 0.2s ease;
   }
 
@@ -52,6 +53,7 @@
     font-size: 0.68rem;
     font-weight: 600;
     letter-spacing: 0.1px;
+    line-height: 1;
     transition: color 0.2s ease;
   }
 
@@ -67,7 +69,7 @@
   .bnav-item.active::after {
     content: '';
     position: absolute;
-    bottom: 4px;
+    bottom: 2px;
     width: 16px;
     height: 3px;
     border-radius: 999px;
@@ -92,7 +94,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-top: -16px;
+    margin-bottom: 4px;
+    margin-top: -14px;
     box-shadow: 0 6px 18px rgba(13, 148, 136, 0.38);
     transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
     border: 2.5px solid white;
