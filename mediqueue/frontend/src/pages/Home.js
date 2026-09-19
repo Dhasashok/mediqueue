@@ -11,7 +11,10 @@ import {
   CheckCircle2,
   Zap,
   Activity,
-  Sparkles
+  Sparkles,
+  Stethoscope,
+  PhoneCall,
+  Clock
 } from 'lucide-react';
 import './Home.css';
 
@@ -96,35 +99,101 @@ const Home = () => {
 
         <div className="container hero-v2-inner">
           <div className="hero-v2-text">
-            {/* Hospital badge */}
-            <div className="hero-badge">
-              <span className="hero-badge-dot"></span>
-              City General Hospital, Pune
+            {/* ── Desktop Hero Content ── */}
+            <div className="hero-desktop-view">
+              <div className="hero-badge">
+                <span className="hero-badge-dot"></span>
+                City General Hospital, Pune
+              </div>
+
+              <h1 className="hero-v2-title">
+                Skip the Wait,<br />
+                <span className="hero-gradient-text">Not the Care</span>
+              </h1>
+
+              <p className="hero-v2-desc">
+                Book hospital appointments online, get your QR token instantly, and join the queue —
+                all from your phone. Our AI predicts real-time wait times.
+              </p>
+
+              <div className="hero-v2-btns">
+                <Link to="/find-hospital" className="btn-hero-primary">
+                  <CalendarCheck size={18} /> Book Appointment
+                </Link>
+              </div>
+
+              <div className="hero-trust">
+                <span className="trust-item"><CheckCircle2 size={15} color="#22c55e" /> Free to use</span>
+                <span className="trust-item"><CheckCircle2 size={15} color="#22c55e" /> Instant QR</span>
+                <span className="trust-item"><CheckCircle2 size={15} color="#22c55e" /> No waiting</span>
+              </div>
             </div>
 
-            <h1 className="hero-v2-title">
-              Skip the Wait,<br />
-              <span className="hero-gradient-text">Not the Care</span>
-            </h1>
+            {/* ── Mobile-Only Clean Clinical Healthcare View ── */}
+            <div className="hero-mobile-clinical">
+              <div className="m-hospital-strip">
+                <span className="m-pulse-dot"></span>
+                <span className="m-hosp-name">City General Hospital, Pune</span>
+                <span className="m-opd-badge">OPD Live</span>
+              </div>
 
-            <p className="hero-v2-desc">
-              Book hospital appointments online, get your QR token instantly, and join the queue —
-              all from your phone. Our AI predicts real-time wait times.
-            </p>
+              <h1 className="m-hero-title">
+                Smart Hospital OPD &amp; Fast-Track Queuing
+              </h1>
+              <p className="m-hero-sub">
+                Book appointments, track live wait times, and skip waiting rooms with your digital pass.
+              </p>
 
-            {/* Mobile 4-Up Quick Actions Grid */}
-            {/* Hero Primary Action Button */}
-            <div className="hero-v2-btns">
-              <Link to="/find-hospital" className="btn-hero-primary">
-                <CalendarCheck size={18} /> Book Appointment
-              </Link>
-            </div>
+              {/* 4-Up Quick Access Matrix */}
+              <div className="m-quick-grid">
+                <Link to="/find-hospital" className="m-quick-card m-qc-primary">
+                  <div className="m-qc-icon-wrap" style={{ background: '#ecfdf5', color: '#059669' }}>
+                    <Stethoscope size={22} />
+                  </div>
+                  <div className="m-qc-text">
+                    <span className="m-qc-title">Book Doctor</span>
+                    <span className="m-qc-sub">OPD Specialists</span>
+                  </div>
+                </Link>
 
-            {/* Trust badges */}
-            <div className="hero-trust">
-              <span className="trust-item"><CheckCircle2 size={15} color="#22c55e" /> Free to use</span>
-              <span className="trust-item"><CheckCircle2 size={15} color="#22c55e" /> Instant QR</span>
-              <span className="trust-item"><CheckCircle2 size={15} color="#22c55e" /> No waiting</span>
+                <Link to="/my-queue" className="m-quick-card m-qc-teal">
+                  <div className="m-qc-icon-wrap" style={{ background: '#f0fdfa', color: '#0d9488' }}>
+                    <Clock size={22} />
+                  </div>
+                  <div className="m-qc-text">
+                    <span className="m-qc-title">Live Queue</span>
+                    <span className="m-qc-sub">Wait Times</span>
+                  </div>
+                </Link>
+
+                <Link to="/my-queue" className="m-quick-card m-qc-indigo">
+                  <div className="m-qc-icon-wrap" style={{ background: '#eef2ff', color: '#4f46e5' }}>
+                    <QrCode size={22} />
+                  </div>
+                  <div className="m-qc-text">
+                    <span className="m-qc-title">My QR Pass</span>
+                    <span className="m-qc-sub">Digital Token</span>
+                  </div>
+                </Link>
+
+                <a href="tel:108" className="m-quick-card m-qc-rose">
+                  <div className="m-qc-icon-wrap" style={{ background: '#fff1f2', color: '#e11d48' }}>
+                    <PhoneCall size={22} />
+                  </div>
+                  <div className="m-qc-text">
+                    <span className="m-qc-title">Emergency</span>
+                    <span className="m-qc-sub">24/7 Care (108)</span>
+                  </div>
+                </a>
+              </div>
+
+              {/* Live Status Ticker */}
+              <div className="m-ticker-card">
+                <div className="m-ticker-pulse"></div>
+                <span className="m-ticker-text">
+                  Average OPD Wait: <strong>~14 mins</strong> · 12 Specialties Active
+                </span>
+              </div>
             </div>
           </div>
 
