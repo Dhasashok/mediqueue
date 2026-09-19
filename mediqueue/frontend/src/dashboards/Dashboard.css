@@ -594,26 +594,39 @@
 
   /* Appt Row on Mobile */
   .appt-row {
-    flex-direction: column !important;
+    flex-direction: row !important;
     align-items: flex-start !important;
-    padding: 16px 14px !important;
+    flex-wrap: wrap !important;
+    padding: 14px 12px !important;
     gap: 12px !important;
-    border-radius: 16px !important;
+    border-radius: 14px !important;
     border: 1px solid #e2e8f0 !important;
     background: #ffffff !important;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
     position: relative !important;
     overflow: hidden !important;
   }
   .appt-row::before {
     width: 4px !important;
-    border-radius: 16px 0 0 16px !important;
+    border-radius: 14px 0 0 14px !important;
   }
   .appt-dept-icon {
-    display: none !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 36px !important;
+    height: 36px !important;
+    font-size: 0.88rem !important;
+    font-weight: 800 !important;
+    border-radius: 10px !important;
+    background: #ccfbf1 !important;
+    color: #0f766e !important;
+    flex-shrink: 0 !important;
+    margin-top: 2px !important;
   }
   .appt-main {
-    width: 100% !important;
+    flex: 1 !important;
+    min-width: 0 !important;
   }
   .appt-actions-col {
     width: 100% !important;
@@ -624,6 +637,12 @@
     margin-top: 4px !important;
     border-top: 1px solid #f1f5f9 !important;
     padding-top: 10px !important;
+  }
+  .appt-actions-col:empty {
+    display: none !important;
+    border-top: none !important;
+    padding-top: 0 !important;
+    margin-top: 0 !important;
   }
   .appt-actions-col .btn-checkin-main {
     flex: 1 !important;
@@ -1793,6 +1812,14 @@
   .dpt-refresh-btn {
     padding: 6px 10px;
   }
+  .dpt-crumb-brand,
+  .dpt-crumb-sep {
+    display: none !important;
+  }
+  .dpt-crumb-current {
+    font-size: 0.95rem !important;
+    font-weight: 700 !important;
+  }
   .dash-portal-topbar {
     padding: 0 12px;
   }
@@ -1978,9 +2005,12 @@
 .reg-filters-card {
   background: #f8fafc;
   border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 14px;
+  border-radius: 14px;
+  padding: 14px 16px;
   margin-bottom: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 .reg-search-row {
   display: flex;
@@ -1992,7 +2022,7 @@
   position: relative;
   display: flex;
   align-items: center;
-  flex: 1;
+  flex: 2;
   min-width: 220px;
 }
 .reg-search-icon {
@@ -2003,47 +2033,102 @@
 }
 .reg-search-input {
   width: 100%;
-  padding: 9px 12px 9px 36px !important;
+  height: 40px;
+  padding: 8px 12px 8px 36px !important;
   border: 1.5px solid #cbd5e1 !important;
-  border-radius: 8px !important;
+  border-radius: 9px !important;
   font-size: 0.85rem !important;
   background: #ffffff !important;
   outline: none !important;
   box-sizing: border-box !important;
+  transition: all 0.15s ease;
 }
 .reg-search-input:focus {
   border-color: #0d9488 !important;
-  box-shadow: 0 0 0 2px rgba(13, 148, 136, 0.15) !important;
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.12) !important;
+}
+.reg-date-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1.2;
+  min-width: 200px;
 }
 .reg-date-input {
+  flex: 1;
+  height: 40px;
   padding: 8px 12px;
   border: 1.5px solid #cbd5e1 !important;
-  border-radius: 8px !important;
+  border-radius: 9px !important;
   font-size: 0.85rem !important;
   background: #ffffff !important;
   outline: none !important;
   box-sizing: border-box !important;
+  transition: all 0.15s ease;
 }
 .reg-date-input:focus {
   border-color: #0d9488 !important;
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.12) !important;
+}
+.reg-date-clear-btn,
+.reg-date-today-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 10px;
+  height: 40px;
+  border-radius: 8px;
+  border: 1.5px solid #e2e8f0;
+  background: #ffffff;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+  box-sizing: border-box;
+}
+.reg-date-clear-btn:hover {
+  background: #fee2e2;
+  color: #b91c1c;
+  border-color: #fca5a5;
+}
+.reg-date-today-btn:hover {
+  background: #f0fdf4;
+  color: #0f766e;
+  border-color: #99f6e4;
 }
 .reg-dept-select {
+  flex: 1.2;
+  min-width: 170px;
+  height: 40px;
   padding: 8px 12px;
   border: 1.5px solid #cbd5e1 !important;
-  border-radius: 8px !important;
+  border-radius: 9px !important;
   font-size: 0.85rem !important;
   background: #ffffff !important;
   outline: none !important;
   box-sizing: border-box !important;
+  cursor: pointer;
+  transition: all 0.15s ease;
 }
 .reg-dept-select:focus {
   border-color: #0d9488 !important;
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.12) !important;
+}
+.reg-filter-bottom-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding-top: 4px;
 }
 .reg-status-pills {
   display: flex;
   gap: 6px;
-  margin-top: 10px;
   flex-wrap: wrap;
+  align-items: center;
 }
 .reg-pill {
   padding: 5px 12px;
@@ -2058,13 +2143,60 @@
 }
 .reg-pill:hover {
   border-color: #cbd5e1;
-  color: #334155;
+  color: #1e293b;
+  background: #f1f5f9;
 }
 .reg-pill.active {
   background: #0d9488;
   border-color: #0d9488;
   color: #ffffff;
   font-weight: 600;
+  box-shadow: 0 2px 6px rgba(13, 148, 136, 0.25);
+}
+.reg-reset-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1.5px solid #e2e8f0;
+  background: #ffffff;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+.reg-reset-btn:hover {
+  background: #fff1f2;
+  border-color: #fecdd3;
+  color: #e11d48;
+}
+
+@media (max-width: 640px) {
+  .reg-search-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .reg-search-box,
+  .reg-date-wrap,
+  .reg-dept-select {
+    width: 100%;
+    min-width: 0;
+  }
+  .reg-filter-bottom-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .reg-status-pills {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  .reg-reset-btn {
+    align-self: flex-start;
+  }
 }
 
 /* Analytics Modern Clean Grids */

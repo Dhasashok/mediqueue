@@ -6,7 +6,7 @@ import { getPendingDoctors, approveDoctor, getAllDoctors, getAnalytics } from '.
 import {
   QrCode, Camera, RefreshCw, CheckCircle2, XCircle, X, ArrowRight, AlertCircle,
   CalendarCheck, Clock, Users, FileText, BarChart3, UserCheck, Stethoscope, Cpu, CalendarX, Calendar, Menu, Search, LogOut,
-  Building2, Sparkles, Sliders, Zap, TrendingUp, Activity, ChevronDown, ChevronUp
+  Building2, Sparkles, Sliders, Zap, TrendingUp, Activity, ChevronDown, ChevronUp, RotateCcw
 } from 'lucide-react';
 import API from '../services/api';
 import './Dashboard.css';
@@ -543,18 +543,23 @@ const AdminDashboard = () => {
 
   const filteredAppointments = allAppointments.filter(a => {
     const apptDate = normalizeDate(a.appointment_date);
-    // Date filter — default is today, so only today shows unless changed
+    // Date filter — only filters when set
     if (filterDate && apptDate !== filterDate) return false;
     if (filterDept   && !(a.dept_name || '').toLowerCase().includes(filterDept.toLowerCase())) return false;
     if (filterStatus && a.status !== filterStatus) return false;
     if (!searchFilter) return true;
-    const q = searchFilter.toLowerCase();
+    const q = searchFilter.toLowerCase().trim();
+    const patientName = `${a.p_first || ''} ${a.p_last || ''}`.trim().toLowerCase();
+    const doctorName = `${a.doc_first || ''} ${a.doc_last || ''}`.trim().toLowerCase();
     return (
       (a.booking_id || '').toLowerCase().includes(q) ||
       (a.full_name || '').toLowerCase().includes(q) ||
-      (`${a.p_first} ${a.p_last}`).toLowerCase().includes(q) ||
+      patientName.includes(q) ||
+      doctorName.includes(q) ||
+      `dr. ${doctorName}`.includes(q) ||
       (a.dept_name || '').toLowerCase().includes(q) ||
       (a.status || '').toLowerCase().includes(q) ||
+      (a.reason_for_visit || '').toLowerCase().includes(q) ||
       apptDate.includes(q)
     );
   });
@@ -583,6 +588,7 @@ const AdminDashboard = () => {
   const ApptRow = ({ a, showCheckin = false, showCancel = false }) => {
     const patientName = `${a.p_first || ''} ${a.p_last || ''}`.trim() || a.full_name || 'Patient';
     const showBookedBy = a.full_name && patientName && a.full_name.trim().toLowerCase() !== patientName.toLowerCase();
+    const hasActions = showCheckin || showCancel;
 
     return (
       <div className="appt-row">
@@ -602,19 +608,21 @@ const AdminDashboard = () => {
           <p className="appt-dept">{a.dept_name} · Dr. {a.doc_first} {a.doc_last} · {a.time_slot}</p>
           <p className="appt-date">Token: <strong style={{ color: 'var(--navy)' }}>{a.booking_id}</strong> · {a.appointment_date?.substring(0,10)} · Age: {a.age || 'N/A'}</p>
         </div>
-        <div className="appt-actions-col">
-          {showCheckin && (
-            <button className="btn btn-primary btn-sm appt-btn-checkin" disabled={checkingIn === a.booking_id}
-              onClick={() => handleCheckIn(a.booking_id)}>
-              {checkingIn === a.booking_id ? 'Checking in...' : <><CheckCircle2 size={14} /> <span>Check In</span></>}
-            </button>
-          )}
-          {showCancel && (
-            <button className="appt-btn-cancel" onClick={() => handleCancelAppointment(a.id, a.booking_id)}>
-              <XCircle size={13} /> <span>Cancel</span>
-            </button>
-          )}
-        </div>
+        {hasActions && (
+          <div className="appt-actions-col">
+            {showCheckin && (
+              <button className="btn btn-primary btn-sm appt-btn-checkin" disabled={checkingIn === a.booking_id}
+                onClick={() => handleCheckIn(a.booking_id)}>
+                {checkingIn === a.booking_id ? 'Checking in...' : <><CheckCircle2 size={14} /> <span>Check In</span></>}
+              </button>
+            )}
+            {showCancel && (
+              <button className="appt-btn-cancel" onClick={() => handleCancelAppointment(a.id, a.booking_id)}>
+                <XCircle size={13} /> <span>Cancel</span>
+              </button>
+            )}
+          </div>
+        )}
       </div>
     );
   };
@@ -953,29 +961,54 @@ const AdminDashboard = () => {
                       icon={FileText}
                       iconClass="register"
                       title="Appointments Register"
-                      badgeText={`${filteredAppointments.length} Records`}
+                      badgeText={`${filteredAppointments.length} ${filteredAppointments.length === 1 ? 'Record' : 'Records'}`}
                       badgeClass="badge-indigo"
                     />
 
-                    {/* Compact Filter Card */}
+                    {/* Modern Filter Card */}
                     <div className="reg-filters-card">
                       <div className="reg-search-row">
                         <div className="reg-search-box">
                           <Search size={15} className="reg-search-icon" />
                           <input
-                            placeholder="Search by patient name, booking ID..."
+                            placeholder="Search patient, doctor, booking ID..."
                             value={searchFilter}
                             onChange={e => setSearchFilter(e.target.value)}
                             className="reg-search-input"
                           />
                         </div>
-                        <input
-                          type="date"
-                          value={filterDate}
-                          onChange={e => setFilterDate(e.target.value)}
-                          className="reg-date-input"
-                          title="Filter by appointment date"
-                        />
+
+                        <div className="reg-date-wrap">
+                          <input
+                            type="date"
+                            value={filterDate}
+                            onChange={e => setFilterDate(e.target.value)}
+                            className="reg-date-input"
+                            title="Filter by appointment date"
+                          />
+                          {filterDate ? (
+                            <button
+                              type="button"
+                              className="reg-date-clear-btn"
+                              onClick={() => setFilterDate('')}
+                              title="Show appointments across all dates"
+                            >
+                              <X size={12} />
+                              <span>All Dates</span>
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              className="reg-date-today-btn"
+                              onClick={() => setFilterDate(todayIST)}
+                              title="Filter today's appointments"
+                            >
+                              <Calendar size={12} />
+                              <span>Today</span>
+                            </button>
+                          )}
+                        </div>
+
                         <select
                           value={filterDept}
                           onChange={e => setFilterDept(e.target.value)}
@@ -985,24 +1018,37 @@ const AdminDashboard = () => {
                           {allDepts.map(d => <option key={d} value={d}>{d}</option>)}
                         </select>
                       </div>
-                      <div className="reg-status-pills">
-                        {STATUS_OPTIONS.map(s => (
+
+                      <div className="reg-filter-bottom-bar">
+                        <div className="reg-status-pills">
                           <button
-                            key={s}
                             type="button"
-                            className={`reg-pill ${filterStatus === s ? 'active' : ''}`}
-                            onClick={() => setFilterStatus(filterStatus === s ? '' : s)}
+                            className={`reg-pill ${!filterStatus ? 'active' : ''}`}
+                            onClick={() => setFilterStatus('')}
                           >
-                            {s}
+                            All
                           </button>
-                        ))}
-                        {(filterDept || filterStatus || filterDate !== todayIST || searchFilter) && (
+                          {STATUS_OPTIONS.map(s => (
+                            <button
+                              key={s}
+                              type="button"
+                              className={`reg-pill ${filterStatus === s ? 'active' : ''}`}
+                              onClick={() => setFilterStatus(filterStatus === s ? '' : s)}
+                            >
+                              {s}
+                            </button>
+                          ))}
+                        </div>
+
+                        {(filterDept || filterStatus || filterDate || searchFilter) && (
                           <button
                             type="button"
                             className="reg-reset-btn"
-                            onClick={() => { setFilterDept(''); setFilterStatus(''); setFilterDate(todayIST); setSearchFilter(''); }}
+                            onClick={() => { setFilterDept(''); setFilterStatus(''); setFilterDate(''); setSearchFilter(''); }}
+                            title="Clear all search, date, department and status filters"
                           >
-                            Reset Filters
+                            <RotateCcw size={13} />
+                            <span>Reset Filters</span>
                           </button>
                         )}
                       </div>
@@ -1012,7 +1058,7 @@ const AdminDashboard = () => {
                     <p style={{ fontSize: '0.76rem', color: 'var(--muted)', margin: '0 0 10px 2px' }}>
                       {filterDate === todayIST && !filterDept && !filterStatus && !searchFilter
                         ? `Showing ${filteredAppointments.length} appointment${filteredAppointments.length !== 1 ? 's' : ''} for today`
-                        : `Showing ${filteredAppointments.length} of ${allAppointments.length} appointments`
+                        : `Showing ${filteredAppointments.length} of ${allAppointments.length} appointment${allAppointments.length !== 1 ? 's' : ''}`
                       }
                     </p>
 
