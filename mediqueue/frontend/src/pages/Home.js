@@ -147,61 +147,46 @@ const Home = () => {
                 </p>
               </div>
 
-              {/* Big Professional Action Cards */}
-              <div className="m-actions-group">
-                {/* 1. Big Featured Primary Card */}
-                <Link to="/find-hospital" className="m-featured-card">
-                  <div className="m-fc-left">
-                    <div className="m-fc-icon-wrap">
-                      <Stethoscope size={24} />
-                    </div>
-                    <div className="m-fc-text">
-                      <span className="m-fc-badge">OPD CONSULTATION</span>
-                      <span className="m-fc-title">Book Doctor Appointment</span>
-                      <span className="m-fc-sub">12 Hospital Departments · Instant Confirmation</span>
-                    </div>
+              {/* 4-Up Quick Access Matrix */}
+              <div className="m-quick-grid">
+                <Link to="/find-hospital" className="m-quick-card m-qc-primary">
+                  <div className="m-qc-icon-wrap m-qci-emerald">
+                    <Stethoscope size={22} />
                   </div>
-                  <div className="m-fc-arrow">
-                    <ArrowRight size={20} />
+                  <div className="m-qc-text">
+                    <span className="m-qc-title">Book Doctor</span>
+                    <span className="m-qc-sub">OPD Specialists</span>
                   </div>
                 </Link>
 
-                {/* 2. Secondary Duo Cards (Wide & Comfortable) */}
-                <div className="m-duo-grid">
-                  <Link to="/my-queue" className="m-duo-card m-duo-queue">
-                    <div className="m-duo-icon m-qci-teal">
-                      <Clock size={20} />
-                    </div>
-                    <div className="m-duo-text">
-                      <span className="m-duo-title">Live Queue</span>
-                      <span className="m-duo-sub">Track Wait Times</span>
-                    </div>
-                    <ArrowRight size={15} className="m-duo-arrow" />
-                  </Link>
-
-                  <Link to="/my-queue" className="m-duo-card m-duo-pass">
-                    <div className="m-duo-icon m-qci-indigo">
-                      <QrCode size={20} />
-                    </div>
-                    <div className="m-duo-text">
-                      <span className="m-duo-title">My QR Pass</span>
-                      <span className="m-duo-sub">Digital Token</span>
-                    </div>
-                    <ArrowRight size={15} className="m-duo-arrow" />
-                  </Link>
-                </div>
-
-                {/* 3. Emergency Hotline Bar */}
-                <a href="tel:108" className="m-emergency-bar">
-                  <div className="m-emg-left">
-                    <div className="m-emg-icon">
-                      <PhoneCall size={18} />
-                    </div>
-                    <span className="m-emg-text">
-                      <strong>24/7 Emergency Casualty:</strong> Dial 108
-                    </span>
+                <Link to="/my-queue" className="m-quick-card m-qc-teal">
+                  <div className="m-qc-icon-wrap m-qci-teal">
+                    <Clock size={22} />
                   </div>
-                  <span className="m-emg-action">Call Now</span>
+                  <div className="m-qc-text">
+                    <span className="m-qc-title">Live Queue</span>
+                    <span className="m-qc-sub">Wait Times</span>
+                  </div>
+                </Link>
+
+                <Link to="/my-queue" className="m-quick-card m-qc-indigo">
+                  <div className="m-qc-icon-wrap m-qci-indigo">
+                    <QrCode size={22} />
+                  </div>
+                  <div className="m-qc-text">
+                    <span className="m-qc-title">My QR Pass</span>
+                    <span className="m-qc-sub">Digital Token</span>
+                  </div>
+                </Link>
+
+                <a href="tel:108" className="m-quick-card m-qc-rose">
+                  <div className="m-qc-icon-wrap m-qci-rose">
+                    <PhoneCall size={22} />
+                  </div>
+                  <div className="m-qc-text">
+                    <span className="m-qc-title">Emergency</span>
+                    <span className="m-qc-sub">24/7 Care (108)</span>
+                  </div>
                 </a>
               </div>
 
@@ -209,7 +194,7 @@ const Home = () => {
               <div className="m-ticker-card">
                 <div className="m-ticker-pulse"></div>
                 <span className="m-ticker-text">
-                  Live OPD Status: <strong>~14 mins avg wait</strong> · 12 Specialties Active Today
+                  Average OPD Wait: <strong>~14 mins</strong> · 12 Specialties Active
                 </span>
               </div>
             </div>
