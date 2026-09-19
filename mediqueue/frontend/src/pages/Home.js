@@ -147,8 +147,8 @@ const Home = () => {
               {/* 4-Up Quick Access Matrix */}
               <div className="m-quick-grid">
                 <Link to="/find-hospital" className="m-quick-card m-qc-primary">
-                  <div className="m-qc-icon-wrap" style={{ background: '#ecfdf5', color: '#059669' }}>
-                    <Stethoscope size={22} />
+                  <div className="m-qc-icon-wrap m-qci-emerald">
+                    <Stethoscope size={20} />
                   </div>
                   <div className="m-qc-text">
                     <span className="m-qc-title">Book Doctor</span>
@@ -157,8 +157,8 @@ const Home = () => {
                 </Link>
 
                 <Link to="/my-queue" className="m-quick-card m-qc-teal">
-                  <div className="m-qc-icon-wrap" style={{ background: '#f0fdfa', color: '#0d9488' }}>
-                    <Clock size={22} />
+                  <div className="m-qc-icon-wrap m-qci-teal">
+                    <Clock size={20} />
                   </div>
                   <div className="m-qc-text">
                     <span className="m-qc-title">Live Queue</span>
@@ -167,8 +167,8 @@ const Home = () => {
                 </Link>
 
                 <Link to="/my-queue" className="m-quick-card m-qc-indigo">
-                  <div className="m-qc-icon-wrap" style={{ background: '#eef2ff', color: '#4f46e5' }}>
-                    <QrCode size={22} />
+                  <div className="m-qc-icon-wrap m-qci-indigo">
+                    <QrCode size={20} />
                   </div>
                   <div className="m-qc-text">
                     <span className="m-qc-title">My QR Pass</span>
@@ -177,8 +177,8 @@ const Home = () => {
                 </Link>
 
                 <a href="tel:108" className="m-quick-card m-qc-rose">
-                  <div className="m-qc-icon-wrap" style={{ background: '#fff1f2', color: '#e11d48' }}>
-                    <PhoneCall size={22} />
+                  <div className="m-qc-icon-wrap m-qci-rose">
+                    <PhoneCall size={20} />
                   </div>
                   <div className="m-qc-text">
                     <span className="m-qc-title">Emergency</span>
