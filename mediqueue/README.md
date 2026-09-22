@@ -10,6 +10,7 @@
 [![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](https://mysql.com/)
 [![Socket.io](https://img.shields.io/badge/Socket.io-4.6-010101?style=for-the-badge&logo=socketdotio&logoColor=white)](https://socket.io/)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://frontend-phi-ruby-62.vercel.app)
 
 *An intelligent multi-tier healthcare orchestration platform that eliminates waiting room congestion, reduces patient waiting times, prevents physician burnout, and delivers live digital queue tracking.*
 
@@ -126,6 +127,12 @@ sequenceDiagram
 - **E-Prescriptions**: Directly view and store digital prescriptions issued by consulting physicians.
 - **Automated Alerts**: Email notifications for registration OTP, appointment confirmation, check-in, and completion.
 
+### 📱 Mobile-First Healthcare Experience
+- **2x2 Quick Access Matrix**: Clean, clinical mobile home screen with dedicated cards for **Book Doctor**, **Live Queue**, **My QR Pass**, and **24/7 Emergency Care (108)**.
+- **Live OPD Wait Ticker**: Pulsing status bar showing average OPD wait times and active specialties.
+- **Mobile Bottom Navigation Dock (`BottomNav`)**: Fixed dock for rapid single-tap navigation between Home, Find Hospital, Live Queue, and Profile.
+- **Touch & Viewport Optimization**: Responsive engine preventing horizontal overflow, left-edge text clipping, and card squishing on small mobile viewports (360px–430px).
+
 ### 🩺 Doctor Suite
 - **Interactive Live Queue**: Clean, synchronized dashboard showing all checked-in patients in order of arrival.
 - **Action Controls**: Simple one-click progression (`▶ Start`, `✓ Complete`, `✕ Mark No-Show`).
@@ -135,8 +142,9 @@ sequenceDiagram
 
 ### 🛡️ Hospital Administration & Operations
 - **Doctor Approval Pipeline**: Review newly registered practitioners before granting clinical access.
-- **Department Overviews**: Monitor patient flow, doctor active status, and live queue velocity across all hospital wings.
-- **Dynamic Capacity Control**: Inspect machine learning averages (`avg_consultation_mins`) and adjusted slot capacities per department.
+- **Interactive ML Calibrator**: Real-time admin control to inspect department consultation moving averages, preview next-day slot capacities, and trigger dynamic capacity recalibration.
+- **7-Day Wait Trends & Peak Hours Visualizer**: Analytics dashboard tracking hourly congestion patterns, weekly patient volume, and department queue velocities.
+- **Multi-Status Appointment Filtering**: Filter appointments by status pill tabs (*All, Waiting, In-Progress, Completed, No-Show*), doctor search, and date-range pickers.
 - **Master Scheduling**: Full visibility over today's appointments, upcoming schedules, and manual doctor leave overrides.
 - **Contactless Reception Scanning**: QR scanner to check-in arriving patients instantly.
 
@@ -144,26 +152,70 @@ sequenceDiagram
 
 ## 🧠 Machine Learning & Smart Queue Engine
 
-### 1. Predictive Wait Time Regression
-The ML microservice utilizes a **Random Forest Regressor** trained on clinical outpatient datasets (`Hospital_Wait_Time_Data.csv`) factoring in:
-- Department historical consultation metrics
-- Time of day & slot congestion
-- Current queue depth and backlog
-- Patient age and clinical complexity score
-- Emergency bypass weighting
+MediQueue deploys a dedicated Python Flask machine learning microservice (`ml-service/`) that transforms static scheduling into an adaptive, data-driven queue orchestration engine.
 
-### 2. Dynamic Slot Capacity Formula
-Instead of arbitrary scheduling limits, MediQueue dynamically recalculates slot limits:
+### 1. Model Architecture & Training
+- **Algorithm**: **Random Forest Regressor** (`n_estimators=100`, `random_state=42`) trained on real-world outpatient consultation datasets (`Hospital_Wait_Time_Data.csv`, 5,000+ records).
+- **Preprocessing**: `MinMaxScaler` normalization across operational and patient features to handle differing scales uniformly.
+- **Inference Latency**: Sub-15ms prediction response times under concurrent load.
+- **Output Bucketing**: Predictions are floored at 5 minutes and rounded to the nearest 5-minute increment to provide clean, patient-friendly arrival estimates.
+
+### 2. The 14-Feature Input Dimension Vector
+The model ingests 14 dynamic operational and clinical variables for every prediction request:
+
+| # | Feature | Type | Range / Format | Description |
+| :-: | :--- | :---: | :---: | :--- |
+| **1** | `department_id` | Integer | `1 - 12` | Mapped hospital specialty (Cardiology, Orthopedics, Neurology, etc.). |
+| **2** | `time_slot` | Categorical | `0 - 5` | 2-hour interval index (0: <10 AM, 1: 10-12, 2: 12-2, 3: 2-4, 4: 4-6, 5: 6+). |
+| **3** | `day_of_week` | Integer | `0 - 6` | Day index (0 = Monday, 6 = Sunday) capturing weekly rush patterns. |
+| **4** | `month` | Integer | `1 - 12` | Month of the year capturing seasonal disease and consultation variations. |
+| **5** | `is_weekend` | Binary | `0` or `1` | Weekend flag accounting for reduced clinic staffing and emergency shifts. |
+| **6** | `current_queue_length` | Integer | `0 - 50+` | Real-time count of checked-in patients currently waiting in the department. |
+| **7** | `providers_on_shift` | Integer | `1 - 20` | Number of active, approved doctors currently seeing patients in the department. |
+| **8** | `nurses_on_shift` | Integer | `1 - 30` | Triage and clinical nursing staff assisting in the department. |
+| **9** | `staff_ratio` | Float | `0.0 - 1.0` | Proportion of active medical staff relative to current waiting room load. |
+| **10** | `is_emergency` | Binary | `0` or `1` | Priority bypass flag (Emergency department or critical triage cases). |
+| **11** | `patient_age` | Integer | `1 - 100` | Patient age demographic weighting consultation complexity. |
+| **12** | `reason_complexity_score` | Integer | `1 - 3` | Consultation complexity score (1 = Routine checkup, 2 = Moderate, 3 = Complex). |
+| **13** | `is_online_booking` | Binary | `0` or `1` | Whether the patient booked online with QR pass or registered as walk-in. |
+| **14** | `occupancy_rate` | Float | `0.0 - 1.0` | Overall hospital bed and consultation room utilization rate. |
+
+### 3. Queue Load Level Categorization
+Predicted wait times are automatically categorized into intuitive color-coded operational tiers:
+
+| Wait Time | Load Level | Badge Color | Clinical Action / Patient Advice |
+| :--- | :---: | :---: | :--- |
+| **$\le$ 15 minutes** | **Low** | `#22c55e` (Green) | Minimal delay. Arrive during your standard 30-min window. |
+| **16 – 30 minutes** | **Medium** | `#f59e0b` (Amber) | Normal operational pace. Queue progressing steadily. |
+| **31 – 60 minutes** | **High** | `#ef4444` (Red) | High congestion. Staggered arrival window strongly advised. |
+| **> 60 minutes** | **Very High** | `#7c3aed` (Purple) | Severe backlog. Hospital auto-deploys additional consultation support. |
+
+### 4. Dynamic Slot Capacity Formulation
+Rather than relying on arbitrary, static appointment caps, MediQueue dynamically calibrates booking limits for every 2-hour window:
+
 $$\text{Slot Capacity} = \left\lfloor \frac{120 \text{ minutes}}{\text{avg\_consultation\_mins}} \right\rfloor$$
 
-*Example*: If Cardiology consultations average **24 minutes**, the system caps bookings at **5 patients per 2-hour slot**. If Pediatrics averages **15 minutes**, the slot capacity expands to **8 patients**.
+- **Cardiology** ($\text{avg} = 24\text{ mins}$): Capped at $\lfloor 120 / 24 \rfloor = \mathbf{5 \text{ patients/slot}}$.
+- **Pediatrics** ($\text{avg} = 15\text{ mins}$): Expands to $\lfloor 120 / 15 \rfloor = \mathbf{8 \text{ patients/slot}}$.
+- **General Medicine** ($\text{avg} = 12\text{ mins}$): Expands to $\lfloor 120 / 12 \rfloor = \mathbf{10 \text{ patients/slot}}$.
 
-### 3. Self-Healing Moving-Window Aggregator
-Every midnight at **23:59 IST**, a background task executes the following self-correction:
-- Pulls all verified consultations within the last **20-day window**.
-- Applies strict outlier rejection (excluding sessions $< 5$ min as accidental clicks and $> 60$ min as doctor system oversights).
-- Updates `dept_consultation_stats` with new empirical averages and updated slot capacities.
-- **Resilient Fallback**: If the ML service is temporarily unreachable, the backend gracefully computes queue wait estimates directly from the database stats table without failing the booking.
+### 5. Continuous Retraining Pipeline (`retrain.py`)
+To prevent model drift and adapt to evolving hospital throughput, MediQueue includes a continuous learning pipeline:
+
+- **Automated Execution**: Runs nightly at **23:59 IST** or on-demand via the Admin Dashboard.
+- **Strict Zero-PII Privacy Safeguard**:
+  - The pipeline accesses completed clinical encounters strictly through a dedicated database abstraction view (`v_ml_clean_metrics`).
+  - An automated enforcement check scans feature dataframes against a hardcoded blacklist (`FORBIDDEN_COLUMNS`: names, emails, phones, passwords, medical diagnoses, prescriptions, QR codes). If any sensitive column is present, the pipeline immediately raises a `PermissionError` and halts. Zero patient PII ever enters the ML model or memory.
+- **Statistical IQR Outlier Cleaning**:
+  - Applies department-wise Interquartile Range ($Q1 - 1.5 \times \text{IQR}$ to $Q3 + 1.5 \times \text{IQR}$) anomaly filtering.
+  - Automatically eliminates false data: doctor accidental double-clicks ($< 3$ minutes) and forgotten open browser tabs ($> 90$ minutes).
+- **Token-Secured REST Retraining Endpoint**:
+  - `POST /retrain` is protected with cryptographic constant-time comparison (`secrets.compare_digest`) requiring a valid Bearer token (`ML_INTERNAL_SECRET`).
+
+### 6. High-Availability Resilient Fallback Engine
+If the Flask ML service is temporarily restarting or unreachable over the network, MediQueue guarantees **zero booking failures**:
+- The Node.js backend automatically detects ML service downtime and gracefully transitions to an internal statistical fallback.
+- Wait times and arrival windows are calculated in real time using moving averages stored in `dept_consultation_stats` without interrupting the patient's checkout or booking confirmation.
 
 ---
 
@@ -190,7 +242,11 @@ mediqueue/
 ├── frontend/                          # React 18 Single Page Application
 │   ├── public/                        # Static HTML index & icons
 │   ├── src/
-│   │   ├── components/                # Reusable UI components (Navbar, Footer, etc.)
+│   │   ├── components/                # Reusable UI components (Navbar, BottomNav, Footer)
+│   │   │   ├── BottomNav.js           # Mobile bottom navigation dock
+│   │   │   ├── BottomNav.css          # Bottom dock responsive styling
+│   │   │   ├── Navbar.js              # Desktop & mobile responsive header
+│   │   │   └── Footer.js              # Standardized footer
 │   │   ├── context/                   # Global state (AuthContext)
 │   │   ├── dashboards/                # Role dashboards (Patient, Doctor, Admin)
 │   │   ├── pages/                     # Routed pages (Home, Book, Login, Register, etc.)
@@ -209,10 +265,11 @@ mediqueue/
 │   │   ├── features.pkl               # Model feature list
 │   │   ├── dept_map.json              # Department ID to label mappings
 │   │   └── dept_stats.csv             # Baseline dataset statistics
-│   ├── app.py                         # Flask prediction API
-│   ├── train.py                       # Model training and artifact generation pipeline
+│   ├── app.py                         # Flask prediction API (Inference & Health)
+│   ├── train.py                       # Baseline training and artifact generation pipeline
+│   ├── retrain.py                     # Continuous retraining & IQR anomaly detection pipeline
 │   ├── Dockerfile                     # Docker container specification
-│   ├── requirements.txt               # Python package dependencies
+│   ├── requirements.txt               # Python package dependencies (NumPy, Scikit-learn, Pandas)
 │   ├── runtime.txt                    # Target Python runtime version
 │   └── Hospital_Wait__TIme_Data.csv   # Historical wait time dataset
 ├── .gitignore                         # Comprehensive repository-level gitignore
@@ -357,6 +414,19 @@ mediqueue/
 | `JWT_SECRET` | **Yes** | - | Cryptographic secret for signing JWT tokens. |
 | `EMAIL_USER` | **Yes** | - | Gmail account for sending transactional emails. |
 | `EMAIL_PASS` | **Yes** | - | 16-character Google App Password. |
+| `ML_INTERNAL_SECRET` | No | - | Shared secret token for triggering protected ML retraining requests. |
+
+### Machine Learning Service (`ml-service/.env`)
+
+| Variable | Required | Default | Description |
+| :--- | :---: | :--- | :--- |
+| `PORT` | No | `5001` | Port for the Flask ML prediction server. |
+| `DB_HOST` | **Yes** | `localhost` | MySQL / TiDB host for loading consultation records. |
+| `DB_PORT` | No | `3306` | Database port (use `4000` for TiDB Cloud). |
+| `DB_USER` | **Yes** | `root` | Database username. |
+| `DB_PASSWORD` | **Yes** | - | Database password. |
+| `DB_NAME` | **Yes** | `mediqueue` | Target database name. |
+| `ML_INTERNAL_SECRET` | No | - | Cryptographic bearer token required for `POST /retrain`. |
 
 ### Frontend (`frontend/.env`)
 
@@ -367,6 +437,15 @@ mediqueue/
 ---
 
 ## 📡 API Endpoints
+
+### Machine Learning Service (`:5001`)
+| Method | Endpoint | Access | Description |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/predict-wait` | Internal / Service | Ingests 14-feature vector; returns predicted wait minutes, load tier, and historical averages. |
+| `POST` | `/predict-batch` | Internal / Service | Computes concurrent wait times and load levels across all 12 hospital departments. |
+| `GET` | `/dept-stats` | Public | Returns historical average and median wait times derived from clinical dataset. |
+| `GET` | `/health` | Public | Service heartbeat, verifies active model weight status and feature list. |
+| `POST` | `/retrain` | Protected (Token) | Triggers the continuous retraining pipeline and IQR cleaning over database records. |
 
 ### Authentication (`/api/auth`)
 | Method | Endpoint | Access | Description |
