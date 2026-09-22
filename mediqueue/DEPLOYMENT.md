@@ -21,126 +21,155 @@ graph TD
 
 ---
 
-## 1. Database Setup (MySQL)
+## 1. Database Setup (MySQL / TiDB Cloud)
 
-You need a MySQL database instance. You can host this using services like **Clever Cloud**, **Aiven**, **Railway**, or any standard VPS.
+You need a MySQL database instance. You can host this using services like **TiDB Cloud** (recommended serverless MySQL), **Clever Cloud**, **Aiven**, **Railway**, or standard MySQL 8.0+.
 
-1. Create a MySQL database and retrieve your connection details:
-   - **Host**
-   - **Port** (usually `3306` or `3307`)
+1. Create a database named `mediqueue` and retrieve your credentials:
+   - **Host** (e.g. `gateway01.ap-southeast-1.prod.aws.tidbcloud.com` or `localhost`)
+   - **Port** (usually `4000` for TiDB Cloud, `3306` for MySQL)
    - **User**
    - **Password**
-   - **Database Name**
-2. Import the schema file `mediqueue/database/schema.sql` to initialize the database tables and default admin user.
-   - Run via MySQL CLI:
+   - **Database Name** (`mediqueue`)
+   - **SSL Requirement** (Set `DB_SSL=true` for cloud providers requiring TLS)
+
+2. Import the database schema:
+   - **For MySQL 8.0+ or TiDB Cloud (Recommended)**:
+     ```bash
+     mysql -u <user> -p -h <host> -P <port> --ssl-mode=REQUIRED <database_name> < database/schema_fixed.sql
+     ```
+   - **For standard MySQL 5.7+ / MariaDB / Clever Cloud**:
      ```bash
      mysql -u <user> -p -h <host> -P <port> <database_name> < database/schema.sql
      ```
-   - Alternatively, copy and paste the contents of `schema.sql` into your database administration tool (e.g. phpMyAdmin, DBeaver, or Clever Cloud console).
+   *(Alternatively, execute the SQL file directly via DBeaver, MySQL Workbench, or your cloud provider web console).*
 
 ---
 
 ## 2. ML Service Deployment (Python Flask)
 
-The Machine Learning service loads the pre-trained `trained_model.pkl` to predict queue waiting times. 
+The Machine Learning service provides sub-15ms wait time forecasting using a pre-trained Random Forest model and includes an automated continuous retraining pipeline (`retrain.py`).
 
-* **Hosting Recommendations**: Render (Web Service), Railway, or PythonAnywhere.
+* **Hosting Recommendations**: Render (Web Service), Railway, or Docker.
+* **Root Directory**: `mediqueue/ml-service`
+* **Runtime**: Python 3.10 / 3.11
 * **Build Command**: `pip install -r requirements.txt`
 * **Start Command**: `gunicorn app:app --bind 0.0.0.0:$PORT`
-* **Port**: Automatically bound by the platform via the `PORT` environment variable (defaults to `5001` if run locally).
-
-### Deployment on Render:
-1. Create a new **Web Service** on Render.
-2. Select your repository and set the **Root Directory** to `mediqueue/ml-service`.
-3. Set **Runtime** to `Python 3`.
-4. Set the **Build Command** to:
-   ```bash
-   pip install -r requirements.txt
-   ```
-5. Set the **Start Command** to:
-   ```bash
-   gunicorn app:app
-   ```
-6. Render will assign you a public URL (e.g., `https://mediqueue-ml.onrender.com`). **Save this URL** for the backend setup.
-
----
-
-## 3. Backend Deployment (Node.js Express)
-
-The backend acts as the central coordinator and handles web sockets (Socket.io) for real-time queue updates.
-
-* **Hosting Recommendations**: Render (Web Service), Railway, or any Node.js host.
-* **Root Directory**: `mediqueue/backend`
-* **Build Command**: `npm install`
-* **Start Command**: `node server.js` or `npm start`
-* **Port**: Render/Railway will inject a dynamic `PORT` environment variable (defaults to `5000` if local).
+* **Port**: Automatically assigned by platform via `$PORT` (defaults to `5001` locally).
 
 ### Environment Variables:
-Configure the following environment variables in your backend service:
+| Variable | Required | Description | Example |
+| :--- | :---: | :--- | :--- |
+| `PORT` | No | Flask HTTP port | `5001` |
+| `DB_HOST` | **Yes** | Database host (for retraining pipeline) | `gateway01.tidbcloud.com` |
+| `DB_PORT` | No | Database port | `4000` (TiDB) or `3306` |
+| `DB_USER` | **Yes** | Database username | `root` |
+| `DB_PASSWORD` | **Yes** | Database password | `<your_db_password>` |
+| `DB_NAME` | **Yes** | Database name | `mediqueue` |
+| `ML_INTERNAL_SECRET` | **Yes** | Shared secret token guarding `POST /retrain` | `<random_token_32_chars>` |
 
-| Variable | Description | Example / Default |
-| :--- | :--- | :--- |
-| `NODE_ENV` | Environment level | `production` |
-| `PORT` | Listening Port | `5000` |
-| `DB_HOST` | MySQL Hostname | `kx1s-e.h.filess.io` |
-| `DB_PORT` | MySQL Port | `3307` |
-| `DB_USER` | MySQL Username | `mediqueue_worejoined` |
-| `DB_PASSWORD` | MySQL Password | `<your_db_password>` |
-| `DB_NAME` | MySQL Database Name | `mediqueue_worejoined` |
-| `DB_SSL` | Enable SSL for DB (Required for secure hosts) | `true` (set to `true` if your DB requires SSL) |
-| `ML_SERVICE_URL` | Deployed ML Flask URL | `https://mediqueue-ml.onrender.com` |
-| `FRONTEND_URL` | Deployed React Frontend URL (for CORS) | `https://mediqueue.vercel.app` |
-| `EMAIL_USER` | Gmail address for sending OTP emails | `your-email@gmail.com` |
-| `EMAIL_PASS` | Gmail App Password (not standard pass) | `xxxx xxxx xxxx xxxx` |
-| `JWT_SECRET` | Secret key for signing authorization tokens | `any-random-long-string` |
+### Continuous Retraining Setup:
+- **Nightly Retraining via Cron / Render Cron Job**:
+  You can run a daily cron at midnight:
+  ```bash
+  python retrain.py
+  ```
+- **Webhook / API Trigger**:
+  Send an authenticated `POST` request to reload model weights on demand:
+  ```bash
+  curl -X POST https://your-ml-service.onrender.com/retrain \
+    -H "Authorization: Bearer <ML_INTERNAL_SECRET>"
+  ```
 
 ---
 
-## 4. Frontend Deployment (React)
+## 3. Backend Deployment (Node.js Express + Socket.io)
 
-The frontend is built as a static application and can be hosted for free.
+The backend acts as the central coordinator, handles WebSocket rooms for live queue broadcasts, communicates with the ML microservice, and executes nightly dynamic slot recalculation.
 
-* **Hosting Recommendations**: Vercel, Netlify, or GitHub Pages.
+* **Hosting Recommendations**: Render (Web Service), Railway, or VPS.
+* **Root Directory**: `mediqueue/backend`
+* **Build Command**: `npm install`
+* **Start Command**: `npm start`
+* **Port**: Render/Railway injects dynamic `$PORT` (defaults to `5000` locally).
+
+### Environment Variables:
+Configure the following in your deployed backend service:
+
+| Variable | Required | Description | Example / Default |
+| :--- | :---: | :--- | :--- |
+| `NODE_ENV` | No | Environment mode | `production` |
+| `PORT` | No | HTTP listening port | `5000` |
+| `DB_HOST` | **Yes** | MySQL / TiDB host address | `gateway01.tidbcloud.com` |
+| `DB_PORT` | No | Database port | `4000` or `3306` |
+| `DB_USER` | **Yes** | Database username | `root` |
+| `DB_PASSWORD` | **Yes** | Database password | `<your_db_password>` |
+| `DB_NAME` | **Yes** | Database name | `mediqueue` |
+| `DB_SSL` | No | Cloud TLS SSL flag (`true` for TiDB/Aiven) | `true` |
+| `ML_SERVICE_URL` | **Yes** | URL of deployed Flask ML service | `https://your-ml-service.onrender.com` |
+| `ML_INTERNAL_SECRET`| No | Shared secret token matching ML service | `<random_token_32_chars>` |
+| `FRONTEND_URL` | **Yes** | Allowed client origin for CORS whitelist | `https://frontend-phi-ruby-62.vercel.app` |
+| `EMAIL_USER` | **Yes** | Gmail account for OTPs & confirmations | `your-email@gmail.com` |
+| `EMAIL_PASS` | **Yes** | 16-character Google App Password | `xxxx xxxx xxxx xxxx` |
+| `JWT_SECRET` | **Yes** | Secret for signing JSON Web Tokens | `any-random-long-string-min-32-chars` |
+
+---
+
+## 4. Frontend Deployment (React 18 SPA)
+
+The frontend client is built as an optimized static Single Page Application with mobile-first responsiveness and hosted on Vercel.
+
+* **Hosting Recommendation**: Vercel (Production URL: `https://frontend-phi-ruby-62.vercel.app`).
 * **Root Directory**: `mediqueue/frontend`
+* **Framework Preset**: Create React App
 * **Build Command**: `npm run build`
 * **Output Directory**: `build`
+* **SPA Routing**: Handled automatically via `frontend/vercel.json` rewrites.
 
-### Setup:
-During deployment, you **MUST** specify the environment variables at build-time so they are compiled into the static JS files.
-
-1. **Environment Variables**:
-   - `REACT_APP_API_URL`: Set this to your deployed Backend URL (e.g., `https://mediqueue-backend.onrender.com/api`).
-2. **On Vercel**:
-   - Import your repo.
-   - Set **Root Directory** to `mediqueue/frontend`.
-   - Under **Framework Preset**, select **Create React App**.
-   - Add the Environment Variable `REACT_APP_API_URL` with your backend endpoint.
-   - Click **Deploy**.
+### Setup on Vercel:
+1. Import the repository into Vercel.
+2. Set **Root Directory** to `mediqueue/frontend`.
+3. Add Build Environment Variable:
+   - `REACT_APP_API_URL`: Set to your deployed backend URL (e.g., `https://your-backend.onrender.com/api`).
+4. Click **Deploy**.
 
 ---
 
 ## ⚡ Verifying Your Deployment
 
-1. **ML Service**: Visit `https://your-ml-service.onrender.com/health` in your browser. It should return:
+1. **ML Service Heartbeat**:
+   Visit `https://your-ml-service.onrender.com/health` in your browser. It should return:
    ```json
    {
      "status": "OK",
      "model_loaded": true,
      "service": "MediQueue ML Service",
-     "dataset": "Hospital_Wait_Time_Data.csv"
+     "features": [
+       "department_id", "time_slot", "day_of_week", "month", "is_weekend",
+       "current_queue_length", "providers_on_shift", "nurses_on_shift",
+       "staff_ratio", "is_emergency", "patient_age", "reason_complexity_score",
+       "is_online_booking", "occupancy_rate"
+     ]
    }
    ```
-2. **Backend**: Visit `https://your-backend.onrender.com/health`. It should return:
-   ```json
-   {
-     "status": "OK",
-     "env": "production"
-   }
+
+2. **ML Prediction Verification**:
+   Test wait time inference:
+   ```bash
+   curl -X POST https://your-ml-service.onrender.com/predict-wait \
+     -H "Content-Type: application/json" \
+     -d '{"department_id": 2, "current_queue_length": 4, "providers_on_shift": 3, "patient_age": 42}'
    ```
-3. **Database connection**: Check your backend deployment logs. On startup, it will run a test query. You should see:
+   Should return: `{"success": true, "predicted_wait_minutes": 25, "load_level": "Medium", ...}`
+
+3. **Backend Status**:
+   Visit `https://your-backend.onrender.com/health` or inspect deployment startup logs:
    ```text
    🏥 MediQueue Backend — port 5000
    🌐 NODE_ENV: production
    📡 Socket.io ready
    ✅ Database connected
    ```
+
+4. **Frontend Verification**:
+   Navigate to your Vercel URL (`https://frontend-phi-ruby-62.vercel.app`), verify the live OPD ticker, 2x2 quick matrix on mobile view, and test creating an appointment booking with instant QR pass generation.

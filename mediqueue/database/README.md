@@ -26,6 +26,7 @@ This directory contains the database schema definitions and seed data for the **
   - `avg_consultation_mins`: Historical moving average.
   - `slot_capacity`: Maximum patients per 2-hour slot ($\lfloor 120 / \text{avg\_consultation\_mins} \rfloor$).
 - **`prescriptions`**: Digital e-prescriptions with diagnostic notes, medicines, dosage, and doctor sign-off.
+- **`v_ml_clean_metrics`** *(SQL View)*: Privacy-preserving, zero-PII SQL abstraction view generated for the continuous ML retraining pipeline (`retrain.py`). Strips all patient names, passwords, emails, and diagnosis notes, exposing only anonymized clinical timestamps, queue lengths, and department metrics.
 
 ---
 
